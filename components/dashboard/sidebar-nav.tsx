@@ -1,6 +1,6 @@
 "use client";
 
-import { CreditCard, Home, type LucideIcon } from "lucide-react";
+import { CreditCard, Home, Tag, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -15,6 +15,7 @@ type NavItem = {
 const items: NavItem[] = [
   { href: "/", label: "Início", icon: Home },
   { href: "/cards", label: "Cartões", icon: CreditCard },
+  { href: "/categories", label: "Categorias", icon: Tag },
 ];
 
 export function SidebarNav() {
