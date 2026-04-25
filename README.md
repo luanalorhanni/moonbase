@@ -1,36 +1,42 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# moonbase
 
-## Getting Started
+Sistema pessoal de controle financeiro construído com Next.js, Tailwind, shadcn/ui e Supabase.
 
-First, run the development server:
+A fonte da verdade do projeto — stack, ADRs, schema, convenções, identidade visual e plano de migração em fases — vive em [`docs/architecture.md`](docs/architecture.md). Toda decisão arquitetural é tomada referenciando esse documento.
+
+## Getting started
+
+Pré-requisitos:
+
+- Node.js 22+
+- pnpm 10+
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
+cp .env.local.example .env.local   # depois preencher os valores reais
+pnpm dev                           # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Scripts
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Comando            | O que faz                                  |
+| ------------------ | ------------------------------------------ |
+| `pnpm dev`         | Servidor de desenvolvimento (Turbopack)    |
+| `pnpm build`       | Build de produção                          |
+| `pnpm start`       | Servir build de produção localmente        |
+| `pnpm lint`        | ESLint                                     |
+| `pnpm typecheck`   | `tsc --noEmit`                             |
+| `pnpm test`        | Vitest (unitários, modo run-once)          |
+| `pnpm format`      | Formatar com Prettier                      |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Variáveis de ambiente
 
-## Learn More
+Copie `.env.local.example` para `.env.local` e preencha. Detalhes do que cada variável faz estão no próprio `.env.local.example`. **Nunca commite `.env.local`.**
 
-To learn more about Next.js, take a look at the following resources:
+## Convenções
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Inglês para código, identificadores e mensagens de commit; português brasileiro para UI.
+- Toda mudança via PR; nunca commitar direto em `main`.
+- Lógica pura em `lib/finance/*` é coberta por testes Vitest e nunca toca o banco.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Mais detalhes na seção 6 do arch doc.
