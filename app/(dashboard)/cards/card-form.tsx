@@ -31,6 +31,18 @@ const COLOR_LABEL: Record<(typeof CARD_COLORS)[number], string> = {
   gray: "Cinza",
 };
 
+const COLOR_DOT_CLASS: Record<(typeof CARD_COLORS)[number], string> = {
+  red: "bg-red-500",
+  orange: "bg-orange-500",
+  yellow: "bg-yellow-400",
+  green: "bg-green-500",
+  blue: "bg-blue-500",
+  purple: "bg-purple-500",
+  pink: "bg-pink-500",
+  brown: "bg-amber-700",
+  gray: "bg-gray-400",
+};
+
 type Props = {
   /** When provided, the form runs in edit mode. */
   card?: CardRow;
@@ -213,7 +225,13 @@ export function CardForm({ card, onSuccess }: Props) {
                 <SelectContent>
                   {CARD_COLORS.map((color) => (
                     <SelectItem key={color} value={color}>
-                      {COLOR_LABEL[color]}
+                      <span className="flex items-center gap-2">
+                        <span
+                          className={`size-3 shrink-0 rounded-full ring-1 ring-black/10 ${COLOR_DOT_CLASS[color]}`}
+                          aria-hidden
+                        />
+                        {COLOR_LABEL[color]}
+                      </span>
                     </SelectItem>
                   ))}
                 </SelectContent>
