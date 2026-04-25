@@ -21,7 +21,7 @@ export function SidebarNav() {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="Navegação principal" className="flex flex-col gap-1 px-3 py-4">
+    <nav aria-label="Navegação principal" className="flex flex-col gap-0.5 px-3 py-3">
       {items.map((item) => {
         const isActive =
           pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
@@ -31,13 +31,23 @@ export function SidebarNav() {
             href={item.href}
             aria-current={isActive ? "page" : undefined}
             className={cn(
-              "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
+              "relative flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors duration-150",
               isActive
-                ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                : "text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground",
+                ? "bg-primary/[0.07] text-foreground font-medium"
+                : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-foreground",
             )}
           >
-            <item.icon className="size-4" strokeWidth={1.5} aria-hidden />
+            {isActive && (
+              <span
+                className="bg-primary absolute inset-y-1.5 left-0 w-[2.5px] rounded-full"
+                aria-hidden
+              />
+            )}
+            <item.icon
+              className={cn("size-4 shrink-0", isActive ? "text-primary" : "opacity-50")}
+              strokeWidth={1.5}
+              aria-hidden
+            />
             <span>{item.label}</span>
           </Link>
         );
