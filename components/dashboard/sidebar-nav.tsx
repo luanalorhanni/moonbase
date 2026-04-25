@@ -1,6 +1,14 @@
 "use client";
 
-import { ArrowDownToLine, Banknote, CreditCard, Home, Tag, type LucideIcon } from "lucide-react";
+import {
+  ArrowDownToLine,
+  Banknote,
+  CreditCard,
+  Home,
+  ReceiptText,
+  Tag,
+  type LucideIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -17,6 +25,7 @@ const items: NavItem[] = [
   { href: "/cards", label: "Cartões", icon: CreditCard },
   { href: "/categories", label: "Categorias", icon: Tag },
   { href: "/expenses/cash", label: "Despesas à vista", icon: Banknote },
+  { href: "/expenses/credit", label: "Despesas de crédito", icon: ReceiptText },
   { href: "/incomes", label: "Receitas", icon: ArrowDownToLine },
 ];
 
