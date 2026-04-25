@@ -6,6 +6,7 @@ import {
   CreditCard,
   Home,
   ReceiptText,
+  Repeat,
   Tag,
   type LucideIcon,
 } from "lucide-react";
@@ -26,6 +27,7 @@ const items: NavItem[] = [
   { href: "/categories", label: "Categorias", icon: Tag },
   { href: "/expenses/cash", label: "Despesas à vista", icon: Banknote },
   { href: "/expenses/credit", label: "Despesas de crédito", icon: ReceiptText },
+  { href: "/expenses/fixed", label: "Despesas fixas", icon: Repeat },
   { href: "/incomes", label: "Receitas", icon: ArrowDownToLine },
 ];
 
