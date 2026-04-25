@@ -6,6 +6,7 @@ import {
   CreditCard,
   HandCoins,
   Home,
+  PiggyBank,
   ReceiptText,
   Repeat,
   Tag,
@@ -31,6 +32,7 @@ const items: NavItem[] = [
   { href: "/expenses/fixed", label: "Despesas fixas", icon: Repeat },
   { href: "/incomes", label: "Receitas", icon: ArrowDownToLine },
   { href: "/receivables", label: "Recebíveis", icon: HandCoins },
+  { href: "/investments", label: "Investimentos", icon: PiggyBank },
 ];
 
 export function SidebarNav() {
