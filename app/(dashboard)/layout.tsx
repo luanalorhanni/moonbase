@@ -20,17 +20,26 @@ export default async function DashboardLayout({ children }: { children: ReactNod
 
   return (
     <div className="flex min-h-full">
-      <aside className="bg-sidebar text-sidebar-foreground border-sidebar-border hidden w-64 flex-col border-r md:flex">
-        <div className="border-sidebar-border flex items-center gap-2 border-b px-6 py-4">
-          <Moon className="text-muted-foreground size-5" strokeWidth={1.25} aria-hidden />
-          <span className="font-semibold tracking-tight">moonbase</span>
+      <aside className="bg-sidebar text-sidebar-foreground border-sidebar-border hidden w-60 flex-col border-r md:flex">
+        <div className="px-6 py-5">
+          <div className="flex items-center gap-2.5">
+            <Moon className="text-primary size-[18px]" strokeWidth={1.25} aria-hidden />
+            <span className="text-foreground text-sm font-semibold tracking-tight">moonbase</span>
+          </div>
         </div>
         <SidebarNav />
-        <div className="border-sidebar-border mt-auto border-t px-3 py-3">
-          <div className="flex flex-col gap-2">
-            <span className="text-muted-foreground truncate px-2 text-xs">{user.email}</span>
+        <div className="border-sidebar-border mt-auto border-t px-4 py-4">
+          <div className="flex flex-col gap-1">
+            <span className="text-muted-foreground/70 truncate px-2 font-mono text-[10px] leading-relaxed">
+              {user.email}
+            </span>
             <form action={signOut}>
-              <Button type="submit" variant="ghost" size="sm" className="w-full justify-start">
+              <Button
+                type="submit"
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground hover:text-foreground w-full justify-start text-sm font-normal"
+              >
                 Sair
               </Button>
             </form>
@@ -42,8 +51,8 @@ export default async function DashboardLayout({ children }: { children: ReactNod
         <header className="border-border bg-background/80 supports-backdrop-blur:bg-background/60 sticky top-0 z-10 border-b backdrop-blur md:hidden">
           <div className="flex items-center justify-between gap-4 px-6 py-3">
             <div className="flex items-center gap-2">
-              <Moon className="text-muted-foreground size-5" strokeWidth={1.25} aria-hidden />
-              <span className="font-semibold tracking-tight">moonbase</span>
+              <Moon className="text-primary size-4" strokeWidth={1.25} aria-hidden />
+              <span className="text-foreground text-sm font-semibold tracking-tight">moonbase</span>
             </div>
             <form action={signOut}>
               <Button type="submit" variant="ghost" size="sm">
