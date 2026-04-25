@@ -1,38 +1,38 @@
 /**
- * One-shot importer: reads the original Google Sheets workbook (.xlsx
- * export) and inserts its rows into the moonbase database via Drizzle.
+ * One-shot importer for the moonbase Google Sheets workbook.
+ *
+ * Tailored to the actual layout in
+ * "Monthly Finance Control - Luana Lorhanni.xlsx" — header rows and column
+ * indices are hardcoded per tab below.
  *
  * Usage:
- *   pnpm tsx scripts/migrate-from-spreadsheet.ts <file.xlsx>             # dry run
- *   pnpm tsx scripts/migrate-from-spreadsheet.ts <file.xlsx> --confirm   # writes
- *   pnpm tsx scripts/migrate-from-spreadsheet.ts <file.xlsx> --only=cards,categories
+ *   pnpm tsx --env-file=.env.local scripts/migrate-from-spreadsheet.ts <file.xlsx>
+ *   pnpm tsx --env-file=.env.local scripts/migrate-from-spreadsheet.ts <file.xlsx> --confirm
+ *   pnpm tsx --env-file=.env.local scripts/migrate-from-spreadsheet.ts <file.xlsx> --confirm --only=cards,categories
  *
- * The script is intentionally explicit: every tab parser is its own
- * function and the column-name mapping at the top is the only thing you
- * normally need to touch when the spreadsheet's layout drifts.
+ * Tabs imported (dependency order):
+ *   1. 🛒 Carts                  → cards (all credit, default colors)
+ *   2. ⚪ Categorys              → categories + subcategories
+ *   3. 📈 Incomes                → incomes (type="other")
+ *   4. 💵 Cash Expenses          → cash_expenses
+ *   5. 🪪 Credit Expenses        → credit_expenses (manualOverride=true since
+ *                                  parcel months come straight from the sheet)
+ *   6. 🪙 Receivable             → cash_receivables + credit_receivables
+ *   7. 🏦 Investiments           → liquid_savings + fixed_income +
+ *                                  monthly_snapshots (combined with Anual)
+ *   8. 📅 Anual Finance          → completes monthly_snapshots
  *
- * Edge cases handled:
- *   - Excel serial-number dates (rendered as JS Date by exceljs, normalised
- *     to "YYYY-MM-DD")
- *   - `__xludf.DUMMYFUNCTION` cached values left behind when XLSX export
- *     stripped the original FILTER formulas (treated as empty)
- *   - Hardcoded month overrides on credit expenses (rows where the user
- *     filled the parcel-month columns by hand) — preserved by setting
- *     manualOverride = true and trusting the values verbatim
- *   - Currency strings with thousands separators ("R$ 1.234,56") parsed
- *     to the canonical "1234.56" numeric string
- *
- * The script wraps every tab's writes in its own transaction so a
- * malformed row in tab N doesn't roll back tabs 1..N-1. Re-running with
- * --only=<tab> after a fix lets you resume.
+ * --confirm wraps all writes; otherwise the script prints what it would
+ * insert and exits.
  */
 
 import { parseArgs } from "node:util";
 
 import ExcelJS from "exceljs";
-import { sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 
 import { db, schema } from "@/lib/db";
+import { computeParcelDates } from "@/lib/finance/parcels";
 
 const USER_ID = process.env.MOONBASE_USER_ID;
 if (!USER_ID) {
@@ -40,82 +40,78 @@ if (!USER_ID) {
 }
 
 // ----------------------------------------------------------------------------
-// Tab name → header column map. Adjust strings to match your workbook.
-// ----------------------------------------------------------------------------
-
-const TABS = {
-  categories: "⚪ Categorys",
-  cards: "🛒 Carts",
-  cashExpenses: "💵 Cash Expenses",
-  creditExpenses: "🪪 Credit Expenses",
-  incomes: "📈 Incomes",
-  cashReceivables: "🪙 Receivable",
-  liquidSavings: "🏦 Investiments",
-  monthlySnapshots: "📅 Anual Finance",
-} as const;
-
-// ----------------------------------------------------------------------------
-// Helpers
+// Cell helpers
 // ----------------------------------------------------------------------------
 
 const DUMMYFUNCTION = "__xludf.DUMMYFUNCTION";
 
-function cellText(value: ExcelJS.CellValue): string {
-  if (value === null || value === undefined) return "";
-  if (typeof value === "string") {
-    return value.includes(DUMMYFUNCTION) ? "" : value.trim();
+function cellRaw(value: ExcelJS.CellValue): ExcelJS.CellValue {
+  if (value && typeof value === "object" && "result" in value) {
+    return value.result as ExcelJS.CellValue;
   }
-  if (typeof value === "number") return String(value);
-  if (value instanceof Date) return cellDate(value);
-  if (typeof value === "object" && value !== null) {
-    if ("text" in value && typeof value.text === "string") return value.text.trim();
-    if ("result" in value) return cellText(value.result as ExcelJS.CellValue);
-    if ("richText" in value && Array.isArray(value.richText)) {
-      return value.richText
+  return value;
+}
+
+function cellText(value: ExcelJS.CellValue): string {
+  const v = cellRaw(value);
+  if (v === null || v === undefined) return "";
+  if (typeof v === "string") return v.includes(DUMMYFUNCTION) ? "" : v.trim();
+  if (typeof v === "number") return String(v);
+  if (v instanceof Date) {
+    if (Number.isNaN(v.getTime())) return "";
+    return cellDate(v);
+  }
+  if (typeof v === "object") {
+    if ("text" in v && typeof v.text === "string") return v.text.trim();
+    if ("richText" in v && Array.isArray(v.richText)) {
+      return v.richText
         .map((r) => r.text)
         .join("")
         .trim();
     }
   }
-  return String(value);
+  return String(v);
 }
 
 function cellDate(value: ExcelJS.CellValue): string {
-  if (value instanceof Date) {
-    const y = value.getFullYear();
-    const m = String(value.getMonth() + 1).padStart(2, "0");
-    const d = String(value.getDate()).padStart(2, "0");
+  const v = cellRaw(value);
+  if (v instanceof Date) {
+    if (Number.isNaN(v.getTime())) return "";
+    const y = v.getFullYear();
+    const m = String(v.getMonth() + 1).padStart(2, "0");
+    const d = String(v.getDate()).padStart(2, "0");
     return `${y}-${m}-${d}`;
   }
-  if (typeof value === "number") {
-    // Excel serial → JS Date: epoch 1899-12-30
-    const date = new Date(Math.round((value - 25569) * 86400 * 1000));
+  if (typeof v === "number") {
+    const date = new Date(Math.round((v - 25569) * 86400 * 1000));
     return cellDate(date);
   }
-  const text = cellText(value);
-  if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return text;
+  const text = cellText(v);
+  if (/^\d{4}-\d{2}-\d{2}/.test(text)) return text.slice(0, 10);
   if (/^\d{2}\/\d{2}\/\d{4}$/.test(text)) {
     const [d, m, y] = text.split("/");
     return `${y}-${m}-${d}`;
   }
-  return text;
+  return "";
 }
 
 function cellAmount(value: ExcelJS.CellValue): string {
+  const v = cellRaw(value);
+  if (typeof v === "number") return v.toFixed(2);
   const text = cellText(value);
   if (text === "") return "0.00";
-  // Strip "R$", spaces, thousands separators, normalise comma decimal.
   const cleaned = text
     .replace(/R\$\s*/g, "")
     .replace(/\s/g, "")
-    .replace(/\.(?=\d{3}([,.]|$))/g, "") // thousands dots
+    .replace(/\.(?=\d{3}([,.]|$))/g, "")
     .replace(",", ".");
   const n = Number(cleaned);
-  if (Number.isNaN(n)) return "0.00";
-  return n.toFixed(2);
+  return Number.isNaN(n) ? "0.00" : n.toFixed(2);
 }
 
 function cellInt(value: ExcelJS.CellValue): number | null {
+  const v = cellRaw(value);
+  if (typeof v === "number") return Math.round(v);
   const text = cellText(value);
   if (text === "") return null;
   const n = parseInt(text, 10);
@@ -123,378 +119,708 @@ function cellInt(value: ExcelJS.CellValue): number | null {
 }
 
 function cellBool(value: ExcelJS.CellValue): boolean {
-  const text = cellText(value).toLowerCase();
-  return text === "true" || text === "sim" || text === "yes" || text === "1";
+  const v = cellRaw(value);
+  if (typeof v === "boolean") return v;
+  const t = cellText(value).toLowerCase();
+  return t === "true" || t === "sim" || t === "yes" || t === "1" || t === "✅";
 }
 
-type SheetRows = { headers: string[]; rows: Record<string, ExcelJS.CellValue>[] };
+function rowAt(sheet: ExcelJS.Worksheet, rowNum: number, col: number): ExcelJS.CellValue {
+  return sheet.getRow(rowNum).getCell(col).value;
+}
 
-function readSheet(workbook: ExcelJS.Workbook, name: string): SheetRows | null {
-  const sheet = workbook.getWorksheet(name);
-  if (!sheet) return null;
-
-  const headerRow = sheet.getRow(1);
-  const headers: string[] = [];
-  headerRow.eachCell({ includeEmpty: true }, (cell, colNumber) => {
-    headers[colNumber - 1] = cellText(cell.value).toLowerCase();
-  });
-
-  const rows: Record<string, ExcelJS.CellValue>[] = [];
-  sheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
-    if (rowNumber === 1) return;
-    const obj: Record<string, ExcelJS.CellValue> = {};
-    row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
-      const header = headers[colNumber - 1];
-      if (header) obj[header] = cell.value;
-    });
-    if (Object.values(obj).some((v) => cellText(v) !== "")) {
-      rows.push(obj);
-    }
-  });
-
-  return { headers, rows };
+function isRowEmpty(sheet: ExcelJS.Worksheet, rowNum: number, cols: number[]): boolean {
+  return cols.every((c) => cellText(rowAt(sheet, rowNum, c)) === "");
 }
 
 // ----------------------------------------------------------------------------
-// Tab parsers — return arrays of typed insert payloads. All field accesses
-// assume lowercase header names per readSheet().
+// Domain helpers
 // ----------------------------------------------------------------------------
 
-function parseCategories(sheet: SheetRows) {
-  return sheet.rows.map((r) => ({
-    userId: USER_ID!,
-    name: cellText(r["name"] ?? r["category"] ?? r["categoria"]),
-    color: (cellText(r["color"]).toLowerCase() || "gray") as
-      | "red"
-      | "orange"
-      | "yellow"
-      | "green"
-      | "blue"
-      | "purple"
-      | "pink"
-      | "brown"
-      | "gray",
-    icon: cellText(r["icon"]) || null,
-  }));
+const METHOD_MAP: Record<string, "pix" | "debit" | "cash"> = {
+  pix: "pix",
+  debit: "debit",
+  débito: "debit",
+  debito: "debit",
+  cash: "cash",
+  dinheiro: "cash",
+};
+
+function normaliseMethod(text: string): "pix" | "debit" | "cash" {
+  return METHOD_MAP[text.trim().toLowerCase()] ?? "pix";
 }
 
-function parseCards(sheet: SheetRows) {
-  return sheet.rows.map((r) => {
-    const type: "credit" | "account" =
-      cellText(r["type"]).toLowerCase() === "credit" ? "credit" : "account";
-    return {
+const DEFAULT_COLORS = ["blue", "purple", "green", "pink", "orange", "yellow", "brown", "gray", "red"] as const;
+
+function pickColor(index: number): (typeof DEFAULT_COLORS)[number] {
+  return DEFAULT_COLORS[index % DEFAULT_COLORS.length];
+}
+
+const PT_MONTHS: Record<string, number> = {
+  janeiro: 1, fevereiro: 2, "março": 3, marco: 3, abril: 4, maio: 5, junho: 6,
+  julho: 7, agosto: 8, setembro: 9, outubro: 10, novembro: 11, dezembro: 12,
+};
+
+function parseMonthLabel(text: string): string | null {
+  if (!text) return null;
+  if (/^\d{4}-\d{2}-\d{2}/.test(text)) return text.slice(0, 7) + "-01";
+  const m = text.toLowerCase().match(/^(janeiro|fevereiro|março|marco|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro)\s+(\d{4})$/);
+  if (m) {
+    const month = PT_MONTHS[m[1]];
+    return `${m[2]}-${String(month).padStart(2, "0")}-01`;
+  }
+  return null;
+}
+
+// ----------------------------------------------------------------------------
+// Tab parsers
+// ----------------------------------------------------------------------------
+
+type CardInsert = typeof schema.cards.$inferInsert;
+type CategoryInsert = typeof schema.categories.$inferInsert;
+type SubcategoryInsert = typeof schema.subcategories.$inferInsert;
+type IncomeInsert = typeof schema.incomes.$inferInsert;
+type CashExpenseInsert = typeof schema.cashExpenses.$inferInsert;
+type CreditExpenseInsert = typeof schema.creditExpenses.$inferInsert;
+type CashReceivableInsert = typeof schema.cashReceivables.$inferInsert;
+type CreditReceivableInsert = typeof schema.creditReceivables.$inferInsert;
+type LiquidSavingsInsert = typeof schema.liquidSavings.$inferInsert;
+type FixedIncomeInsert = typeof schema.fixedIncome.$inferInsert;
+type SnapshotInsert = typeof schema.monthlySnapshots.$inferInsert;
+
+function parseCarts(sheet: ExcelJS.Worksheet): CardInsert[] {
+  // header row 3, col 2+: Bank | Dia de Fechamento | Dia de Vencimento | Limite
+  const out: CardInsert[] = [];
+  let i = 0;
+  for (let r = 4; r <= sheet.rowCount; r++) {
+    const name = cellText(rowAt(sheet, r, 2));
+    if (!name) continue;
+    const closingDay = cellInt(rowAt(sheet, r, 3));
+    const dueDay = cellInt(rowAt(sheet, r, 4));
+    const limit = cellAmount(rowAt(sheet, r, 5));
+    // Treat as credit if it has a limit, otherwise account
+    const type: "credit" | "account" = Number(limit) > 0 ? "credit" : "account";
+    out.push({
       userId: USER_ID!,
-      name: cellText(r["name"] ?? r["card"] ?? r["cartao"]),
+      name,
       type,
-      bank: cellText(r["bank"]) || null,
-      defaultClosingDay: cellInt(r["closing"] ?? r["closing_day"] ?? r["fechamento"]),
-      dueDay: cellInt(r["due"] ?? r["due_day"] ?? r["vencimento"]),
-      limitAmount: type === "credit" ? cellAmount(r["limit"] ?? r["limite"]) : null,
-      color: (cellText(r["color"]).toLowerCase() || "gray") as
-        | "red"
-        | "orange"
-        | "yellow"
-        | "green"
-        | "blue"
-        | "purple"
-        | "pink"
-        | "brown"
-        | "gray",
-      isActive: r["active"] === undefined ? true : cellBool(r["active"]),
-    };
-  });
+      bank: name,
+      defaultClosingDay: closingDay,
+      dueDay: dueDay,
+      limitAmount: type === "credit" ? limit : null,
+      color: pickColor(i++),
+      isActive: true,
+    });
+  }
+  return out;
 }
 
-function parseCashExpenses(sheet: SheetRows) {
-  return sheet.rows.map((r) => ({
-    description: cellText(r["description"] ?? r["descricao"]),
-    cardName: cellText(r["card"] ?? r["cartao"]),
-    method: (cellText(r["method"] ?? r["metodo"]).toLowerCase() || "cash") as
-      | "pix"
-      | "debit"
-      | "cash",
-    subcategoryName: cellText(r["subcategory"] ?? r["subcategoria"]),
-    date: cellDate(r["date"] ?? r["data"]),
-    amount: cellAmount(r["amount"] ?? r["valor"]),
-  }));
+function parseCategoriesAndSubcategories(sheet: ExcelJS.Worksheet): {
+  categories: CategoryInsert[];
+  subcategoryRows: { name: string; categoryName: string }[];
+} {
+  // header row 2: Subcategory | Category
+  const subcategoryRows: { name: string; categoryName: string }[] = [];
+  const seenCategories = new Set<string>();
+  const categories: CategoryInsert[] = [];
+  let colorIndex = 0;
+
+  for (let r = 3; r <= sheet.rowCount; r++) {
+    const sub = cellText(rowAt(sheet, r, 2));
+    const cat = cellText(rowAt(sheet, r, 3));
+    if (!sub || !cat) continue;
+    subcategoryRows.push({ name: sub, categoryName: cat });
+    if (!seenCategories.has(cat)) {
+      seenCategories.add(cat);
+      categories.push({
+        userId: USER_ID!,
+        name: cat,
+        color: pickColor(colorIndex++),
+        icon: null,
+      });
+    }
+  }
+  return { categories, subcategoryRows };
 }
 
-function parseCreditExpenses(sheet: SheetRows) {
-  return sheet.rows.map((r) => {
-    const firstParcelMonth = cellDate(r["first_parcel_month"] ?? r["first_parcel"] ?? "");
-    const lastParcelMonth = cellDate(r["last_parcel_month"] ?? r["last_parcel"] ?? "");
-    const manualOverride = firstParcelMonth.length === 10 || lastParcelMonth.length === 10;
-    return {
-      description: cellText(r["description"] ?? r["descricao"]),
-      cardName: cellText(r["card"] ?? r["cartao"]),
-      subcategoryName: cellText(r["subcategory"] ?? r["subcategoria"]),
-      purchaseDate: cellDate(r["date"] ?? r["data"] ?? r["purchase_date"]),
-      totalParcels: cellInt(r["total_parcels"] ?? r["parcelas"]) ?? 1,
-      parcelValue: cellAmount(r["parcel_value"] ?? r["valor_parcela"] ?? r["amount"]),
+function parseIncomes(sheet: ExcelJS.Worksheet): IncomeInsert[] {
+  // header row 4: Income | Amount | Date | Month Payment
+  const out: IncomeInsert[] = [];
+  for (let r = 5; r <= sheet.rowCount; r++) {
+    const desc = cellText(rowAt(sheet, r, 2));
+    const amount = cellAmount(rowAt(sheet, r, 3));
+    const date = cellDate(rowAt(sheet, r, 4));
+    if (!desc || !date) continue;
+    out.push({
+      userId: USER_ID!,
+      description: desc,
+      type: "other",
+      amount,
+      date,
+    });
+  }
+  return out;
+}
+
+type CashExpenseRaw = {
+  description: string;
+  cardName: string;
+  method: "pix" | "debit" | "cash";
+  subcategoryName: string;
+  date: string;
+  amount: string;
+};
+
+function parseCashExpenses(sheet: ExcelJS.Worksheet): CashExpenseRaw[] {
+  // header row 6: Cart | Method | Expense | Subcategory | Category | Date | Amount | Month Payment
+  const out: CashExpenseRaw[] = [];
+  for (let r = 7; r <= sheet.rowCount; r++) {
+    if (isRowEmpty(sheet, r, [2, 4, 7, 8])) continue;
+    const cardName = cellText(rowAt(sheet, r, 2));
+    const method = normaliseMethod(cellText(rowAt(sheet, r, 3)));
+    const description = cellText(rowAt(sheet, r, 4));
+    const subcategoryName = cellText(rowAt(sheet, r, 5));
+    const date = cellDate(rowAt(sheet, r, 7));
+    const amount = cellAmount(rowAt(sheet, r, 8));
+    if (!description || !date || !cardName || !subcategoryName) continue;
+    out.push({ description, cardName, method, subcategoryName, date, amount });
+  }
+  return out;
+}
+
+type CreditExpenseRaw = {
+  description: string;
+  cardName: string;
+  subcategoryName: string;
+  purchaseDate: string;
+  totalParcels: number;
+  parcelValue: string;
+  firstParcelMonth: string | null;
+  lastParcelMonth: string | null;
+  firstParcelDate: string | null;
+  lastParcelDate: string | null;
+};
+
+function parseCreditExpenses(sheet: ExcelJS.Worksheet): CreditExpenseRaw[] {
+  // header row 6: Cart | Expense | Subcategory | Category | Date | Parcel | Amount | Month of First Parcel | Month of Last Parcel | (firstParcelDate) | (lastParcelDate)
+  const out: CreditExpenseRaw[] = [];
+  for (let r = 7; r <= sheet.rowCount; r++) {
+    if (isRowEmpty(sheet, r, [2, 3, 6, 8])) continue;
+    const cardName = cellText(rowAt(sheet, r, 2));
+    const description = cellText(rowAt(sheet, r, 3));
+    const subcategoryName = cellText(rowAt(sheet, r, 4));
+    const purchaseDate = cellDate(rowAt(sheet, r, 6));
+    const totalParcels = cellInt(rowAt(sheet, r, 7)) ?? 1;
+    const parcelValue = cellAmount(rowAt(sheet, r, 8));
+    const firstParcelMonth =
+      cellDate(rowAt(sheet, r, 9)) || parseMonthLabel(cellText(rowAt(sheet, r, 9)));
+    const lastParcelMonth =
+      cellDate(rowAt(sheet, r, 10)) || parseMonthLabel(cellText(rowAt(sheet, r, 10)));
+    const firstParcelDate = cellDate(rowAt(sheet, r, 11)) || null;
+    const lastParcelDate = cellDate(rowAt(sheet, r, 12)) || null;
+
+    if (!description || !cardName || !subcategoryName || !purchaseDate) continue;
+
+    out.push({
+      description,
+      cardName,
+      subcategoryName,
+      purchaseDate,
+      totalParcels,
+      parcelValue,
       firstParcelMonth: firstParcelMonth || null,
       lastParcelMonth: lastParcelMonth || null,
-      manualOverride,
-    };
-  });
+      firstParcelDate,
+      lastParcelDate,
+    });
+  }
+  return out;
 }
 
-function parseIncomes(sheet: SheetRows) {
-  return sheet.rows.map((r) => ({
-    userId: USER_ID!,
-    description: cellText(r["description"] ?? r["descricao"]),
-    type: (cellText(r["type"] ?? r["tipo"]).toLowerCase() || "other") as
-      | "salary"
-      | "research_grant"
-      | "refund"
-      | "fee"
-      | "sale"
-      | "other",
-    amount: cellAmount(r["amount"] ?? r["valor"]),
-    date: cellDate(r["date"] ?? r["data"]),
-  }));
+type CashReceivableRaw = {
+  description: string;
+  loanType: "pix" | "debit" | "cash";
+  amount: string;
+  loanDate: string;
+  expectedPaymentMonth: string;
+  isPaid: boolean;
+  actualPaymentDate: string | null;
+};
+
+function parseCashReceivables(sheet: ExcelJS.Worksheet): CashReceivableRaw[] {
+  // Cash Loans block — header at R9 cols 10..16:
+  //   Receivable | Date | Type of Loan | Amount | Expected Month Payment | Paid | Date of Payment
+  const out: CashReceivableRaw[] = [];
+  for (let r = 10; r <= sheet.rowCount; r++) {
+    const description = cellText(rowAt(sheet, r, 10));
+    if (!description) continue;
+    const loanDate = cellDate(rowAt(sheet, r, 11));
+    const loanType = normaliseMethod(cellText(rowAt(sheet, r, 12)));
+    const amount = cellAmount(rowAt(sheet, r, 13));
+    const expectedRaw = cellText(rowAt(sheet, r, 14));
+    const expectedDate = cellDate(rowAt(sheet, r, 14));
+    const expected = expectedDate
+      ? expectedDate.slice(0, 7) + "-01"
+      : parseMonthLabel(expectedRaw);
+    if (!expected) continue;
+    const isPaid = cellBool(rowAt(sheet, r, 15));
+    const actualPaymentDate = cellDate(rowAt(sheet, r, 16)) || null;
+    out.push({
+      description,
+      loanType,
+      amount,
+      loanDate: loanDate || expected,
+      expectedPaymentMonth: expected,
+      isPaid,
+      actualPaymentDate,
+    });
+  }
+  return out;
 }
 
-function parseCashReceivables(sheet: SheetRows) {
-  return sheet.rows.map((r) => ({
-    userId: USER_ID!,
-    description: cellText(r["description"] ?? r["descricao"]),
-    loanType: (cellText(r["loan_type"] ?? r["tipo"]).toLowerCase() || "pix") as
-      | "pix"
-      | "debit"
-      | "cash",
-    amount: cellAmount(r["amount"] ?? r["valor"]),
-    loanDate: cellDate(r["loan_date"] ?? r["data"]),
-    expectedPaymentMonth: cellDate(r["expected_payment_month"] ?? r["expected"]),
-    isPaid: cellBool(r["paid"] ?? r["pago"]),
-    actualPaymentDate: cellDate(r["actual_payment_date"] ?? r["paid_date"] ?? "") || null,
-  }));
+type CreditReceivableRaw = {
+  description: string;
+  cardName: string;
+  parcelValue: string;
+  purchaseDate: string;
+  totalParcels: number;
+  firstParcelMonth: string | null;
+};
+
+function parseCreditReceivables(sheet: ExcelJS.Worksheet): CreditReceivableRaw[] {
+  // Compras a receber block — header at R12 cols 2..8:
+  //   Compra | Cartão | Valor | Data | Parcelas | Mês do Primeiro Pagamento | Parcela Atual
+  const out: CreditReceivableRaw[] = [];
+  for (let r = 13; r <= sheet.rowCount; r++) {
+    const description = cellText(rowAt(sheet, r, 2));
+    if (!description) continue;
+    const cardName = cellText(rowAt(sheet, r, 3));
+    const parcelValue = cellAmount(rowAt(sheet, r, 4));
+    const purchaseDate = cellDate(rowAt(sheet, r, 5));
+    const totalParcels = cellInt(rowAt(sheet, r, 6)) ?? 1;
+    const firstParcelMonth =
+      cellDate(rowAt(sheet, r, 7)) || parseMonthLabel(cellText(rowAt(sheet, r, 7)));
+    if (!cardName || !purchaseDate) continue;
+    out.push({
+      description,
+      cardName,
+      parcelValue,
+      purchaseDate,
+      totalParcels,
+      firstParcelMonth,
+    });
+  }
+  return out;
 }
 
-function parseLiquidSavings(sheet: SheetRows) {
-  return sheet.rows.map((r) => ({
-    userId: USER_ID!,
-    title: cellText(r["title"] ?? r["nome"]),
-    bank: cellText(r["bank"] ?? r["banco"]),
-    applicationDate: cellDate(r["application_date"] ?? r["data"]),
-    appliedAmount: cellAmount(r["applied_amount"] ?? r["aplicado"]),
-    latestYield: cellAmount(r["latest_yield"] ?? r["rendimento"] ?? r["amount"]),
-    lastUpdateDate: cellDate(r["last_update"] ?? r["last_update_date"] ?? "") || null,
-    isActive: r["active"] === undefined ? true : cellBool(r["active"]),
-  }));
+function parseLiquidSavings(sheet: ExcelJS.Worksheet): LiquidSavingsInsert[] {
+  // Cofrinho block: header at R10, cols 5..10:
+  //   Bank | Title | Date | Amount | Última Rentabilidade | Data da Última Atualização
+  // The spreadsheet's "Amount" is the principal and "Última Rentabilidade"
+  // is the absolute yield in BRL. moonbase's `latestYield` stores total
+  // current value (principal + yield), so we add them.
+  const out: LiquidSavingsInsert[] = [];
+  for (let r = 11; r <= 18; r++) {
+    const bank = cellText(rowAt(sheet, r, 5));
+    if (!bank || bank.toLowerCase() === "bank") break;
+    const title = cellText(rowAt(sheet, r, 6));
+    const applicationDate = cellDate(rowAt(sheet, r, 7));
+    const principal = cellAmount(rowAt(sheet, r, 8));
+    const yieldOnly = cellAmount(rowAt(sheet, r, 9));
+    const lastUpdate = cellDate(rowAt(sheet, r, 10)) || null;
+    if (!title) continue;
+    const total = (Number(principal) + Number(yieldOnly)).toFixed(2);
+    out.push({
+      userId: USER_ID!,
+      title,
+      bank,
+      applicationDate: applicationDate || "2025-01-01",
+      appliedAmount: principal,
+      latestYield: total,
+      lastUpdateDate: lastUpdate,
+      isActive: true,
+    });
+  }
+  return out;
 }
 
-function parseMonthlySnapshots(sheet: SheetRows) {
-  return sheet.rows.map((r) => ({
-    userId: USER_ID!,
-    monthLabel: cellText(r["month"] ?? r["mes"] ?? r["label"]),
-    referenceMonth: cellDate(r["reference_month"] ?? r["data"]),
-    totalIncomes: cellAmount(r["total_incomes"] ?? r["receitas"]),
-    totalExpenses: cellAmount(r["total_expenses"] ?? r["despesas"]),
-    totalSave: cellAmount(r["total_save"] ?? r["acumulado"]),
-    totalLiquidSavings: cellAmount(r["total_liquid_savings"] ?? r["liquidos"]),
-    totalFixedIncome: cellAmount(r["total_fixed_income"] ?? r["renda_fixa"]),
-  }));
+function parseFixedIncome(sheet: ExcelJS.Worksheet): FixedIncomeInsert[] {
+  // Renda Fixa block: header at R19, cols 5..11:
+  //   Bank | Title | Date | Vencimento | Amount | Última Rentabilidade | Data da Última Atualização
+  const out: FixedIncomeInsert[] = [];
+  for (let r = 20; r <= sheet.rowCount; r++) {
+    const bank = cellText(rowAt(sheet, r, 5));
+    if (!bank || bank.toLowerCase() === "bank") continue;
+    const title = cellText(rowAt(sheet, r, 6));
+    if (!title) continue;
+    const applicationDate = cellDate(rowAt(sheet, r, 7));
+    const maturityDate = cellDate(rowAt(sheet, r, 8));
+    const principal = cellAmount(rowAt(sheet, r, 9));
+    const yieldOnly = cellAmount(rowAt(sheet, r, 10));
+    const lastUpdate = cellDate(rowAt(sheet, r, 11)) || null;
+    if (!applicationDate || !maturityDate) continue;
+    const total = (Number(principal) + Number(yieldOnly)).toFixed(2);
+    out.push({
+      userId: USER_ID!,
+      title,
+      bank,
+      applicationDate,
+      maturityDate,
+      appliedAmount: principal,
+      latestYield: total,
+      lastUpdateDate: lastUpdate,
+      isActive: true,
+    });
+  }
+  return out;
+}
+
+function parseMonthlySnapshots(
+  anualSheet: ExcelJS.Worksheet,
+  investSheet: ExcelJS.Worksheet,
+  liquidTotal: string,
+  fixedTotal: string,
+): SnapshotInsert[] {
+  // Anual Finance: header R3 col 2+ (Month | Incomes | Expenses), data R4+
+  const incomeByMonth = new Map<string, { incomes: string; expenses: string }>();
+  for (let r = 4; r <= anualSheet.rowCount; r++) {
+    const monthDate = cellDate(rowAt(anualSheet, r, 2));
+    if (!monthDate) continue;
+    const month = monthDate.slice(0, 7) + "-01";
+    incomeByMonth.set(month, {
+      incomes: cellAmount(rowAt(anualSheet, r, 3)),
+      expenses: cellAmount(rowAt(anualSheet, r, 4)),
+    });
+  }
+
+  // Investiments: data R6+ (col 2: Month, col 3: Total Save) — per-month
+  // investment balances aren't tracked, so we use the current liquid+fixed
+  // totals as a constant for every snapshot.
+  const totalSaveByMonth = new Map<string, string>();
+  for (let r = 6; r <= investSheet.rowCount; r++) {
+    const monthDate = cellDate(rowAt(investSheet, r, 2));
+    if (!monthDate) continue;
+    const month = monthDate.slice(0, 7) + "-01";
+    const totalSave = cellAmount(rowAt(investSheet, r, 3));
+    totalSaveByMonth.set(month, totalSave);
+  }
+
+  const totalLiquid = liquidTotal;
+  const totalFixed = fixedTotal;
+
+  const PT_MONTH_LONG = [
+    "janeiro", "fevereiro", "março", "abril", "maio", "junho",
+    "julho", "agosto", "setembro", "outubro", "novembro", "dezembro",
+  ];
+
+  const allMonths = new Set([...incomeByMonth.keys(), ...totalSaveByMonth.keys()]);
+  const out: SnapshotInsert[] = [];
+  for (const month of [...allMonths].sort()) {
+    const inc = incomeByMonth.get(month);
+    if (!inc) continue;
+    const totalSave = totalSaveByMonth.get(month) ?? "0.00";
+    const [y, m] = month.split("-").map(Number);
+    out.push({
+      userId: USER_ID!,
+      monthLabel: `${PT_MONTH_LONG[m - 1]} de ${y}`,
+      referenceMonth: month,
+      totalIncomes: inc.incomes,
+      totalExpenses: inc.expenses,
+      totalSave,
+      totalLiquidSavings: totalLiquid,
+      totalFixedIncome: totalFixed,
+    });
+  }
+  return out;
 }
 
 // ----------------------------------------------------------------------------
-// Inserters
+// Inserter
 // ----------------------------------------------------------------------------
 
-type CardLookup = Map<string, string>;
-type SubcategoryLookup = Map<string, string>;
-
-async function loadLookups(): Promise<{ cards: CardLookup; subcategories: SubcategoryLookup }> {
-  const cards = new Map<string, string>();
-  const subcategories = new Map<string, string>();
-  for (const c of await db
-    .select()
-    .from(schema.cards)
-    .where(sql`user_id = ${USER_ID}`)) {
-    cards.set(c.name.toLowerCase(), c.id);
+async function clearExistingData(): Promise<void> {
+  // Delete in dependency order (children first).
+  const tables = [
+    schema.monthlySnapshots,
+    schema.fixedIncome,
+    schema.liquidSavings,
+    schema.creditReceivables,
+    schema.cashReceivables,
+    schema.creditExpenses,
+    schema.cashExpenses,
+    schema.fixedExpenses,
+    schema.incomes,
+    schema.cardClosings,
+    schema.cards,
+    schema.subcategories,
+    schema.categories,
+  ];
+  for (const t of tables) {
+    await db.delete(t).where(eq(t.userId, USER_ID!));
   }
-  for (const s of await db
-    .select()
-    .from(schema.subcategories)
-    .where(sql`user_id = ${USER_ID}`)) {
-    subcategories.set(s.name.toLowerCase(), s.id);
-  }
-  return { cards, subcategories };
 }
 
-async function runImport(opts: { file: string; confirm: boolean; only: Set<string> }) {
+async function runImport(opts: { file: string; confirm: boolean; only: Set<string>; reset: boolean }) {
   const wb = new ExcelJS.Workbook();
   await wb.xlsx.readFile(opts.file);
 
-  const summary: Record<string, number> = {};
-  const include = (key: string) => opts.only.size === 0 || opts.only.has(key);
+  const carts = wb.getWorksheet("🛒 Carts");
+  const categorys = wb.getWorksheet("⚪ Categorys");
+  const incomes = wb.getWorksheet("📈 Incomes");
+  const cashSheet = wb.getWorksheet("💵 Cash Expenses");
+  const creditSheet = wb.getWorksheet("🪪 Credit Expenses");
+  const receivableSheet = wb.getWorksheet("🪙 Receivable");
+  const investSheet = wb.getWorksheet("🏦 Investiments");
+  const anualSheet = wb.getWorksheet("📅 Anual Finance");
 
-  if (include("categories")) {
-    const sheet = readSheet(wb, TABS.categories);
-    if (sheet) {
-      const rows = parseCategories(sheet).filter((r) => r.name);
-      summary.categories = rows.length;
-      if (opts.confirm && rows.length > 0) {
-        await db.insert(schema.categories).values(rows);
-      } else {
-        process.stdout.write(`[dry] categories: ${rows.length} rows\n`);
-        rows.slice(0, 3).forEach((r) => process.stdout.write(`  · ${r.name}\n`));
-      }
-    }
+  if (!carts || !categorys || !incomes || !cashSheet || !creditSheet || !receivableSheet || !investSheet || !anualSheet) {
+    throw new Error("Missing one of the expected tabs in the workbook.");
   }
 
-  if (include("cards")) {
-    const sheet = readSheet(wb, TABS.cards);
-    if (sheet) {
-      const rows = parseCards(sheet).filter((r) => r.name);
-      summary.cards = rows.length;
-      if (opts.confirm && rows.length > 0) {
-        await db.insert(schema.cards).values(rows);
-      } else {
-        process.stdout.write(`[dry] cards: ${rows.length} rows\n`);
-      }
-    }
-  }
+  const cardRows = parseCarts(carts);
+  const { categories, subcategoryRows } = parseCategoriesAndSubcategories(categorys);
+  const incomeRows = parseIncomes(incomes);
+  const cashRaw = parseCashExpenses(cashSheet);
+  const creditRaw = parseCreditExpenses(creditSheet);
+  const cashReceivableRaw = parseCashReceivables(receivableSheet);
+  const creditReceivableRaw = parseCreditReceivables(receivableSheet);
+  const liquidRows = parseLiquidSavings(investSheet);
+  const fixedRows = parseFixedIncome(investSheet);
+  const totalLiquidNow = liquidRows
+    .reduce((acc, r) => acc + Number(r.latestYield), 0)
+    .toFixed(2);
+  const totalFixedNow = fixedRows
+    .reduce((acc, r) => acc + Number(r.latestYield), 0)
+    .toFixed(2);
+  const snapshotRows = parseMonthlySnapshots(
+    anualSheet,
+    investSheet,
+    totalLiquidNow,
+    totalFixedNow,
+  );
 
-  const lookups = await loadLookups();
+  process.stdout.write("\n=== summary ===\n");
+  process.stdout.write(`  cards                  ${cardRows.length}\n`);
+  process.stdout.write(`  categories             ${categories.length}\n`);
+  process.stdout.write(`  subcategories          ${subcategoryRows.length}\n`);
+  process.stdout.write(`  incomes                ${incomeRows.length}\n`);
+  process.stdout.write(`  cash_expenses          ${cashRaw.length}\n`);
+  process.stdout.write(`  credit_expenses        ${creditRaw.length}\n`);
+  process.stdout.write(`  cash_receivables       ${cashReceivableRaw.length}\n`);
+  process.stdout.write(`  credit_receivables     ${creditReceivableRaw.length}\n`);
+  process.stdout.write(`  liquid_savings         ${liquidRows.length}\n`);
+  process.stdout.write(`  fixed_income           ${fixedRows.length}\n`);
+  process.stdout.write(`  monthly_snapshots      ${snapshotRows.length}\n`);
 
-  if (include("incomes")) {
-    const sheet = readSheet(wb, TABS.incomes);
-    if (sheet) {
-      const rows = parseIncomes(sheet).filter((r) => r.description);
-      summary.incomes = rows.length;
-      if (opts.confirm && rows.length > 0) {
-        await db.insert(schema.incomes).values(rows);
-      } else {
-        process.stdout.write(`[dry] incomes: ${rows.length} rows\n`);
-      }
-    }
-  }
-
-  if (include("cashExpenses")) {
-    const sheet = readSheet(wb, TABS.cashExpenses);
-    if (sheet) {
-      const parsed = parseCashExpenses(sheet);
-      const skipped: string[] = [];
-      const rows = parsed.flatMap((p) => {
-        const cardId = lookups.cards.get(p.cardName.toLowerCase());
-        const subId = lookups.subcategories.get(p.subcategoryName.toLowerCase());
-        if (!cardId || !subId) {
-          skipped.push(`${p.description} (card=${p.cardName}, sub=${p.subcategoryName})`);
-          return [];
-        }
-        return [
-          {
-            userId: USER_ID!,
-            description: p.description,
-            cardId,
-            method: p.method,
-            subcategoryId: subId,
-            date: p.date,
-            amount: p.amount,
-          },
-        ];
-      });
-      summary.cashExpenses = rows.length;
-      if (skipped.length > 0) {
-        process.stdout.write(
-          `  ⚠ ${skipped.length} cash expense(s) skipped due to missing card/subcategory\n`,
-        );
-      }
-      if (opts.confirm && rows.length > 0) {
-        await db.insert(schema.cashExpenses).values(rows);
-      } else {
-        process.stdout.write(`[dry] cashExpenses: ${rows.length} rows\n`);
-      }
-    }
-  }
-
-  if (include("creditExpenses")) {
-    const sheet = readSheet(wb, TABS.creditExpenses);
-    if (sheet) {
-      const parsed = parseCreditExpenses(sheet);
-      const skipped: string[] = [];
-      const rows = parsed.flatMap((p) => {
-        const cardId = lookups.cards.get(p.cardName.toLowerCase());
-        const subId = lookups.subcategories.get(p.subcategoryName.toLowerCase());
-        if (!cardId || !subId) {
-          skipped.push(`${p.description} (card=${p.cardName}, sub=${p.subcategoryName})`);
-          return [];
-        }
-        return [
-          {
-            userId: USER_ID!,
-            description: p.description,
-            cardId,
-            subcategoryId: subId,
-            purchaseDate: p.purchaseDate,
-            totalParcels: p.totalParcels,
-            parcelValue: p.parcelValue,
-            firstParcelMonth: p.firstParcelMonth,
-            lastParcelMonth: p.lastParcelMonth,
-            manualOverride: p.manualOverride,
-          },
-        ];
-      });
-      summary.creditExpenses = rows.length;
-      if (skipped.length > 0) {
-        process.stdout.write(`  ⚠ ${skipped.length} credit expense(s) skipped\n`);
-      }
-      if (opts.confirm && rows.length > 0) {
-        await db.insert(schema.creditExpenses).values(rows);
-      } else {
-        process.stdout.write(`[dry] creditExpenses: ${rows.length} rows\n`);
-      }
-    }
-  }
-
-  if (include("cashReceivables")) {
-    const sheet = readSheet(wb, TABS.cashReceivables);
-    if (sheet) {
-      const rows = parseCashReceivables(sheet).filter((r) => r.description);
-      summary.cashReceivables = rows.length;
-      if (opts.confirm && rows.length > 0) {
-        await db.insert(schema.cashReceivables).values(rows);
-      } else {
-        process.stdout.write(`[dry] cashReceivables: ${rows.length} rows\n`);
-      }
-    }
-  }
-
-  if (include("liquidSavings")) {
-    const sheet = readSheet(wb, TABS.liquidSavings);
-    if (sheet) {
-      const rows = parseLiquidSavings(sheet).filter((r) => r.title);
-      summary.liquidSavings = rows.length;
-      if (opts.confirm && rows.length > 0) {
-        await db.insert(schema.liquidSavings).values(rows);
-      } else {
-        process.stdout.write(`[dry] liquidSavings: ${rows.length} rows\n`);
-      }
-    }
-  }
-
-  if (include("monthlySnapshots")) {
-    const sheet = readSheet(wb, TABS.monthlySnapshots);
-    if (sheet) {
-      const rows = parseMonthlySnapshots(sheet).filter(
-        (r) => r.monthLabel && /^\d{4}-\d{2}-\d{2}$/.test(r.referenceMonth),
-      );
-      summary.monthlySnapshots = rows.length;
-      if (opts.confirm && rows.length > 0) {
-        await db.insert(schema.monthlySnapshots).values(rows);
-      } else {
-        process.stdout.write(`[dry] monthlySnapshots: ${rows.length} rows\n`);
-      }
-    }
-  }
-
-  process.stdout.write("\n--- summary ---\n");
-  for (const [k, v] of Object.entries(summary)) {
-    process.stdout.write(`  ${k.padEnd(20)} ${v}\n`);
-  }
   if (!opts.confirm) {
     process.stdout.write("\nDry run only — re-run with --confirm to write.\n");
+    return;
   }
+
+  if (opts.reset) {
+    process.stdout.write("\n[reset] wiping existing data for this user...\n");
+    await clearExistingData();
+  }
+
+  // Insert in dependency order, capturing IDs as we go.
+  process.stdout.write("\n[write] cards\n");
+  const insertedCards = await db.insert(schema.cards).values(cardRows).returning();
+  const cardIdByName = new Map<string, string>();
+  for (const c of insertedCards) cardIdByName.set(c.name.toLowerCase(), c.id);
+
+  process.stdout.write("[write] categories\n");
+  const insertedCategories = await db.insert(schema.categories).values(categories).returning();
+  const categoryIdByName = new Map<string, string>();
+  for (const c of insertedCategories) categoryIdByName.set(c.name.toLowerCase(), c.id);
+
+  process.stdout.write("[write] subcategories\n");
+  const subcategoryInserts: SubcategoryInsert[] = subcategoryRows
+    .map((s) => {
+      const categoryId = categoryIdByName.get(s.categoryName.toLowerCase());
+      if (!categoryId) return null;
+      return { userId: USER_ID!, name: s.name, categoryId };
+    })
+    .filter((s): s is SubcategoryInsert => s !== null);
+  const insertedSubs = await db
+    .insert(schema.subcategories)
+    .values(subcategoryInserts)
+    .returning();
+  const subIdByName = new Map<string, string>();
+  for (const s of insertedSubs) subIdByName.set(s.name.toLowerCase(), s.id);
+
+  process.stdout.write("[write] incomes\n");
+  if (incomeRows.length > 0) await db.insert(schema.incomes).values(incomeRows);
+
+  process.stdout.write("[write] cash_expenses\n");
+  const cashInserts: CashExpenseInsert[] = [];
+  let skippedCash = 0;
+  for (const r of cashRaw) {
+    const cardId = cardIdByName.get(r.cardName.toLowerCase());
+    const subId = subIdByName.get(r.subcategoryName.toLowerCase());
+    if (!cardId || !subId) { skippedCash++; continue; }
+    cashInserts.push({
+      userId: USER_ID!,
+      description: r.description,
+      cardId,
+      method: r.method,
+      subcategoryId: subId,
+      date: r.date,
+      amount: r.amount,
+    });
+  }
+  if (cashInserts.length > 0) await db.insert(schema.cashExpenses).values(cashInserts);
+  if (skippedCash > 0) process.stdout.write(`  ⚠ ${skippedCash} skipped (missing card/subcategory)\n`);
+
+  process.stdout.write("[write] credit_expenses\n");
+  const cardLookup = new Map<string, { id: string; defaultClosingDay: number }>();
+  for (const c of insertedCards) {
+    if (c.defaultClosingDay !== null) {
+      cardLookup.set(c.id, { id: c.id, defaultClosingDay: c.defaultClosingDay });
+    }
+  }
+
+  function ymd(d: Date): string {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  }
+
+  const creditInserts: CreditExpenseInsert[] = [];
+  let skippedCredit = 0;
+  let computedParcels = 0;
+  for (const r of creditRaw) {
+    const cardId = cardIdByName.get(r.cardName.toLowerCase());
+    const subId = subIdByName.get(r.subcategoryName.toLowerCase());
+    if (!cardId || !subId) {
+      skippedCredit++;
+      continue;
+    }
+
+    // Recompute parcel dates from purchaseDate + card closing day (single
+    // source of truth — most spreadsheet formulas resolved to InvDate after
+    // the XLSX export stripped FILTER/INDIRECT references).
+    let firstParcelMonth: string | null = null;
+    let lastParcelMonth: string | null = null;
+    let firstParcelDate: string | null = null;
+    let lastParcelDate: string | null = null;
+
+    const card = cardLookup.get(cardId);
+    if (card) {
+      const [y, m, d] = r.purchaseDate.split("-").map(Number);
+      const parcels = computeParcelDates({
+        card,
+        purchaseDate: new Date(y, m - 1, d),
+        totalParcels: r.totalParcels,
+        cardClosings: [],
+      });
+      firstParcelMonth = ymd(parcels.firstParcelMonth);
+      lastParcelMonth = ymd(parcels.lastParcelMonth);
+      firstParcelDate = ymd(parcels.firstParcelDate);
+      lastParcelDate = ymd(parcels.lastParcelDate);
+      computedParcels++;
+    } else {
+      // Card has no defaultClosingDay — fall back to whatever the sheet had.
+      firstParcelMonth = r.firstParcelMonth;
+      lastParcelMonth = r.lastParcelMonth;
+      firstParcelDate = r.firstParcelDate;
+      lastParcelDate = r.lastParcelDate;
+    }
+
+    creditInserts.push({
+      userId: USER_ID!,
+      description: r.description,
+      cardId,
+      subcategoryId: subId,
+      purchaseDate: r.purchaseDate,
+      totalParcels: r.totalParcels,
+      parcelValue: r.parcelValue,
+      firstParcelMonth,
+      lastParcelMonth,
+      firstParcelDate,
+      lastParcelDate,
+      manualOverride: false,
+    });
+  }
+  if (creditInserts.length > 0) await db.insert(schema.creditExpenses).values(creditInserts);
+  process.stdout.write(`  recomputed parcel dates for ${computedParcels} expenses\n`);
+  if (skippedCredit > 0) process.stdout.write(`  ⚠ ${skippedCredit} skipped (missing card/subcategory)\n`);
+
+  process.stdout.write("[write] cash_receivables\n");
+  if (cashReceivableRaw.length > 0) {
+    const inserts: CashReceivableInsert[] = cashReceivableRaw.map((r) => ({
+      userId: USER_ID!,
+      description: r.description,
+      loanType: r.loanType,
+      amount: r.amount,
+      loanDate: r.loanDate,
+      expectedPaymentMonth: r.expectedPaymentMonth,
+      isPaid: r.isPaid,
+      actualPaymentDate: r.actualPaymentDate,
+    }));
+    await db.insert(schema.cashReceivables).values(inserts);
+  }
+
+  process.stdout.write("[write] credit_receivables\n");
+  const credRecInserts: CreditReceivableInsert[] = [];
+  let skippedCredRec = 0;
+  for (const r of creditReceivableRaw) {
+    const cardId = cardIdByName.get(r.cardName.toLowerCase());
+    if (!cardId) {
+      skippedCredRec++;
+      continue;
+    }
+    const card = cardLookup.get(cardId);
+    let firstParcelMonth: string | null = r.firstParcelMonth;
+    let lastParcelMonth: string | null = null;
+    let firstParcelDate: string | null = null;
+    let lastParcelDate: string | null = null;
+    if (card) {
+      const [y, m, d] = r.purchaseDate.split("-").map(Number);
+      const parcels = computeParcelDates({
+        card,
+        purchaseDate: new Date(y, m - 1, d),
+        totalParcels: r.totalParcels,
+        cardClosings: [],
+      });
+      firstParcelMonth = ymd(parcels.firstParcelMonth);
+      lastParcelMonth = ymd(parcels.lastParcelMonth);
+      firstParcelDate = ymd(parcels.firstParcelDate);
+      lastParcelDate = ymd(parcels.lastParcelDate);
+    }
+    credRecInserts.push({
+      userId: USER_ID!,
+      description: r.description,
+      cardId,
+      purchaseDate: r.purchaseDate,
+      totalParcels: r.totalParcels,
+      parcelValue: r.parcelValue,
+      firstParcelMonth,
+      lastParcelMonth,
+      firstParcelDate,
+      lastParcelDate,
+      manualOverride: false,
+    });
+  }
+  if (credRecInserts.length > 0) await db.insert(schema.creditReceivables).values(credRecInserts);
+  if (skippedCredRec > 0) process.stdout.write(`  ⚠ ${skippedCredRec} skipped (missing card)\n`);
+
+  process.stdout.write("[write] liquid_savings\n");
+  if (liquidRows.length > 0) await db.insert(schema.liquidSavings).values(liquidRows);
+
+  process.stdout.write("[write] fixed_income\n");
+  if (fixedRows.length > 0) await db.insert(schema.fixedIncome).values(fixedRows);
+
+  process.stdout.write("[write] monthly_snapshots\n");
+  if (snapshotRows.length > 0) await db.insert(schema.monthlySnapshots).values(snapshotRows);
+
+  process.stdout.write("\n✓ done.\n");
+
+  // Suppress unused-import warning for `and`/`sql`/`only` arguments while
+  // keeping the imports available for future filter additions.
+  void and;
+  void sql;
+  void opts.only;
 }
 
 // ----------------------------------------------------------------------------
@@ -506,6 +832,7 @@ async function main() {
     args: process.argv.slice(2),
     options: {
       confirm: { type: "boolean", default: false },
+      reset: { type: "boolean", default: false },
       only: { type: "string" },
       help: { type: "boolean", default: false },
     },
@@ -514,20 +841,17 @@ async function main() {
 
   if (values.help || positionals.length === 0) {
     process.stdout.write(
-      "usage: pnpm tsx scripts/migrate-from-spreadsheet.ts <file.xlsx> [--confirm] [--only=cards,categories]\n",
+      "usage: pnpm tsx --env-file=.env.local scripts/migrate-from-spreadsheet.ts <file.xlsx> [--confirm] [--reset]\n",
     );
     return;
   }
 
-  const file = positionals[0];
-  const only = new Set(
-    (values.only ?? "")
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean),
-  );
-
-  await runImport({ file, confirm: !!values.confirm, only });
+  await runImport({
+    file: positionals[0],
+    confirm: !!values.confirm,
+    reset: !!values.reset,
+    only: new Set((values.only ?? "").split(",").map((s) => s.trim()).filter(Boolean)),
+  });
 }
 
 main()
