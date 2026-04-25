@@ -75,9 +75,6 @@ export function CardsList({ initialCards }: { initialCards: CardRow[] }) {
   const [pendingDelete, setPendingDelete] = useState<CardRow | null>(null);
   const [isDeleting, startDeleteTransition] = useTransition();
 
-  // Server actions revalidatePath, so initialCards refreshes on the next
-  // server render — no client-side state needed for the list.
-
   function handleDelete(card: CardRow) {
     startDeleteTransition(async () => {
       const result = await deleteCard(card.id);
@@ -92,15 +89,15 @@ export function CardsList({ initialCards }: { initialCards: CardRow[] }) {
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-8">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight">Cartões</h1>
-          <p className="text-muted-foreground text-sm">
+          <h1 className="text-2xl font-semibold tracking-tight">Cartões</h1>
+          <p className="text-muted-foreground mt-0.5 text-sm">
             Cartões de crédito e contas para pagamentos à vista.
           </p>
         </div>
-        <Button onClick={() => setDialog({ kind: "create" })}>
-          <Plus aria-hidden /> Novo cartão
+        <Button onClick={() => setDialog({ kind: "create" })} size="sm">
+          <Plus aria-hidden className="size-4" /> Novo cartão
         </Button>
       </div>
 
@@ -110,49 +107,69 @@ export function CardsList({ initialCards }: { initialCards: CardRow[] }) {
         <div className="border-border overflow-hidden rounded-lg border">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Nome</TableHead>
-                <TableHead>Tipo</TableHead>
-                <TableHead>Banco</TableHead>
-                <TableHead className="text-right">Fechamento</TableHead>
-                <TableHead className="text-right">Vencimento</TableHead>
-                <TableHead className="text-right">Limite</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="w-12"></TableHead>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="py-3 text-[11px] font-medium tracking-wider uppercase">
+                  Nome
+                </TableHead>
+                <TableHead className="py-3 text-[11px] font-medium tracking-wider uppercase">
+                  Tipo
+                </TableHead>
+                <TableHead className="py-3 text-[11px] font-medium tracking-wider uppercase">
+                  Banco
+                </TableHead>
+                <TableHead className="py-3 text-right text-[11px] font-medium tracking-wider uppercase">
+                  Fechamento
+                </TableHead>
+                <TableHead className="py-3 text-right text-[11px] font-medium tracking-wider uppercase">
+                  Vencimento
+                </TableHead>
+                <TableHead className="py-3 text-right text-[11px] font-medium tracking-wider uppercase">
+                  Limite
+                </TableHead>
+                <TableHead className="py-3 text-[11px] font-medium tracking-wider uppercase">
+                  Status
+                </TableHead>
+                <TableHead className="w-10 py-3" />
               </TableRow>
             </TableHeader>
             <TableBody>
               {initialCards.map((card) => (
                 <TableRow key={card.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
+                  <TableCell className="py-3.5">
+                    <div className="flex items-center gap-2.5">
                       <span
-                        className={`size-2.5 rounded-full ${COLOR_DOT_CLASS[card.color]}`}
+                        className={`size-3 shrink-0 rounded-full ring-1 ring-black/10 ${COLOR_DOT_CLASS[card.color]}`}
                         aria-hidden
                       />
                       <span className="font-medium">{card.name}</span>
                     </div>
                   </TableCell>
-                  <TableCell>{TYPE_LABEL[card.type]}</TableCell>
-                  <TableCell className="text-muted-foreground">{card.bank ?? "—"}</TableCell>
-                  <TableCell className="text-right tabular-nums">
+                  <TableCell className="py-3.5 text-sm">{TYPE_LABEL[card.type]}</TableCell>
+                  <TableCell className="text-muted-foreground py-3.5 text-sm">
+                    {card.bank ?? "—"}
+                  </TableCell>
+                  <TableCell className="py-3.5 text-right text-sm tabular-nums">
                     {card.defaultClosingDay ?? "—"}
                   </TableCell>
-                  <TableCell className="text-right tabular-nums">{card.dueDay ?? "—"}</TableCell>
-                  <TableCell className="text-right tabular-nums">
+                  <TableCell className="py-3.5 text-right text-sm tabular-nums">
+                    {card.dueDay ?? "—"}
+                  </TableCell>
+                  <TableCell className="py-3.5 text-right text-sm tabular-nums">
                     {formatAmount(card.limitAmount)}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="py-3.5">
                     {card.isActive ? (
-                      <span className="text-success-foreground inline-flex items-center gap-1 text-xs">
+                      <span className="bg-success/10 text-success inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium">
                         <span className="bg-success size-1.5 rounded-full" aria-hidden />
                         Ativo
                       </span>
                     ) : (
-                      <span className="text-muted-foreground text-xs">Inativo</span>
+                      <span className="bg-muted text-muted-foreground inline-flex rounded-full px-2 py-0.5 text-xs">
+                        Inativo
+                      </span>
                     )}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="py-3.5">
                     <DropdownMenu>
                       <DropdownMenuTrigger
                         aria-label="Ações"
@@ -239,15 +256,15 @@ export function CardsList({ initialCards }: { initialCards: CardRow[] }) {
 function EmptyState({ onAdd }: { onAdd: () => void }) {
   return (
     <div className="border-border bg-card flex flex-col items-center gap-4 rounded-lg border border-dashed px-6 py-16 text-center">
-      <CreditCard className="text-muted-foreground size-10" strokeWidth={1.25} aria-hidden />
+      <CreditCard className="text-muted-foreground/60 size-10" strokeWidth={1} aria-hidden />
       <div className="flex max-w-sm flex-col gap-1">
-        <h2 className="text-lg font-medium">Nenhum cartão cadastrado ainda</h2>
+        <h2 className="text-base font-medium">Nenhum cartão cadastrado ainda</h2>
         <p className="text-muted-foreground text-sm">
           Cadastre o primeiro para começar a registrar despesas.
         </p>
       </div>
-      <Button onClick={onAdd}>
-        <Plus aria-hidden /> Novo cartão
+      <Button onClick={onAdd} size="sm">
+        <Plus aria-hidden className="size-4" /> Novo cartão
       </Button>
     </div>
   );
