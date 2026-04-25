@@ -44,8 +44,7 @@ async function deriveParcelDates(
   purchaseDate: string,
   totalParcels: number,
 ): Promise<
-  | { ok: true; dates: ReturnType<typeof computeParcelDates> }
-  | { ok: false; error: string }
+  { ok: true; dates: ReturnType<typeof computeParcelDates> } | { ok: false; error: string }
 > {
   const [cardRows, cardClosingRows] = await Promise.all([
     db
@@ -93,7 +92,12 @@ export async function createCreditExpense(
   }
 
   const data = normaliseCreditExpenseForm(parsed.data);
-  const derived = await deriveParcelDates(data.cardId, user.id, data.purchaseDate, data.totalParcels);
+  const derived = await deriveParcelDates(
+    data.cardId,
+    user.id,
+    data.purchaseDate,
+    data.totalParcels,
+  );
   if (!derived.ok) return { ok: false, error: derived.error };
 
   const { dates } = derived;
@@ -145,7 +149,12 @@ export async function updateCreditExpense(
       })
       .where(where);
   } else {
-    const derived = await deriveParcelDates(data.cardId, user.id, data.purchaseDate, data.totalParcels);
+    const derived = await deriveParcelDates(
+      data.cardId,
+      user.id,
+      data.purchaseDate,
+      data.totalParcels,
+    );
     if (!derived.ok) return { ok: false, error: derived.error };
 
     const { dates } = derived;
