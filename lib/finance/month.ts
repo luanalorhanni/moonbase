@@ -10,34 +10,34 @@
 
 export type MonthRef = string;
 
-const PT_MONTH_SHORT = [
+const EN_MONTH_SHORT = [
   "jan",
-  "fev",
+  "feb",
   "mar",
-  "abr",
-  "mai",
+  "apr",
+  "may",
   "jun",
   "jul",
-  "ago",
-  "set",
-  "out",
+  "aug",
+  "sep",
+  "oct",
   "nov",
-  "dez",
+  "dec",
 ] as const;
 
-const PT_MONTH_LONG = [
-  "janeiro",
-  "fevereiro",
-  "março",
-  "abril",
-  "maio",
-  "junho",
-  "julho",
-  "agosto",
-  "setembro",
-  "outubro",
-  "novembro",
-  "dezembro",
+const EN_MONTH_LONG = [
+  "january",
+  "february",
+  "march",
+  "april",
+  "may",
+  "june",
+  "july",
+  "august",
+  "september",
+  "october",
+  "november",
+  "december",
 ] as const;
 
 export function isMonthRef(value: string): value is MonthRef {
@@ -65,12 +65,12 @@ export function shiftMonth(month: MonthRef, delta: number): MonthRef {
 
 export function formatMonthShort(month: MonthRef): string {
   const [y, m] = month.split("-").map(Number);
-  return `${PT_MONTH_SHORT[m - 1]}/${String(y).slice(2)}`;
+  return `${EN_MONTH_SHORT[m - 1]}/${String(y).slice(2)}`;
 }
 
 export function formatMonthLong(month: MonthRef): string {
   const [y, m] = month.split("-").map(Number);
-  return `${PT_MONTH_LONG[m - 1]} de ${y}`;
+  return `${EN_MONTH_LONG[m - 1]} ${y}`;
 }
 
 export function isInMonth(dateYmd: string, month: MonthRef): boolean {

@@ -40,8 +40,8 @@ describe("month refs", () => {
   });
 
   it("formats labels", () => {
-    expect(formatMonthShort("2026-04")).toBe("abr/26");
-    expect(formatMonthLong("2026-04")).toBe("abril de 2026");
+    expect(formatMonthShort("2026-04")).toBe("apr/26");
+    expect(formatMonthLong("2026-04")).toBe("april 2026");
   });
 });
 

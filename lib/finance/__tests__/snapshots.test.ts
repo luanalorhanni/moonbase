@@ -29,7 +29,7 @@ describe("buildMonthlySnapshot", () => {
     });
 
     expect(snapshot).toEqual({
-      monthLabel: "abril de 2026",
+      monthLabel: "april 2026",
       referenceMonth: "2026-04-01",
       totalIncomes: "5000.00",
       totalExpenses: "2000.00",
