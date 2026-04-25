@@ -1,0 +1,20 @@
+# Enforce LF line endings in the repository on every platform.
+# Working trees on Windows still get LF on checkout, which matches the
+# Prettier `endOfLine: "lf"` setting and avoids spurious diffs.
+
+* text=auto eol=lf
+
+# Treat lockfiles as text but never round-trip them through merge tools.
+pnpm-lock.yaml linguist-generated=true text eol=lf
+package-lock.json linguist-generated=true text eol=lf
+
+# Mark common binary formats explicitly so git does not try to diff them.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.xlsx binary
+*.xls binary
