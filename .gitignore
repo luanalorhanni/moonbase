@@ -44,3 +44,9 @@ next-env.d.ts
 # Claude Code local state (per-machine, not tracked)
 /.claude/
 
+# Personal financial data (Excel exports, raw imports, scratch CSVs).
+# The phase 8 migration script reads these from a configurable path.
+*.xlsx
+*.xls
+*.csv
+
