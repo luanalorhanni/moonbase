@@ -39,3 +39,26 @@ export async function listCategories(): Promise<CategoryRow[]> {
     .where(eq(schema.categories.userId, user.id))
     .orderBy(asc(schema.categories.name));
 }
+
+export type SubcategoryWithCategory = SubcategoryRow & {
+  categoryName: string;
+  categoryIcon: string | null;
+};
+
+export async function listSubcategoriesWithCategory(): Promise<SubcategoryWithCategory[]> {
+  const user = await requireUser();
+  return db
+    .select({
+      id: schema.subcategories.id,
+      userId: schema.subcategories.userId,
+      name: schema.subcategories.name,
+      categoryId: schema.subcategories.categoryId,
+      createdAt: schema.subcategories.createdAt,
+      categoryName: schema.categories.name,
+      categoryIcon: schema.categories.icon,
+    })
+    .from(schema.subcategories)
+    .innerJoin(schema.categories, eq(schema.subcategories.categoryId, schema.categories.id))
+    .where(eq(schema.subcategories.userId, user.id))
+    .orderBy(asc(schema.categories.name), asc(schema.subcategories.name));
+}
