@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Archive,
   ArrowDownToLine,
   Banknote,
   CreditCard,
@@ -33,6 +34,7 @@ const items: NavItem[] = [
   { href: "/incomes", label: "Receitas", icon: ArrowDownToLine },
   { href: "/receivables", label: "Recebíveis", icon: HandCoins },
   { href: "/investments", label: "Investimentos", icon: PiggyBank },
+  { href: "/snapshots", label: "Snapshots", icon: Archive },
 ];
 
 export function SidebarNav() {
