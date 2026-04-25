@@ -4,6 +4,7 @@ import {
   ArrowDownToLine,
   Banknote,
   CreditCard,
+  HandCoins,
   Home,
   ReceiptText,
   Repeat,
@@ -29,6 +30,7 @@ const items: NavItem[] = [
   { href: "/expenses/credit", label: "Despesas de crédito", icon: ReceiptText },
   { href: "/expenses/fixed", label: "Despesas fixas", icon: Repeat },
   { href: "/incomes", label: "Receitas", icon: ArrowDownToLine },
+  { href: "/receivables", label: "Recebíveis", icon: HandCoins },
 ];
 
 export function SidebarNav() {
