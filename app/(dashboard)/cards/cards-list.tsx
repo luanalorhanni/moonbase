@@ -148,13 +148,13 @@ export function CardsList({ initialCards }: { initialCards: CardRow[] }) {
                   <TableCell className="text-muted-foreground py-3.5 text-sm">
                     {card.bank ?? "—"}
                   </TableCell>
-                  <TableCell className="py-3.5 text-right tabular-nums text-sm">
+                  <TableCell className="py-3.5 text-right text-sm tabular-nums">
                     {card.defaultClosingDay ?? "—"}
                   </TableCell>
-                  <TableCell className="py-3.5 text-right tabular-nums text-sm">
+                  <TableCell className="py-3.5 text-right text-sm tabular-nums">
                     {card.dueDay ?? "—"}
                   </TableCell>
-                  <TableCell className="py-3.5 text-right tabular-nums text-sm">
+                  <TableCell className="py-3.5 text-right text-sm tabular-nums">
                     {formatAmount(card.limitAmount)}
                   </TableCell>
                   <TableCell className="py-3.5">
