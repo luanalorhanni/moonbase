@@ -58,11 +58,7 @@ const COLOR_DOT_CLASS: Record<string, string> = {
   gray: "bg-gray-400",
 };
 
-export function CategoriesList({
-  initialCategories,
-}: {
-  initialCategories: CategoryWithSubs[];
-}) {
+export function CategoriesList({ initialCategories }: { initialCategories: CategoryWithSubs[] }) {
   const [dialog, setDialog] = useState<DialogState>({ kind: "closed" });
   const [pendingDelete, setPendingDelete] = useState<DeleteState>(null);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
@@ -209,9 +205,7 @@ export function CategoriesList({
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               variant="destructive"
-                              onSelect={() =>
-                                setPendingDelete({ kind: "subcategory", item: sub })
-                              }
+                              onSelect={() => setPendingDelete({ kind: "subcategory", item: sub })}
                             >
                               Excluir
                             </DropdownMenuItem>
@@ -289,7 +283,9 @@ export function CategoriesList({
           {(dialog.kind === "new-subcategory" || dialog.kind === "edit-subcategory") && (
             <SubcategoryForm
               key={
-                dialog.kind === "edit-subcategory" ? dialog.subcategory.id : `new-${dialog.categoryId}`
+                dialog.kind === "edit-subcategory"
+                  ? dialog.subcategory.id
+                  : `new-${dialog.categoryId}`
               }
               subcategory={dialog.kind === "edit-subcategory" ? dialog.subcategory : undefined}
               categoryId={
