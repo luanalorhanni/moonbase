@@ -29,9 +29,7 @@ export type CreditExpenseActionData = {
   manualOverride: boolean;
 };
 
-export function normaliseCreditExpenseForm(
-  input: CreditExpenseFormInput,
-): CreditExpenseActionData {
+export function normaliseCreditExpenseForm(input: CreditExpenseFormInput): CreditExpenseActionData {
   return {
     description: input.description.trim(),
     cardId: input.cardId,
