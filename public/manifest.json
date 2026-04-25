@@ -1,0 +1,19 @@
+{
+  "name": "moonbase",
+  "short_name": "moonbase",
+  "description": "Comando central de finanças pessoais.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#1a1d2e",
+  "background_color": "#fafaf6",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
