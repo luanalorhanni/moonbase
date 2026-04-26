@@ -258,9 +258,7 @@ export function invoicePerCard(
     .map((c) => {
       const b = byCardId.get(c.id)!;
       // Within a card, sort items by amount desc — heaviest charges first.
-      const items = b.items
-        .slice()
-        .sort((x, y) => Number(y.parcelValue) - Number(x.parcelValue));
+      const items = b.items.slice().sort((x, y) => Number(y.parcelValue) - Number(x.parcelValue));
       return {
         cardId: c.id,
         cardName: c.name,
