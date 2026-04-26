@@ -1,29 +1,34 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { JetBrains_Mono, Onest } from "next/font/google";
 
+import { Starfield } from "@/components/decorative/starfield";
 import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const onest = Onest({
+  variable: "--font-onest",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const jetMono = JetBrains_Mono({
+  variable: "--font-jet-mono",
   subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
   title: "moonbase",
-  description: "Comando central de finanças pessoais.",
+  description: "personal finance, charted from a quiet observatory.",
   manifest: "/manifest.json",
   applicationName: "moonbase",
   appleWebApp: {
     capable: true,
     title: "moonbase",
-    statusBarStyle: "default",
+    statusBarStyle: "black-translucent",
   },
   icons: {
     icon: [
@@ -36,23 +41,18 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#fafaf6" },
-    { media: "(prefers-color-scheme: dark)", color: "#1a1d2e" },
-  ],
+  themeColor: "#1a1d2e",
+  colorScheme: "dark",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="pt-BR" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
-      <body className="flex min-h-full flex-col">
-        {children}
+    <html lang="en" className={`${onest.variable} ${jetMono.variable} h-full antialiased`}>
+      <body className="relative flex min-h-full flex-col overflow-x-hidden">
+        <Starfield />
+        <div className="relative z-10 flex min-h-full flex-1 flex-col">{children}</div>
         <ServiceWorkerRegister />
-        <Toaster richColors closeButton position="top-right" />
+        <Toaster richColors closeButton position="top-right" theme="dark" />
       </body>
     </html>
   );
