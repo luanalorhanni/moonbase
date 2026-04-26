@@ -12,7 +12,7 @@ import {
 } from "recharts";
 
 const formatBRL = (value: number) =>
-  new Intl.NumberFormat("pt-BR", {
+  new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "BRL",
     maximumFractionDigits: 0,
@@ -20,8 +20,8 @@ const formatBRL = (value: number) =>
 
 export type YearChartDatum = {
   label: string;
-  receitas: number;
-  despesas: number;
+  incomes: number;
+  expenses: number;
 };
 
 export function YearBarChart({ data }: { data: YearChartDatum[] }) {
@@ -49,14 +49,14 @@ export function YearBarChart({ data }: { data: YearChartDatum[] }) {
           contentStyle={{
             background: "var(--card)",
             border: "1px solid var(--border)",
-            borderRadius: 6,
+            borderRadius: 8,
             fontSize: 12,
           }}
           labelStyle={{ color: "var(--foreground)" }}
         />
         <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
-        <Bar dataKey="receitas" name="Receitas" fill="oklch(0.65 0.15 150)" radius={[3, 3, 0, 0]} />
-        <Bar dataKey="despesas" name="Despesas" fill="oklch(0.55 0.15 260)" radius={[3, 3, 0, 0]} />
+        <Bar dataKey="incomes" name="incomes" fill="oklch(0.74 0.13 160)" radius={[3, 3, 0, 0]} />
+        <Bar dataKey="expenses" name="expenses" fill="oklch(0.82 0.13 78)" radius={[3, 3, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );
