@@ -21,8 +21,8 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
   const summary = await loadYear(parsed);
   const chartData = summary.months.map((m) => ({
     label: formatMonthShort(m.reference).split("/")[0],
-    receitas: Number(m.totalIncomes),
-    despesas: Number(m.totalExpenses),
+    incomes: Number(m.totalIncomes),
+    expenses: Number(m.totalExpenses),
   }));
 
   return (
