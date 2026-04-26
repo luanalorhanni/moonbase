@@ -1,22 +1,88 @@
-import { ArrowUpRight, Banknote, ReceiptText, TrendingUp } from "lucide-react";
+import {
+  ArrowUpRight,
+  Banknote,
+  CalendarClock,
+  ChevronRight,
+  ReceiptText,
+  TrendingUp,
+} from "lucide-react";
 import Link from "next/link";
 
-import { YearBarChart } from "@/components/charts/year-bar-chart";
+import { CompositionBar, type CompositionSegment } from "@/components/charts/composition-bar";
+import { TrendChart } from "@/components/charts/trend-chart";
+import { PixelMoonFull } from "@/components/decorative/pixel-icons";
 import {
-  ConstellationBullet,
-  PixelComet,
-  PixelMoonFull,
-  PixelStarSmall,
-} from "@/components/decorative/pixel-icons";
-import { aggregateMonth } from "@/lib/finance/aggregate";
+  aggregateMonth,
+  cumulativeBalance,
+  invoicePerCard,
+  type InvoicePerCard,
+} from "@/lib/finance/aggregate";
 import {
   currentMonthRef,
   formatMonthLong,
   formatMonthShort,
   shiftMonth,
+  sumNumeric,
 } from "@/lib/finance/month";
+import { listCards } from "@/lib/queries/cards";
 import { loadFullDataset, toAggregateInputs } from "@/lib/queries/month";
 import { cn, formatCurrency } from "@/lib/utils";
+
+const CARD_DOT: Record<string, string> = {
+  red: "bg-red-500",
+  orange: "bg-orange-500",
+  yellow: "bg-yellow-400",
+  green: "bg-green-500",
+  blue: "bg-blue-500",
+  purple: "bg-purple-500",
+  pink: "bg-pink-500",
+  brown: "bg-amber-700",
+  gray: "bg-gray-400",
+};
+
+const PT_MONTH_LONG: Record<number, string> = {
+  1: "janeiro",
+  2: "fevereiro",
+  3: "março",
+  4: "abril",
+  5: "maio",
+  6: "junho",
+  7: "julho",
+  8: "agosto",
+  9: "setembro",
+  10: "outubro",
+  11: "novembro",
+  12: "dezembro",
+};
+
+const PT_MONTH_SHORT_NAMES: Record<number, string> = {
+  1: "jan",
+  2: "fev",
+  3: "mar",
+  4: "abr",
+  5: "mai",
+  6: "jun",
+  7: "jul",
+  8: "ago",
+  9: "set",
+  10: "out",
+  11: "nov",
+  12: "dez",
+};
+
+function ptMonthLong(monthRef: string): string {
+  const [, m] = monthRef.split("-").map(Number);
+  return PT_MONTH_LONG[m] ?? "";
+}
+
+function formatBillDates(closingDay: number | null, dueDay: number | null, closingMonth: string) {
+  const [, m] = closingMonth.split("-").map(Number);
+  const dueM = m === 12 ? 1 : m + 1;
+  return {
+    closing: closingDay ? `${closingDay} de ${PT_MONTH_SHORT_NAMES[m]}` : null,
+    due: dueDay ? `${dueDay} de ${PT_MONTH_SHORT_NAMES[dueM]}` : null,
+  };
+}
 
 const INCOME = "income" as const;
 const CASH = "cash" as const;
@@ -33,27 +99,61 @@ type ActivityItem = {
 };
 
 export default async function HomePage() {
-  const dataset = await loadFullDataset();
+  const [dataset, cards] = await Promise.all([loadFullDataset(), listCards()]);
   const inputs = toAggregateInputs(dataset);
 
   const current = currentMonthRef();
+  const next = shiftMonth(current, 1);
   const month = aggregateMonth(inputs, current);
   const year = Number(current.slice(0, 4));
 
-  const trail = Array.from({ length: 6 }, (_, i) => shiftMonth(current, -5 + i));
-  const trend = trail.map((m) => aggregateMonth(inputs, m));
-  const chartData = trend.map((m) => ({
-    label: formatMonthShort(m.reference).split("/")[0],
-    incomes: Number(m.totalIncomes),
-    expenses: Number(m.totalExpenses),
+  const cardsForInvoice = cards.map((c) => ({
+    id: c.id,
+    name: c.name,
+    color: c.color,
+    defaultClosingDay: c.defaultClosingDay,
+    dueDay: c.dueDay,
   }));
+  const nextInvoice = invoicePerCard(dataset.creditExpenses, cardsForInvoice, next);
+  const nextInvoiceTotal = sumNumeric(nextInvoice.map((b) => b.total));
+
+  const totalSave = cumulativeBalance(inputs, current);
+
+  const trail = Array.from({ length: 12 }, (_, i) => shiftMonth(current, -11 + i));
+  const trend = trail.map((m) => aggregateMonth(inputs, m));
+  const trendData = trail.map((m, i) => ({
+    label: formatMonthShort(m).split("/")[0],
+    net: Number(trend[i].balance),
+    cumulative: Number(cumulativeBalance(inputs, m)),
+  }));
+
+  const composition: CompositionSegment[] = [
+    {
+      key: "credit",
+      label: "credit",
+      value: Number(month.totalCreditExpenses),
+      tone: "primary",
+    },
+    {
+      key: "cash",
+      label: "cash",
+      value: Number(month.totalCashExpenses),
+      tone: "muted",
+    },
+    {
+      key: "fixed",
+      label: "fixed",
+      value: Number(month.totalFixedExpenses),
+      tone: "subtle",
+    },
+  ];
 
   const recent: ActivityItem[] = [
     ...dataset.incomes.slice(0, 10).map((i) => ({
       id: `inc-${i.id}`,
       kind: INCOME,
       primary: i.description,
-      secondary: "income received",
+      secondary: "received",
       amount: i.amount,
       date: i.date,
       sign: 1 as const,
@@ -78,199 +178,290 @@ export default async function HomePage() {
     })),
   ]
     .sort((a, b) => (a.date < b.date ? 1 : -1))
-    .slice(0, 7);
+    .slice(0, 8);
 
   const balanceNum = Number(month.balance);
   const balanceTone = balanceNum > 0 ? "positive" : balanceNum < 0 ? "negative" : "neutral";
 
   return (
-    <div className="enter mx-auto w-full max-w-6xl px-6 pt-10 pb-16 md:pt-14">
-      <header className="flex flex-col gap-3">
-        <div className="text-muted-foreground flex items-center gap-2 font-mono text-[11px] tracking-[0.18em]">
-          <PixelStarSmall size={6} className="text-primary" />
-          <span>observatory log · {formatMonthShort(current)}</span>
-          <span className="bg-border-strong ml-2 h-px max-w-32 flex-1" />
+    <div className="enter mx-auto w-full max-w-4xl px-6 pt-12 pb-24 md:pt-20">
+      {/* ── header — almanac dateline ────────────────────────────────────── */}
+      <header className="flex flex-col gap-7">
+        <div className="text-muted-foreground flex items-center gap-3 font-mono text-[10px] tracking-[0.22em]">
+          <span>almanac · entry {formatMonthShort(current)}</span>
+          <span className="bg-border-strong h-px max-w-32 flex-1" />
+          <Link href={`/year/${year}`} className="hover:text-foreground transition-colors">
+            year of {year}
+          </Link>
         </div>
+
         <div className="flex items-end justify-between gap-6">
-          <h1 className="text-foreground text-[44px] leading-[1.05] font-semibold tracking-[-0.02em] md:text-[56px]">
-            {formatMonthLong(current)}
-            <span className="text-muted-foreground">,</span>
+          <h1 className="font-display text-foreground text-[64px] leading-[0.95] font-light tracking-[-0.03em] md:text-[88px]">
+            {formatMonthLong(current).split(" ")[0]}
+            <span className="text-muted-foreground italic">,</span>
             <br />
-            <span className="text-muted-foreground italic">charted.</span>
+            <span className="text-muted-foreground/80 italic">
+              {formatMonthLong(current).split(" ")[1]}.
+            </span>
           </h1>
-          <div className="hidden md:block">
-            <PixelMoonFull size={48} className="text-foreground/85" />
+          <div className="hidden shrink-0 md:block">
+            <PixelMoonFull size={36} className="text-foreground/40" />
           </div>
         </div>
       </header>
 
-      <section className="mt-12 grid gap-3 md:grid-cols-3">
-        <SummaryTile
-          label="incomes"
-          value={month.totalIncomes}
-          accent="aurora"
-          decoration={<PixelStarSmall size={8} className="text-success/70" />}
-        />
-        <SummaryTile label="expenses" value={month.totalExpenses} accent="muted" />
-        <SummaryTile
-          label="balance"
-          value={month.balance}
-          tone={balanceTone}
-          accent="gold"
-          decoration={<PixelComet size={20} className="text-primary/80" />}
-          highlight
-        />
-      </section>
-
-      <section className="mt-4 flex flex-wrap items-center gap-2">
-        <QuickLink href={`/month/${current}`}>this month, in detail</QuickLink>
-        <QuickLink href={`/year/${year}`}>year of {year}</QuickLink>
-        <QuickLink href="/snapshots">archived snapshots</QuickLink>
-      </section>
-
-      <hr className="divider-dotted my-12" />
-
-      <section className="grid gap-6 md:grid-cols-5">
-        <div className="glass glass-glow md:col-span-3">
-          <div className="flex items-baseline justify-between p-6 pb-2">
-            <div className="flex flex-col gap-1">
-              <span className="text-muted-foreground font-mono text-[10px] tracking-[0.18em]">
-                last six lunations
-              </span>
-              <h2 className="text-foreground text-base font-medium">trailing trend</h2>
-            </div>
-            <ConstellationBullet />
-          </div>
-          <div className="px-3 pb-4">
-            <YearBarChart data={chartData} />
-          </div>
+      {/* ── hero number — balance ────────────────────────────────────────── */}
+      <section className="border-border-strong mt-14 flex flex-col gap-3 border-t pt-7">
+        <div className="flex items-baseline justify-between gap-6">
+          <span className="text-muted-foreground font-mono text-[10px] tracking-[0.22em]">
+            balance, this month
+          </span>
+          <Link
+            href={`/month/${current}`}
+            className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 font-mono text-[10px] tracking-[0.18em] transition-colors"
+          >
+            in detail
+            <ArrowUpRight className="size-3" strokeWidth={1.6} />
+          </Link>
         </div>
-
-        <div className="glass md:col-span-2">
-          <div className="border-border flex items-baseline justify-between border-b px-6 py-4">
-            <div className="flex flex-col gap-1">
-              <span className="text-muted-foreground font-mono text-[10px] tracking-[0.18em]">
-                recent activity
-              </span>
-              <h2 className="text-foreground text-base font-medium">small fortunes</h2>
-            </div>
-            <PixelStarSmall size={8} className="text-primary/70" />
-          </div>
-          {recent.length === 0 ? (
-            <p className="text-muted-foreground px-6 py-8 text-center text-sm">the log is empty.</p>
-          ) : (
-            <ul className="divide-border divide-y">
-              {recent.map((item) => (
-                <ActivityRow key={item.id} item={item} />
-              ))}
-            </ul>
+        <p
+          className={cn(
+            "display-numeric text-foreground text-[80px] leading-none font-light md:text-[112px]",
+            balanceTone === "negative" && "text-destructive/85",
+            balanceTone === "positive" && "text-primary",
           )}
+        >
+          {formatCurrency(month.balance)}
+        </p>
+        <div className="text-muted-foreground mt-1 flex flex-wrap items-baseline gap-x-6 gap-y-2 font-mono text-[11px] tracking-[0.16em]">
+          <span>
+            <span className="text-success/80">incomes</span>{" "}
+            <span className="numeric text-foreground/75">{formatCurrency(month.totalIncomes)}</span>
+          </span>
+          <span>
+            <span>expenses</span>{" "}
+            <span className="numeric text-foreground/75">
+              {formatCurrency(month.totalExpenses)}
+            </span>
+          </span>
+          <span>
+            <span>save · cumulative</span>{" "}
+            <span className="numeric text-foreground/75">{formatCurrency(totalSave)}</span>
+          </span>
         </div>
+      </section>
+
+      {/* ── composition — single segmented bar ───────────────────────────── */}
+      {Number(month.totalExpenses) > 0 && (
+        <section className="mt-14 flex flex-col gap-4">
+          <SectionHead eyebrow="composition" title="how the month spent" />
+          <CompositionBar segments={composition} />
+        </section>
+      )}
+
+      {/* ── invoice forming ──────────────────────────────────────────────── */}
+      <section className="mt-16 flex flex-col gap-4">
+        <SectionHead
+          eyebrow={`fatura formando · fecha em ${ptMonthLong(next)}`}
+          title="próxima fatura"
+          aside={formatCurrency(nextInvoiceTotal)}
+          asideIcon={<CalendarClock className="size-3.5" strokeWidth={1.4} />}
+        />
+        <p className="text-muted-foreground/90 -mt-1 max-w-prose text-[13px] leading-relaxed">
+          parcelas em andamento + compras feitas após o fechamento de cada cartão. cada cartão pode
+          ser aberto pra ver o que está dentro.
+        </p>
+        {nextInvoice.length === 0 ? (
+          <EmptyLine>nada acumulado para a próxima fatura ainda.</EmptyLine>
+        ) : (
+          <ul className="divide-border-strong/40 divide-y">
+            {nextInvoice.map((b) => (
+              <CardWithItems key={b.cardId} bucket={b} closingMonth={next} />
+            ))}
+          </ul>
+        )}
+      </section>
+
+      {/* ── trend ────────────────────────────────────────────────────────── */}
+      <section className="mt-16 flex flex-col gap-4">
+        <SectionHead
+          eyebrow="trend · trailing twelve"
+          title="save, accumulating"
+          legend={[
+            { label: "cumulative", tone: "primary" },
+            { label: "monthly net", tone: "success" },
+          ]}
+        />
+        <div className="text-foreground/80 -mx-2">
+          <TrendChart data={trendData} />
+        </div>
+      </section>
+
+      {/* ── recent activity ──────────────────────────────────────────────── */}
+      <section className="mt-16 flex flex-col gap-4">
+        <SectionHead eyebrow="logbook · last entries" title="recent activity" />
+        {recent.length === 0 ? (
+          <EmptyLine>the log is empty.</EmptyLine>
+        ) : (
+          <ul className="divide-border-strong/60 divide-y">
+            {recent.map((item) => (
+              <ActivityRow key={item.id} item={item} />
+            ))}
+          </ul>
+        )}
       </section>
     </div>
   );
 }
 
-function SummaryTile({
-  label,
-  value,
-  tone = "neutral",
-  accent = "muted",
-  decoration,
-  highlight,
+/* ────────────────────────────────────────────────────────────────────────── */
+/*  building blocks                                                            */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+function SectionHead({
+  eyebrow,
+  title,
+  aside,
+  asideIcon,
+  legend,
 }: {
-  label: string;
-  value: string;
-  tone?: "neutral" | "positive" | "negative";
-  accent?: "muted" | "gold" | "aurora";
-  decoration?: React.ReactNode;
-  highlight?: boolean;
+  eyebrow: string;
+  title: string;
+  aside?: string;
+  asideIcon?: React.ReactNode;
+  legend?: { label: string; tone: "primary" | "success" | "muted" }[];
 }) {
   return (
-    <div
-      className={cn(
-        "glass relative overflow-hidden p-6 transition-transform duration-300 hover:-translate-y-0.5",
-        highlight && "glass-glow",
-      )}
-    >
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-baseline justify-between gap-3">
         <span className="text-muted-foreground font-mono text-[10px] tracking-[0.22em]">
-          {label}
+          {eyebrow}
         </span>
-        {decoration}
+        {aside ? (
+          <span className="numeric text-foreground/85 flex items-center gap-2 text-[15px] tabular-nums">
+            {aside}
+            {asideIcon ? <span className="text-primary/80">{asideIcon}</span> : null}
+          </span>
+        ) : null}
       </div>
-      <p
-        className={cn(
-          "numeric mt-6 text-3xl font-semibold tracking-tight",
-          tone === "negative" && "text-destructive",
-          tone === "positive" && accent === "gold" && "text-primary",
-          tone === "neutral" && accent === "muted" && "text-foreground/85",
-          accent === "aurora" && "text-success",
-        )}
-      >
-        {formatCurrency(value)}
-      </p>
-      <div
-        aria-hidden
-        className={cn(
-          "pointer-events-none absolute -right-8 -bottom-8 size-24 rounded-full opacity-20 blur-2xl",
-          accent === "gold" && "bg-primary",
-          accent === "aurora" && "bg-success",
-          accent === "muted" && "bg-accent/50",
-        )}
-      />
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 className="font-display text-foreground text-[26px] leading-tight font-light tracking-[-0.015em] italic">
+          {title}
+        </h2>
+        {legend ? (
+          <ul className="text-muted-foreground hidden items-baseline gap-4 font-mono text-[10px] tracking-[0.16em] sm:flex">
+            {legend.map((l) => (
+              <li key={l.label} className="flex items-baseline gap-1.5">
+                <span
+                  aria-hidden
+                  className={cn(
+                    "size-1.5 translate-y-[-1px] rounded-full",
+                    l.tone === "primary" && "bg-primary/85",
+                    l.tone === "success" && "bg-success/85",
+                    l.tone === "muted" && "bg-foreground/40",
+                  )}
+                />
+                {l.label}
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </div>
+      <span className="bg-border-strong h-px w-full" />
     </div>
   );
 }
 
-function QuickLink({ href, children }: { href: string; children: React.ReactNode }) {
+function EmptyLine({ children }: { children: React.ReactNode }) {
+  return <p className="text-muted-foreground py-6 text-center text-[13px] italic">{children}</p>;
+}
+
+function CardWithItems({ bucket, closingMonth }: { bucket: InvoicePerCard; closingMonth: string }) {
+  const dates = formatBillDates(bucket.closingDay, bucket.dueDay, closingMonth);
   return (
-    <Link
-      href={href}
-      className="group border-border-strong text-foreground/85 hover:border-primary/50 hover:bg-primary/5 hover:text-foreground bg-card/30 inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-[13px] backdrop-blur-md transition-all duration-200"
-    >
-      {children}
-      <ArrowUpRight
-        className="size-3 opacity-60 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-        strokeWidth={1.8}
-      />
-    </Link>
+    <li>
+      <details className="group/details">
+        <summary className="hover:bg-accent/[0.03] flex cursor-pointer list-none items-center gap-3 py-3.5 transition-colors [&::-webkit-details-marker]:hidden">
+          <span
+            aria-hidden
+            className={cn(
+              "size-2 shrink-0 rounded-full",
+              CARD_DOT[bucket.cardColor ?? "gray"] ?? CARD_DOT.gray,
+            )}
+          />
+          <div className="flex min-w-0 flex-1 flex-col">
+            <span className="text-foreground truncate text-[15px]">{bucket.cardName}</span>
+            <span className="text-muted-foreground truncate font-mono text-[10px] tracking-[0.16em]">
+              {bucket.count} {bucket.count === 1 ? "compra" : "compras"}
+              {dates.closing ? ` · fecha ${dates.closing}` : ""}
+              {dates.due ? ` · vence ${dates.due}` : ""}
+            </span>
+          </div>
+          <span className="numeric text-foreground/85 text-[15px] tabular-nums">
+            {formatCurrency(bucket.total)}
+          </span>
+          <ChevronRight
+            className="text-muted-foreground/50 size-3.5 shrink-0 transition-transform duration-200 group-open/details:rotate-90"
+            strokeWidth={1.6}
+            aria-hidden
+          />
+        </summary>
+        <ul className="divide-border-strong/30 border-border-strong/30 divide-y border-t pl-5">
+          {bucket.items.map((it) => (
+            <li key={it.id} className="flex items-center gap-3 py-2.5">
+              <span aria-hidden className="bg-border-strong/60 size-1 shrink-0 rounded-full" />
+              <div className="flex min-w-0 flex-1 flex-col">
+                <span className="text-foreground/90 truncate text-[13px]">
+                  {it.description || "—"}
+                </span>
+                <span className="text-muted-foreground/85 truncate font-mono text-[10px] tracking-[0.14em]">
+                  {it.subcategoryName || it.categoryName}
+                  {it.totalParcels > 1 ? ` · parcela ${it.parcelIndex}/${it.totalParcels}` : ""}
+                </span>
+              </div>
+              <span className="numeric text-foreground/85 text-[13px] tabular-nums">
+                {formatCurrency(it.parcelValue)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </details>
+    </li>
   );
 }
 
 function ActivityRow({ item }: { item: ActivityItem }) {
   const Icon = item.kind === INCOME ? TrendingUp : item.kind === CASH ? Banknote : ReceiptText;
   const [y, m, d] = item.date.split("-").map(Number);
-  const dateLabel = new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-  })
+  const dateLabel = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" })
     .format(new Date(y, m - 1, d))
     .toLowerCase();
   return (
-    <li className="hover:bg-accent/[0.03] flex items-center gap-3 px-6 py-3 transition-colors">
+    <li className="flex items-center gap-3 py-3.5">
       <span
         className={cn(
-          "border-border bg-card/60 flex size-8 items-center justify-center rounded-lg border",
-          item.sign === 1 ? "text-success" : "text-foreground/60",
+          "border-border-strong/60 bg-card/40 flex size-7 items-center justify-center rounded-full border",
+          item.sign === 1 ? "text-success/80" : "text-foreground/55",
         )}
       >
-        <Icon className="size-3.5" strokeWidth={1.8} />
+        <Icon className="size-3" strokeWidth={1.6} />
       </span>
       <div className="flex min-w-0 flex-1 flex-col">
-        <span className="text-foreground truncate text-[13px]">{item.primary}</span>
-        <span className="text-muted-foreground truncate text-[11px]">{item.secondary}</span>
+        <span className="text-foreground truncate text-[14px]">{item.primary}</span>
+        <span className="text-muted-foreground truncate font-mono text-[10px] tracking-[0.14em]">
+          {item.secondary}
+        </span>
       </div>
       <div className="flex flex-col items-end gap-0.5">
         <span
           className={cn(
-            "numeric text-[13px]",
-            item.sign === 1 ? "text-success" : "text-foreground/85",
+            "numeric text-[14px]",
+            item.sign === 1 ? "text-success/85" : "text-foreground/85",
           )}
         >
           {item.sign === 1 ? "+" : "−"} {formatCurrency(item.amount)}
         </span>
-        <span className="text-muted-foreground/70 font-mono text-[10px] tracking-wider">
+        <span className="text-muted-foreground/70 font-mono text-[10px] tracking-[0.14em] tabular-nums">
           {dateLabel}
         </span>
       </div>

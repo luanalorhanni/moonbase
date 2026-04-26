@@ -37,6 +37,9 @@ export function CreditReceivableForm({ receivable, cards, onSuccess }: Props) {
   const [isPending, startTransition] = useTransition();
 
   const creditCards = cards.filter((c) => c.type === "credit");
+  const cardLabels = Object.fromEntries(
+    creditCards.map((c) => [c.id, c.bank ? `${c.name} — ${c.bank}` : c.name]),
+  );
 
   const form = useForm<CreditReceivableFormInput>({
     resolver: zodResolver(creditReceivableFormSchema),
@@ -105,7 +108,12 @@ export function CreditReceivableForm({ receivable, cards, onSuccess }: Props) {
             control={form.control}
             name="cardId"
             render={({ field }) => (
-              <Select value={field.value} onValueChange={field.onChange} disabled={isPending}>
+              <Select
+                value={field.value}
+                onValueChange={field.onChange}
+                disabled={isPending}
+                items={cardLabels}
+              >
                 <SelectTrigger id="cr-card" className="w-full">
                   <SelectValue placeholder="Selecione…" />
                 </SelectTrigger>

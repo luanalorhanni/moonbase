@@ -4,6 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import { requireUser } from "@/lib/auth/session";
+import { TAGS, invalidate } from "@/lib/cache/tags";
 import { db, schema } from "@/lib/db";
 import {
   cashExpenseFormSchema,
@@ -39,6 +40,7 @@ export async function createCashExpense(
   }
   const data = normaliseCashExpenseForm(parsed.data);
   await db.insert(schema.cashExpenses).values({ userId: user.id, ...data });
+  invalidate(TAGS.cashExpenses);
   revalidatePath("/expenses/cash");
   return { ok: true };
 }
@@ -61,6 +63,7 @@ export async function updateCashExpense(
     .update(schema.cashExpenses)
     .set(data)
     .where(and(eq(schema.cashExpenses.id, id), eq(schema.cashExpenses.userId, user.id)));
+  invalidate(TAGS.cashExpenses);
   revalidatePath("/expenses/cash");
   return { ok: true };
 }
@@ -70,6 +73,7 @@ export async function deleteCashExpense(id: string): Promise<CashExpenseActionRe
   await db
     .delete(schema.cashExpenses)
     .where(and(eq(schema.cashExpenses.id, id), eq(schema.cashExpenses.userId, user.id)));
+  invalidate(TAGS.cashExpenses);
   revalidatePath("/expenses/cash");
   return { ok: true };
 }
