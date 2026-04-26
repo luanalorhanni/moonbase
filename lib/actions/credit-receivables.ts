@@ -4,6 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import { requireUser } from "@/lib/auth/session";
+import { TAGS, invalidate } from "@/lib/cache/tags";
 import { db, schema } from "@/lib/db";
 import { computeParcelDates } from "@/lib/finance/parcels";
 import {
@@ -115,6 +116,7 @@ export async function createCreditReceivable(
     manualOverride: data.manualOverride,
   });
 
+  invalidate(TAGS.creditReceivables);
   revalidatePath("/receivables");
   return { ok: true };
 }
@@ -171,6 +173,7 @@ export async function updateCreditReceivable(
       .where(where);
   }
 
+  invalidate(TAGS.creditReceivables);
   revalidatePath("/receivables");
   return { ok: true };
 }
@@ -180,6 +183,7 @@ export async function deleteCreditReceivable(id: string): Promise<CreditReceivab
   await db
     .delete(schema.creditReceivables)
     .where(and(eq(schema.creditReceivables.id, id), eq(schema.creditReceivables.userId, user.id)));
+  invalidate(TAGS.creditReceivables);
   revalidatePath("/receivables");
   return { ok: true };
 }

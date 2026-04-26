@@ -129,7 +129,15 @@ export function CardForm({ card, onSuccess }: Props) {
             control={form.control}
             name="type"
             render={({ field }) => (
-              <Select value={field.value} onValueChange={field.onChange} disabled={isPending}>
+              <Select
+                value={field.value}
+                onValueChange={field.onChange}
+                disabled={isPending}
+                items={{
+                  credit: "Cartão de crédito",
+                  account: "Conta (Pix, débito, dinheiro)",
+                }}
+              >
                 <SelectTrigger id="type" className="w-full">
                   <SelectValue />
                 </SelectTrigger>
@@ -218,7 +226,12 @@ export function CardForm({ card, onSuccess }: Props) {
             control={form.control}
             name="color"
             render={({ field }) => (
-              <Select value={field.value} onValueChange={field.onChange} disabled={isPending}>
+              <Select
+                value={field.value}
+                onValueChange={field.onChange}
+                disabled={isPending}
+                items={COLOR_LABEL}
+              >
                 <SelectTrigger id="color" className="w-full">
                   <SelectValue />
                 </SelectTrigger>

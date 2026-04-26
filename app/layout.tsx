@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { JetBrains_Mono, Onest } from "next/font/google";
+import { Fraunces, JetBrains_Mono, Onest } from "next/font/google";
 
-import { Starfield } from "@/components/decorative/starfield";
 import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
@@ -10,6 +9,14 @@ const onest = Onest({
   variable: "--font-onest",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
+});
+
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  axes: ["SOFT", "WONK", "opsz"],
   display: "swap",
 });
 
@@ -47,9 +54,12 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${onest.variable} ${jetMono.variable} h-full antialiased`}>
-      <body className="relative flex min-h-full flex-col overflow-x-hidden">
-        <Starfield />
+    <html
+      lang="en"
+      className={`${onest.variable} ${fraunces.variable} ${jetMono.variable} h-full antialiased`}
+    >
+      <body className="bg-background relative flex min-h-full flex-col overflow-x-hidden">
+        <div className="ambient" aria-hidden />
         <div className="relative z-10 flex min-h-full flex-1 flex-col">{children}</div>
         <ServiceWorkerRegister />
         <Toaster richColors closeButton position="top-right" theme="dark" />

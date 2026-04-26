@@ -4,6 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import { requireUser } from "@/lib/auth/session";
+import { invalidateCategoryGraph, invalidateSubcategoryGraph } from "@/lib/cache/tags";
 import { db, schema } from "@/lib/db";
 import {
   categoryFormSchema,
@@ -39,6 +40,7 @@ export async function createCategory(input: CategoryFormInput): Promise<Category
   }
   const data = normaliseCategoryForm(parsed.data);
   await db.insert(schema.categories).values({ userId: user.id, ...data });
+  invalidateCategoryGraph();
   revalidatePath("/categories");
   return { ok: true };
 }
@@ -61,6 +63,7 @@ export async function updateCategory(
     .update(schema.categories)
     .set(data)
     .where(and(eq(schema.categories.id, id), eq(schema.categories.userId, user.id)));
+  invalidateCategoryGraph();
   revalidatePath("/categories");
   return { ok: true };
 }
@@ -85,6 +88,7 @@ export async function deleteCategory(id: string): Promise<CategoryActionResult> 
     }
     throw error;
   }
+  invalidateCategoryGraph();
   revalidatePath("/categories");
   return { ok: true };
 }
@@ -106,6 +110,7 @@ export async function createSubcategory(
     name: parsed.data.name.trim(),
     categoryId: parsed.data.categoryId,
   });
+  invalidateSubcategoryGraph();
   revalidatePath("/categories");
   return { ok: true };
 }
@@ -127,6 +132,7 @@ export async function updateSubcategory(
     .update(schema.subcategories)
     .set({ name: parsed.data.name.trim(), categoryId: parsed.data.categoryId })
     .where(and(eq(schema.subcategories.id, id), eq(schema.subcategories.userId, user.id)));
+  invalidateSubcategoryGraph();
   revalidatePath("/categories");
   return { ok: true };
 }
@@ -151,6 +157,7 @@ export async function deleteSubcategory(id: string): Promise<CategoryActionResul
     }
     throw error;
   }
+  invalidateSubcategoryGraph();
   revalidatePath("/categories");
   return { ok: true };
 }

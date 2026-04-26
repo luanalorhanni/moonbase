@@ -4,6 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import { requireUser } from "@/lib/auth/session";
+import { invalidateCardGraph } from "@/lib/cache/tags";
 import { db, schema } from "@/lib/db";
 import { cardFormSchema, normaliseCardForm, type CardFormInput } from "@/lib/validation/card";
 
@@ -45,6 +46,7 @@ export async function createCard(input: CardFormInput): Promise<CardActionResult
     isActive: data.isActive,
   });
 
+  invalidateCardGraph();
   revalidatePath("/cards");
   return { ok: true };
 }
@@ -75,6 +77,7 @@ export async function updateCard(id: string, input: CardFormInput): Promise<Card
     })
     .where(and(eq(schema.cards.id, id), eq(schema.cards.userId, user.id)));
 
+  invalidateCardGraph();
   revalidatePath("/cards");
   return { ok: true };
 }
@@ -103,6 +106,7 @@ export async function deleteCard(id: string): Promise<CardActionResult> {
     throw error;
   }
 
+  invalidateCardGraph();
   revalidatePath("/cards");
   return { ok: true };
 }
