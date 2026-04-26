@@ -22,7 +22,9 @@ if (!sheet) {
   process.exit(1);
 }
 
-process.stdout.write(`=== "${sheet.name}" rows ${fromRow}..${toRow} (total: ${sheet.rowCount}) ===\n`);
+process.stdout.write(
+  `=== "${sheet.name}" rows ${fromRow}..${toRow} (total: ${sheet.rowCount}) ===\n`,
+);
 for (let r = fromRow; r <= Math.min(toRow, sheet.rowCount); r++) {
   const cells = [];
   sheet.getRow(r).eachCell({ includeEmpty: true }, (c) => {

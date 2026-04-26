@@ -8,13 +8,62 @@ const sql = postgres(process.env.DATABASE_URL, { max: 1, prepare: false });
 const userId = process.env.MOONBASE_USER_ID;
 
 const ROWS = [
-  { card: "Inter", desc: "Fatura MEI", sub: "DAS MEI", cat: "Essentials", method: "cash", amount: "87.05" },
-  { card: "Inter", desc: "Fatura Claro", sub: "Phone Company", cat: "Essentials", method: "cash", amount: "40.00" },
-  { card: "Banco do Brasil", desc: "Academia", sub: "Gym", cat: "Health", method: "credit", amount: "108.39" },
-  { card: "Nubank", desc: "Spotify", sub: "Tools", cat: "Subscriptions", method: "credit", amount: "40.90" },
-  { card: "Nubank", desc: "Canva", sub: "Tools", cat: "Subscriptions", method: "credit", amount: "35.00" },
-  { card: "Nubank", desc: "Google One", sub: "Tools", cat: "Subscriptions", method: "credit", amount: "14.99" },
-  { card: "Banco do Brasil", desc: "Ifood Club", sub: "Tools", cat: "Subscriptions", method: "credit", amount: "7.95" },
+  {
+    card: "Inter",
+    desc: "Fatura MEI",
+    sub: "DAS MEI",
+    cat: "Essentials",
+    method: "cash",
+    amount: "87.05",
+  },
+  {
+    card: "Inter",
+    desc: "Fatura Claro",
+    sub: "Phone Company",
+    cat: "Essentials",
+    method: "cash",
+    amount: "40.00",
+  },
+  {
+    card: "Banco do Brasil",
+    desc: "Academia",
+    sub: "Gym",
+    cat: "Health",
+    method: "credit",
+    amount: "108.39",
+  },
+  {
+    card: "Nubank",
+    desc: "Spotify",
+    sub: "Tools",
+    cat: "Subscriptions",
+    method: "credit",
+    amount: "40.90",
+  },
+  {
+    card: "Nubank",
+    desc: "Canva",
+    sub: "Tools",
+    cat: "Subscriptions",
+    method: "credit",
+    amount: "35.00",
+  },
+  {
+    card: "Nubank",
+    desc: "Google One",
+    sub: "Tools",
+    cat: "Subscriptions",
+    method: "credit",
+    amount: "14.99",
+  },
+  {
+    card: "Banco do Brasil",
+    desc: "Ifood Club",
+    sub: "Tools",
+    cat: "Subscriptions",
+    method: "credit",
+    amount: "7.95",
+  },
 ];
 
 const COLORS = ["blue", "purple", "green", "pink", "orange", "yellow", "brown", "gray"];
