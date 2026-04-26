@@ -4,6 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import { requireUser } from "@/lib/auth/session";
+import { TAGS, invalidate } from "@/lib/cache/tags";
 import { db, schema } from "@/lib/db";
 import { aggregateMonth } from "@/lib/finance/aggregate";
 import { isMonthRef, sumNumeric, type MonthRef } from "@/lib/finance/month";
@@ -90,6 +91,7 @@ export async function upsertMonthlySnapshot(reference: MonthRef): Promise<Snapsh
     });
   }
 
+  invalidate(TAGS.snapshots);
   revalidatePath("/snapshots");
   revalidatePath(`/month/${reference}`);
   return { ok: true };
@@ -100,6 +102,7 @@ export async function deleteMonthlySnapshot(id: string): Promise<SnapshotActionR
   await db
     .delete(schema.monthlySnapshots)
     .where(and(eq(schema.monthlySnapshots.id, id), eq(schema.monthlySnapshots.userId, user.id)));
+  invalidate(TAGS.snapshots);
   revalidatePath("/snapshots");
   return { ok: true };
 }

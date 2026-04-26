@@ -96,7 +96,12 @@ export function IncomeForm({ income, onSuccess }: Props) {
             control={form.control}
             name="type"
             render={({ field }) => (
-              <Select value={field.value} onValueChange={field.onChange} disabled={isPending}>
+              <Select
+                value={field.value}
+                onValueChange={field.onChange}
+                disabled={isPending}
+                items={INCOME_TYPE_LABEL}
+              >
                 <SelectTrigger id="inc-type" className="w-full">
                   <SelectValue />
                 </SelectTrigger>

@@ -1,7 +1,19 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  experimental: {
+    /**
+     * Client-side router cache. With single-user data and tag-based
+     * server-side invalidation already in place, holding rendered segments
+     * for 60s makes back/forward and quick revisits feel instant without
+     * showing stale data after a mutation (the action's revalidateTag /
+     * revalidatePath both bust this cache too).
+     */
+    staleTimes: {
+      dynamic: 60,
+      static: 300,
+    },
+  },
 };
 
 export default nextConfig;
