@@ -1,13 +1,14 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { YearBarChart } from "@/components/charts/year-bar-chart";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { formatMonthShort } from "@/lib/finance/month";
+import { TrendChart } from "@/components/charts/trend-chart";
+import { PixelMoonFull } from "@/components/decorative/pixel-icons";
+import { cumulativeBalance } from "@/lib/finance/aggregate";
+import { formatMonthShort, type MonthRef } from "@/lib/finance/month";
+import { loadFullDataset, toAggregateInputs } from "@/lib/queries/month";
 import { loadYear } from "@/lib/queries/year";
-import { cn, formatBRL } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 
 type Params = { year: string };
 
@@ -18,151 +19,273 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
     redirect(`/year/${new Date().getFullYear()}`);
   }
 
-  const summary = await loadYear(parsed);
-  const chartData = summary.months.map((m) => ({
+  const [summary, dataset] = await Promise.all([loadYear(parsed), loadFullDataset()]);
+  const inputs = toAggregateInputs(dataset);
+
+  const trendData = summary.months.map((m) => ({
     label: formatMonthShort(m.reference).split("/")[0],
-    incomes: Number(m.totalIncomes),
-    expenses: Number(m.totalExpenses),
+    net: Number(m.balance),
+    cumulative: Number(cumulativeBalance(inputs, m.reference as MonthRef)),
   }));
 
+  const yearEndCumulative = trendData[trendData.length - 1]?.cumulative ?? 0;
+  const yearStartCumulative =
+    summary.months[0] != null
+      ? Number(
+          cumulativeBalance(
+            inputs,
+            // month before year-start
+            previousMonthRef(summary.months[0].reference as MonthRef),
+          ),
+        )
+      : 0;
+  const yearDelta = yearEndCumulative - yearStartCumulative;
+
   return (
-    <div className="mx-auto w-full max-w-6xl px-6 py-8 md:py-10">
-      <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <div className="flex flex-col gap-1.5">
-          <span className="text-muted-foreground text-xs tracking-wide uppercase">Visão anual</span>
-          <h1 className="text-3xl font-semibold tracking-tight">{summary.year}</h1>
+    <div className="enter mx-auto w-full max-w-4xl px-6 pt-12 pb-24 md:pt-20">
+      {/* ── header ───────────────────────────────────────────────────────── */}
+      <header className="flex flex-col gap-7">
+        <div className="flex items-center justify-between gap-3">
+          <div className="text-muted-foreground flex items-center gap-3 font-mono text-[10px] tracking-[0.22em]">
+            <span>almanac · annual ledger</span>
+            <span className="bg-border-strong h-px max-w-32 flex-1" />
+          </div>
+          <div className="flex items-center gap-1">
+            <Link
+              href={`/year/${summary.year - 1}`}
+              aria-label={`previous year (${summary.year - 1})`}
+              className="border-border-strong text-muted-foreground hover:bg-card hover:text-foreground flex size-8 items-center justify-center rounded-full border transition-colors"
+            >
+              <ChevronLeft className="size-3.5" strokeWidth={1.6} />
+            </Link>
+            <span className="text-muted-foreground px-2 font-mono text-[11px] tracking-[0.16em] tabular-nums">
+              {summary.year}
+            </span>
+            <Link
+              href={`/year/${summary.year + 1}`}
+              aria-label={`next year (${summary.year + 1})`}
+              className="border-border-strong text-muted-foreground hover:bg-card hover:text-foreground flex size-8 items-center justify-center rounded-full border transition-colors"
+            >
+              <ChevronRight className="size-3.5" strokeWidth={1.6} />
+            </Link>
+          </div>
         </div>
-        <div className="flex items-center gap-1">
-          <Link
-            href={`/year/${summary.year - 1}`}
-            aria-label={`Ano anterior (${summary.year - 1})`}
-            className="border-border text-muted-foreground hover:bg-muted hover:text-foreground flex size-9 items-center justify-center rounded-md border transition-colors"
-          >
-            <ChevronLeft className="size-4" strokeWidth={1.5} />
-          </Link>
-          <Link
-            href={`/year/${summary.year + 1}`}
-            aria-label={`Próximo ano (${summary.year + 1})`}
-            className="border-border text-muted-foreground hover:bg-muted hover:text-foreground flex size-9 items-center justify-center rounded-md border transition-colors"
-          >
-            <ChevronRight className="size-4" strokeWidth={1.5} />
-          </Link>
+
+        <div className="flex items-end justify-between gap-6">
+          <h1 className="font-display text-foreground text-[80px] leading-[0.95] font-light tracking-[-0.03em] md:text-[120px]">
+            {summary.year}
+            <span className="text-muted-foreground italic">.</span>
+          </h1>
+          <div className="hidden shrink-0 md:block">
+            <PixelMoonFull size={36} className="text-foreground/40" />
+          </div>
         </div>
       </header>
 
-      <Separator className="my-6" />
-
-      <section className="grid grid-cols-3 gap-3">
-        <TotalCard label="Receitas" value={summary.totalIncomes} />
-        <TotalCard label="Despesas" value={summary.totalExpenses} muted />
-        <TotalCard
-          label="Balanço"
+      {/* ── year totals ──────────────────────────────────────────────────── */}
+      <section className="border-border-strong mt-14 grid gap-6 border-t pt-7 md:grid-cols-3">
+        <YearStat
+          label="incomes"
+          value={summary.totalIncomes}
+          tone="success"
+        />
+        <YearStat
+          label="expenses"
+          value={summary.totalExpenses}
+          tone="muted"
+        />
+        <YearStat
+          label="balance"
           value={summary.balance}
-          tone={Number(summary.balance) < 0 ? "destructive" : "default"}
+          tone={Number(summary.balance) < 0 ? "destructive" : "primary"}
+          highlight
         />
       </section>
 
-      <section className="mt-8">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Receitas e despesas por mês</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <YearBarChart data={chartData} />
-          </CardContent>
-        </Card>
+      {/* ── trend ────────────────────────────────────────────────────────── */}
+      <section className="mt-16 flex flex-col gap-4">
+        <SectionHead
+          eyebrow="trend · twelve months"
+          title="the year in saving"
+          aside={`${yearDelta >= 0 ? "+" : "−"} ${formatCurrency(Math.abs(yearDelta))}`}
+          legend={[
+            { label: "cumulative", tone: "primary" },
+            { label: "monthly net", tone: "success" },
+          ]}
+        />
+        <div className="text-foreground/80 -mx-2">
+          <TrendChart data={trendData} />
+        </div>
       </section>
 
-      <section className="mt-8">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Detalhamento mensal</CardTitle>
-          </CardHeader>
-          <CardContent className="px-0">
-            <ul className="divide-border divide-y">
-              {summary.months.map((m) => {
-                const balanceNum = Number(m.balance);
-                const isEmpty = Number(m.totalIncomes) === 0 && Number(m.totalExpenses) === 0;
-                return (
-                  <li key={m.reference}>
-                    <Link
-                      href={`/month/${m.reference}`}
-                      className="hover:bg-muted/40 flex items-center gap-4 px-6 py-3 transition-colors"
-                    >
-                      <span
-                        className={cn(
-                          "w-12 text-sm capitalize tabular-nums",
-                          isEmpty ? "text-muted-foreground" : "text-foreground",
-                        )}
-                      >
-                        {formatMonthShort(m.reference).split("/")[0]}
-                      </span>
-                      <div className="flex flex-1 items-baseline gap-6 text-sm">
-                        <Stat
-                          label="receitas"
-                          value={m.totalIncomes}
-                          dim={Number(m.totalIncomes) === 0}
-                        />
-                        <Stat
-                          label="despesas"
-                          value={m.totalExpenses}
-                          dim={Number(m.totalExpenses) === 0}
-                        />
-                      </div>
-                      <span
-                        className={cn(
-                          "text-sm font-medium tabular-nums",
-                          balanceNum < 0 && "text-destructive",
-                          isEmpty && "text-muted-foreground",
-                        )}
-                      >
-                        {formatBRL(m.balance)}
-                      </span>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </CardContent>
-        </Card>
+      {/* ── month list ───────────────────────────────────────────────────── */}
+      <section className="mt-16 flex flex-col gap-4">
+        <SectionHead eyebrow="logbook · month by month" title="entries" />
+        <ul className="divide-border-strong/60 divide-y">
+          {summary.months.map((m) => {
+            const balanceNum = Number(m.balance);
+            const isEmpty =
+              Number(m.totalIncomes) === 0 && Number(m.totalExpenses) === 0;
+            const monthLabel = formatMonthShort(m.reference).split("/")[0];
+            return (
+              <li key={m.reference}>
+                <Link
+                  href={`/month/${m.reference}`}
+                  className="group hover:bg-accent/[0.03] flex items-center gap-5 py-3.5 transition-colors"
+                >
+                  <span
+                    className={cn(
+                      "w-10 font-mono text-[11px] tracking-[0.18em] tabular-nums",
+                      isEmpty ? "text-muted-foreground/40" : "text-foreground/70",
+                    )}
+                  >
+                    {monthLabel}
+                  </span>
+                  <div className="flex flex-1 items-baseline gap-6 text-[13px]">
+                    <ColumnStat
+                      label="in"
+                      value={m.totalIncomes}
+                      dim={isEmpty || Number(m.totalIncomes) === 0}
+                    />
+                    <ColumnStat
+                      label="out"
+                      value={m.totalExpenses}
+                      dim={isEmpty || Number(m.totalExpenses) === 0}
+                    />
+                  </div>
+                  <span
+                    className={cn(
+                      "numeric text-[14px] tabular-nums",
+                      balanceNum < 0 && "text-destructive/85",
+                      balanceNum > 0 && "text-foreground",
+                      isEmpty && "text-muted-foreground/40",
+                    )}
+                  >
+                    {formatCurrency(m.balance)}
+                  </span>
+                  <ArrowUpRight
+                    className="text-muted-foreground/30 size-3 shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
+                    strokeWidth={1.6}
+                  />
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
       </section>
     </div>
   );
 }
 
-function TotalCard({
+/* ────────────────────────────────────────────────────────────────────────── */
+
+function previousMonthRef(monthRef: MonthRef): MonthRef {
+  const [y, m] = monthRef.split("-").map(Number);
+  const total = y * 12 + (m - 1) - 1;
+  const ny = Math.floor(total / 12);
+  const nm = (total % 12) + 1;
+  return `${ny}-${String(nm).padStart(2, "0")}`;
+}
+
+function YearStat({
   label,
   value,
-  muted,
-  tone = "default",
+  tone,
+  highlight,
 }: {
   label: string;
   value: string;
-  muted?: boolean;
-  tone?: "default" | "destructive";
+  tone: "success" | "muted" | "primary" | "destructive";
+  highlight?: boolean;
 }) {
   return (
-    <div className="border-border bg-card flex flex-col gap-1 rounded-lg border px-4 py-3.5">
-      <p className="text-muted-foreground text-xs tracking-wide uppercase">{label}</p>
-      <p
+    <div
+      className={cn(
+        "flex flex-col gap-2",
+        highlight && "border-border-strong/60 rounded-2xl border px-5 py-4",
+      )}
+    >
+      <span className="text-muted-foreground font-mono text-[10px] tracking-[0.22em]">
+        {label}
+      </span>
+      <span
         className={cn(
-          "text-xl font-semibold tracking-tight tabular-nums",
-          muted && "text-muted-foreground",
-          tone === "destructive" && "text-destructive",
+          "display-numeric text-[34px] leading-none font-light tabular-nums md:text-[42px]",
+          tone === "success" && "text-success/90",
+          tone === "muted" && "text-foreground/85",
+          tone === "primary" && "text-primary",
+          tone === "destructive" && "text-destructive/85",
         )}
       >
-        {formatBRL(value)}
-      </p>
+        {formatCurrency(value)}
+      </span>
     </div>
   );
 }
 
-function Stat({ label, value, dim }: { label: string; value: string; dim: boolean }) {
+function SectionHead({
+  eyebrow,
+  title,
+  aside,
+  legend,
+}: {
+  eyebrow: string;
+  title: string;
+  aside?: string;
+  legend?: { label: string; tone: "primary" | "success" }[];
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-baseline justify-between gap-3">
+        <span className="text-muted-foreground font-mono text-[10px] tracking-[0.22em]">
+          {eyebrow}
+        </span>
+        {aside ? (
+          <span className="numeric text-foreground/85 text-[15px] tabular-nums">
+            {aside}
+          </span>
+        ) : null}
+      </div>
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 className="font-display text-foreground text-[26px] leading-tight font-light tracking-[-0.015em] italic">
+          {title}
+        </h2>
+        {legend ? (
+          <ul className="text-muted-foreground hidden items-baseline gap-4 font-mono text-[10px] tracking-[0.16em] sm:flex">
+            {legend.map((l) => (
+              <li key={l.label} className="flex items-baseline gap-1.5">
+                <span
+                  aria-hidden
+                  className={cn(
+                    "size-1.5 translate-y-[-1px] rounded-full",
+                    l.tone === "primary" && "bg-primary/85",
+                    l.tone === "success" && "bg-success/85",
+                  )}
+                />
+                {l.label}
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </div>
+      <span className="bg-border-strong h-px w-full" />
+    </div>
+  );
+}
+
+function ColumnStat({ label, value, dim }: { label: string; value: string; dim: boolean }) {
   return (
     <span className="flex items-baseline gap-1.5">
-      <span className="text-muted-foreground text-xs uppercase">{label}</span>
-      <span className={cn("tabular-nums", dim ? "text-muted-foreground" : "text-foreground")}>
-        {formatBRL(value)}
+      <span className="text-muted-foreground/70 font-mono text-[10px] tracking-[0.18em]">
+        {label}
+      </span>
+      <span
+        className={cn(
+          "numeric tabular-nums",
+          dim ? "text-muted-foreground/40" : "text-foreground/85",
+        )}
+      >
+        {formatCurrency(value)}
       </span>
     </span>
   );
