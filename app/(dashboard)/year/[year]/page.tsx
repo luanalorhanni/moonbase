@@ -84,16 +84,8 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
 
       {/* ── year totals ──────────────────────────────────────────────────── */}
       <section className="border-border-strong mt-14 grid gap-6 border-t pt-7 md:grid-cols-3">
-        <YearStat
-          label="incomes"
-          value={summary.totalIncomes}
-          tone="success"
-        />
-        <YearStat
-          label="expenses"
-          value={summary.totalExpenses}
-          tone="muted"
-        />
+        <YearStat label="incomes" value={summary.totalIncomes} tone="success" />
+        <YearStat label="expenses" value={summary.totalExpenses} tone="muted" />
         <YearStat
           label="balance"
           value={summary.balance}
@@ -124,8 +116,7 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
         <ul className="divide-border-strong/60 divide-y">
           {summary.months.map((m) => {
             const balanceNum = Number(m.balance);
-            const isEmpty =
-              Number(m.totalIncomes) === 0 && Number(m.totalExpenses) === 0;
+            const isEmpty = Number(m.totalIncomes) === 0 && Number(m.totalExpenses) === 0;
             const monthLabel = formatMonthShort(m.reference).split("/")[0];
             return (
               <li key={m.reference}>
@@ -205,9 +196,7 @@ function YearStat({
         highlight && "border-border-strong/60 rounded-2xl border px-5 py-4",
       )}
     >
-      <span className="text-muted-foreground font-mono text-[10px] tracking-[0.22em]">
-        {label}
-      </span>
+      <span className="text-muted-foreground font-mono text-[10px] tracking-[0.22em]">{label}</span>
       <span
         className={cn(
           "display-numeric text-[34px] leading-none font-light tabular-nums md:text-[42px]",
@@ -241,9 +230,7 @@ function SectionHead({
           {eyebrow}
         </span>
         {aside ? (
-          <span className="numeric text-foreground/85 text-[15px] tabular-nums">
-            {aside}
-          </span>
+          <span className="numeric text-foreground/85 text-[15px] tabular-nums">{aside}</span>
         ) : null}
       </div>
       <div className="flex items-baseline justify-between gap-3">

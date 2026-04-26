@@ -8,10 +8,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-import {
-  CompositionBar,
-  type CompositionSegment,
-} from "@/components/charts/composition-bar";
+import { CompositionBar, type CompositionSegment } from "@/components/charts/composition-bar";
 import { TrendChart } from "@/components/charts/trend-chart";
 import { PixelMoonFull } from "@/components/decorative/pixel-icons";
 import {
@@ -78,11 +75,7 @@ function ptMonthLong(monthRef: string): string {
   return PT_MONTH_LONG[m] ?? "";
 }
 
-function formatBillDates(
-  closingDay: number | null,
-  dueDay: number | null,
-  closingMonth: string,
-) {
+function formatBillDates(closingDay: number | null, dueDay: number | null, closingMonth: string) {
   const [, m] = closingMonth.split("-").map(Number);
   const dueM = m === 12 ? 1 : m + 1;
   return {
@@ -188,8 +181,7 @@ export default async function HomePage() {
     .slice(0, 8);
 
   const balanceNum = Number(month.balance);
-  const balanceTone =
-    balanceNum > 0 ? "positive" : balanceNum < 0 ? "negative" : "neutral";
+  const balanceTone = balanceNum > 0 ? "positive" : balanceNum < 0 ? "negative" : "neutral";
 
   return (
     <div className="enter mx-auto w-full max-w-4xl px-6 pt-12 pb-24 md:pt-20">
@@ -198,10 +190,7 @@ export default async function HomePage() {
         <div className="text-muted-foreground flex items-center gap-3 font-mono text-[10px] tracking-[0.22em]">
           <span>almanac · entry {formatMonthShort(current)}</span>
           <span className="bg-border-strong h-px max-w-32 flex-1" />
-          <Link
-            href={`/year/${year}`}
-            className="hover:text-foreground transition-colors"
-          >
+          <Link href={`/year/${year}`} className="hover:text-foreground transition-colors">
             year of {year}
           </Link>
         </div>
@@ -247,9 +236,7 @@ export default async function HomePage() {
         <div className="text-muted-foreground mt-1 flex flex-wrap items-baseline gap-x-6 gap-y-2 font-mono text-[11px] tracking-[0.16em]">
           <span>
             <span className="text-success/80">incomes</span>{" "}
-            <span className="numeric text-foreground/75">
-              {formatCurrency(month.totalIncomes)}
-            </span>
+            <span className="numeric text-foreground/75">{formatCurrency(month.totalIncomes)}</span>
           </span>
           <span>
             <span>expenses</span>{" "}
@@ -281,7 +268,8 @@ export default async function HomePage() {
           asideIcon={<CalendarClock className="size-3.5" strokeWidth={1.4} />}
         />
         <p className="text-muted-foreground/90 -mt-1 max-w-prose text-[13px] leading-relaxed">
-          parcelas em andamento + compras feitas após o fechamento de cada cartão. cada cartão pode ser aberto pra ver o que está dentro.
+          parcelas em andamento + compras feitas após o fechamento de cada cartão. cada cartão pode
+          ser aberto pra ver o que está dentro.
         </p>
         {nextInvoice.length === 0 ? (
           <EmptyLine>nada acumulado para a próxima fatura ainda.</EmptyLine>
@@ -352,9 +340,7 @@ function SectionHead({
         {aside ? (
           <span className="numeric text-foreground/85 flex items-center gap-2 text-[15px] tabular-nums">
             {aside}
-            {asideIcon ? (
-              <span className="text-primary/80">{asideIcon}</span>
-            ) : null}
+            {asideIcon ? <span className="text-primary/80">{asideIcon}</span> : null}
           </span>
         ) : null}
       </div>
@@ -387,18 +373,10 @@ function SectionHead({
 }
 
 function EmptyLine({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="text-muted-foreground py-6 text-center text-[13px] italic">{children}</p>
-  );
+  return <p className="text-muted-foreground py-6 text-center text-[13px] italic">{children}</p>;
 }
 
-function CardWithItems({
-  bucket,
-  closingMonth,
-}: {
-  bucket: InvoicePerCard;
-  closingMonth: string;
-}) {
+function CardWithItems({ bucket, closingMonth }: { bucket: InvoicePerCard; closingMonth: string }) {
   const dates = formatBillDates(bucket.closingDay, bucket.dueDay, closingMonth);
   return (
     <li>
@@ -428,13 +406,10 @@ function CardWithItems({
             aria-hidden
           />
         </summary>
-        <ul className="divide-border-strong/30 divide-y border-t border-border-strong/30 pl-5">
+        <ul className="divide-border-strong/30 border-border-strong/30 divide-y border-t pl-5">
           {bucket.items.map((it) => (
             <li key={it.id} className="flex items-center gap-3 py-2.5">
-              <span
-                aria-hidden
-                className="bg-border-strong/60 size-1 shrink-0 rounded-full"
-              />
+              <span aria-hidden className="bg-border-strong/60 size-1 shrink-0 rounded-full" />
               <div className="flex min-w-0 flex-1 flex-col">
                 <span className="text-foreground/90 truncate text-[13px]">
                   {it.description || "—"}

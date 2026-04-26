@@ -53,11 +53,7 @@ function ptMonthLong(monthRef: MonthRef): string {
  * that closes on the 29 of an invoice tagged to may shows
  *   { closing: "29 de mai", due: "5 de jun" }
  */
-function formatBillDates(
-  closingDay: number | null,
-  dueDay: number | null,
-  closingMonth: MonthRef,
-) {
+function formatBillDates(closingDay: number | null, dueDay: number | null, closingMonth: MonthRef) {
   const [y, m] = closingMonth.split("-").map(Number);
   const dueY = m === 12 ? y + 1 : y;
   const dueM = m === 12 ? 1 : m + 1;
@@ -115,8 +111,7 @@ export function MonthView({ summary }: { summary: MonthSummary }) {
   const year = reference.slice(0, 4);
 
   const balanceNum = Number(summary.balance);
-  const balanceTone =
-    balanceNum > 0 ? "positive" : balanceNum < 0 ? "negative" : "neutral";
+  const balanceTone = balanceNum > 0 ? "positive" : balanceNum < 0 ? "negative" : "neutral";
 
   return (
     <div className="enter mx-auto w-full max-w-6xl px-6 pt-10 pb-16 md:pt-14">
@@ -295,12 +290,7 @@ export function MonthView({ summary }: { summary: MonthSummary }) {
               {summary.thisInvoice.length > 0 && (
                 <ul className="divide-border-strong/40 divide-y">
                   {summary.thisInvoice.map((b) => (
-                    <CardWithItems
-                      key={b.cardId}
-                      bucket={b}
-                      sign="−"
-                      closingMonth={reference}
-                    />
+                    <CardWithItems key={b.cardId} bucket={b} sign="−" closingMonth={reference} />
                   ))}
                 </ul>
               )}
@@ -592,26 +582,14 @@ function SubPanel({
   );
 }
 
-function MethodTile({
-  label,
-  total,
-  count,
-}: {
-  label: string;
-  total: string;
-  count: number;
-}) {
+function MethodTile({ label, total, count }: { label: string; total: string; count: number }) {
   return (
     <div className="border-border bg-card/40 flex flex-col gap-1.5 rounded-lg border px-4 py-3">
-      <span className="text-muted-foreground font-mono text-[11px] tracking-[0.18em]">
-        {label}
-      </span>
+      <span className="text-muted-foreground font-mono text-[11px] tracking-[0.18em]">{label}</span>
       <span className="numeric text-foreground text-[17px] font-medium tabular-nums">
         {formatCurrency(total)}
       </span>
-      <span className="text-muted-foreground/70 font-mono text-[10px] tabular-nums">
-        {count}×
-      </span>
+      <span className="text-muted-foreground/70 font-mono text-[10px] tabular-nums">{count}×</span>
     </div>
   );
 }
@@ -631,7 +609,7 @@ function BucketRow({
     <li className="flex items-center justify-between gap-3 py-3">
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="text-foreground truncate text-[15px]">{primary}</span>
-        <span className="text-muted-foreground font-mono truncate text-[11px] tracking-[0.14em]">
+        <span className="text-muted-foreground truncate font-mono text-[11px] tracking-[0.14em]">
           {meta}
         </span>
       </div>
@@ -686,23 +664,15 @@ function DetailRow({
 }
 
 function EmptyLine({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="text-muted-foreground py-2 text-center text-[13px] italic">{children}</p>
-  );
+  return <p className="text-muted-foreground py-2 text-center text-[13px] italic">{children}</p>;
 }
 
-function Disclosure({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
+function Disclosure({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <details className="group border-border/60 mt-3 rounded-lg border border-dashed">
       <summary className="text-muted-foreground hover:text-foreground flex cursor-pointer items-center justify-between gap-3 px-3 py-2 font-mono text-[10px] tracking-[0.16em] transition-colors">
         <span>{label}</span>
-        <span className="group-open:rotate-90 transition-transform">›</span>
+        <span className="transition-transform group-open:rotate-90">›</span>
       </summary>
       <div className="border-border/40 border-t px-3 pt-1 pb-2">{children}</div>
     </details>
@@ -744,12 +714,7 @@ function CardWithItems({
             )}
           />
           <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-            <span
-              className={cn(
-                "text-foreground truncate",
-                inset ? "text-[16px]" : "text-[15px]",
-              )}
-            >
+            <span className={cn("text-foreground truncate", inset ? "text-[16px]" : "text-[15px]")}>
               {bucket.cardName}
             </span>
             <span className="text-muted-foreground truncate font-mono text-[11px] tracking-[0.14em]">
@@ -776,34 +741,21 @@ function CardWithItems({
             aria-hidden
           />
         </summary>
-        <div
-          className={cn(
-            "border-border-strong/30 border-t",
-            inset ? "px-7 py-2" : "py-2",
-          )}
-        >
+        <div className={cn("border-border-strong/30 border-t", inset ? "px-7 py-2" : "py-2")}>
           {bucket.items.length === 0 ? (
             <EmptyLine>sem detalhes deste cartão.</EmptyLine>
           ) : (
             <ul className="divide-border-strong/30 divide-y">
               {bucket.items.map((it) => (
-                <li
-                  key={it.id}
-                  className="flex items-center gap-3 py-2.5 pl-5"
-                >
-                  <span
-                    aria-hidden
-                    className="bg-border-strong/60 size-1 shrink-0 rounded-full"
-                  />
+                <li key={it.id} className="flex items-center gap-3 py-2.5 pl-5">
+                  <span aria-hidden className="bg-border-strong/60 size-1 shrink-0 rounded-full" />
                   <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                     <span className="text-foreground/90 truncate text-[14px]">
                       {it.description || "—"}
                     </span>
                     <span className="text-muted-foreground/85 truncate font-mono text-[10px] tracking-[0.14em]">
                       {it.subcategoryName || it.categoryName}
-                      {it.totalParcels > 1
-                        ? ` · ${it.parcelIndex}/${it.totalParcels}`
-                        : ""}
+                      {it.totalParcels > 1 ? ` · ${it.parcelIndex}/${it.totalParcels}` : ""}
                       {it.purchaseDate ? ` · ${formatPurchaseDate(it.purchaseDate)}` : ""}
                     </span>
                   </div>
@@ -857,12 +809,16 @@ function NextInvoice({
           </div>
         </div>
         <p className="text-muted-foreground/90 max-w-prose text-[13px] leading-relaxed">
-          fatura que <span className="text-foreground/80">fecha em {ptMonthLong(invoice.reference as MonthRef)}</span>: parcelas em andamento + compras feitas após o fechamento de cada cartão.
+          fatura que{" "}
+          <span className="text-foreground/80">
+            fecha em {ptMonthLong(invoice.reference as MonthRef)}
+          </span>
+          : parcelas em andamento + compras feitas após o fechamento de cada cartão.
         </p>
       </div>
       {invoice.perCard.length === 0 ? (
         <EmptyLine>
-          <span className="px-6 py-6 inline-block">
+          <span className="inline-block px-6 py-6">
             nada acumulado para a próxima fatura ainda.
           </span>
         </EmptyLine>
@@ -882,4 +838,3 @@ function NextInvoice({
     </section>
   );
 }
-
