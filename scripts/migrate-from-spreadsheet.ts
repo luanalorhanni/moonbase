@@ -150,21 +150,46 @@ function normaliseMethod(text: string): "pix" | "debit" | "cash" {
   return METHOD_MAP[text.trim().toLowerCase()] ?? "pix";
 }
 
-const DEFAULT_COLORS = ["blue", "purple", "green", "pink", "orange", "yellow", "brown", "gray", "red"] as const;
+const DEFAULT_COLORS = [
+  "blue",
+  "purple",
+  "green",
+  "pink",
+  "orange",
+  "yellow",
+  "brown",
+  "gray",
+  "red",
+] as const;
 
 function pickColor(index: number): (typeof DEFAULT_COLORS)[number] {
   return DEFAULT_COLORS[index % DEFAULT_COLORS.length];
 }
 
 const PT_MONTHS: Record<string, number> = {
-  janeiro: 1, fevereiro: 2, "março": 3, marco: 3, abril: 4, maio: 5, junho: 6,
-  julho: 7, agosto: 8, setembro: 9, outubro: 10, novembro: 11, dezembro: 12,
+  janeiro: 1,
+  fevereiro: 2,
+  março: 3,
+  marco: 3,
+  abril: 4,
+  maio: 5,
+  junho: 6,
+  julho: 7,
+  agosto: 8,
+  setembro: 9,
+  outubro: 10,
+  novembro: 11,
+  dezembro: 12,
 };
 
 function parseMonthLabel(text: string): string | null {
   if (!text) return null;
   if (/^\d{4}-\d{2}-\d{2}/.test(text)) return text.slice(0, 7) + "-01";
-  const m = text.toLowerCase().match(/^(janeiro|fevereiro|março|marco|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro)\s+(\d{4})$/);
+  const m = text
+    .toLowerCase()
+    .match(
+      /^(janeiro|fevereiro|março|marco|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro)\s+(\d{4})$/,
+    );
   if (m) {
     const month = PT_MONTHS[m[1]];
     return `${m[2]}-${String(month).padStart(2, "0")}-01`;
@@ -359,9 +384,7 @@ function parseCashReceivables(sheet: ExcelJS.Worksheet): CashReceivableRaw[] {
     const amount = cellAmount(rowAt(sheet, r, 13));
     const expectedRaw = cellText(rowAt(sheet, r, 14));
     const expectedDate = cellDate(rowAt(sheet, r, 14));
-    const expected = expectedDate
-      ? expectedDate.slice(0, 7) + "-01"
-      : parseMonthLabel(expectedRaw);
+    const expected = expectedDate ? expectedDate.slice(0, 7) + "-01" : parseMonthLabel(expectedRaw);
     if (!expected) continue;
     const isPaid = cellBool(rowAt(sheet, r, 15));
     const actualPaymentDate = cellDate(rowAt(sheet, r, 16)) || null;
@@ -509,8 +532,18 @@ function parseMonthlySnapshots(
   const totalFixed = fixedTotal;
 
   const PT_MONTH_LONG = [
-    "janeiro", "fevereiro", "março", "abril", "maio", "junho",
-    "julho", "agosto", "setembro", "outubro", "novembro", "dezembro",
+    "janeiro",
+    "fevereiro",
+    "março",
+    "abril",
+    "maio",
+    "junho",
+    "julho",
+    "agosto",
+    "setembro",
+    "outubro",
+    "novembro",
+    "dezembro",
   ];
 
   const allMonths = new Set([...incomeByMonth.keys(), ...totalSaveByMonth.keys()]);
@@ -560,7 +593,12 @@ async function clearExistingData(): Promise<void> {
   }
 }
 
-async function runImport(opts: { file: string; confirm: boolean; only: Set<string>; reset: boolean }) {
+async function runImport(opts: {
+  file: string;
+  confirm: boolean;
+  only: Set<string>;
+  reset: boolean;
+}) {
   const wb = new ExcelJS.Workbook();
   await wb.xlsx.readFile(opts.file);
 
@@ -573,7 +611,16 @@ async function runImport(opts: { file: string; confirm: boolean; only: Set<strin
   const investSheet = wb.getWorksheet("🏦 Investiments");
   const anualSheet = wb.getWorksheet("📅 Anual Finance");
 
-  if (!carts || !categorys || !incomes || !cashSheet || !creditSheet || !receivableSheet || !investSheet || !anualSheet) {
+  if (
+    !carts ||
+    !categorys ||
+    !incomes ||
+    !cashSheet ||
+    !creditSheet ||
+    !receivableSheet ||
+    !investSheet ||
+    !anualSheet
+  ) {
     throw new Error("Missing one of the expected tabs in the workbook.");
   }
 
@@ -586,12 +633,8 @@ async function runImport(opts: { file: string; confirm: boolean; only: Set<strin
   const creditReceivableRaw = parseCreditReceivables(receivableSheet);
   const liquidRows = parseLiquidSavings(investSheet);
   const fixedRows = parseFixedIncome(investSheet);
-  const totalLiquidNow = liquidRows
-    .reduce((acc, r) => acc + Number(r.latestYield), 0)
-    .toFixed(2);
-  const totalFixedNow = fixedRows
-    .reduce((acc, r) => acc + Number(r.latestYield), 0)
-    .toFixed(2);
+  const totalLiquidNow = liquidRows.reduce((acc, r) => acc + Number(r.latestYield), 0).toFixed(2);
+  const totalFixedNow = fixedRows.reduce((acc, r) => acc + Number(r.latestYield), 0).toFixed(2);
   const snapshotRows = parseMonthlySnapshots(
     anualSheet,
     investSheet,
@@ -641,10 +684,7 @@ async function runImport(opts: { file: string; confirm: boolean; only: Set<strin
       return { userId: USER_ID!, name: s.name, categoryId };
     })
     .filter((s): s is SubcategoryInsert => s !== null);
-  const insertedSubs = await db
-    .insert(schema.subcategories)
-    .values(subcategoryInserts)
-    .returning();
+  const insertedSubs = await db.insert(schema.subcategories).values(subcategoryInserts).returning();
   const subIdByName = new Map<string, string>();
   for (const s of insertedSubs) subIdByName.set(s.name.toLowerCase(), s.id);
 
@@ -657,7 +697,10 @@ async function runImport(opts: { file: string; confirm: boolean; only: Set<strin
   for (const r of cashRaw) {
     const cardId = cardIdByName.get(r.cardName.toLowerCase());
     const subId = subIdByName.get(r.subcategoryName.toLowerCase());
-    if (!cardId || !subId) { skippedCash++; continue; }
+    if (!cardId || !subId) {
+      skippedCash++;
+      continue;
+    }
     cashInserts.push({
       userId: USER_ID!,
       description: r.description,
@@ -669,7 +712,8 @@ async function runImport(opts: { file: string; confirm: boolean; only: Set<strin
     });
   }
   if (cashInserts.length > 0) await db.insert(schema.cashExpenses).values(cashInserts);
-  if (skippedCash > 0) process.stdout.write(`  ⚠ ${skippedCash} skipped (missing card/subcategory)\n`);
+  if (skippedCash > 0)
+    process.stdout.write(`  ⚠ ${skippedCash} skipped (missing card/subcategory)\n`);
 
   process.stdout.write("[write] credit_expenses\n");
   const cardLookup = new Map<string, { id: string; defaultClosingDay: number }>();
@@ -744,7 +788,8 @@ async function runImport(opts: { file: string; confirm: boolean; only: Set<strin
   }
   if (creditInserts.length > 0) await db.insert(schema.creditExpenses).values(creditInserts);
   process.stdout.write(`  recomputed parcel dates for ${computedParcels} expenses\n`);
-  if (skippedCredit > 0) process.stdout.write(`  ⚠ ${skippedCredit} skipped (missing card/subcategory)\n`);
+  if (skippedCredit > 0)
+    process.stdout.write(`  ⚠ ${skippedCredit} skipped (missing card/subcategory)\n`);
 
   process.stdout.write("[write] cash_receivables\n");
   if (cashReceivableRaw.length > 0) {
@@ -850,7 +895,12 @@ async function main() {
     file: positionals[0],
     confirm: !!values.confirm,
     reset: !!values.reset,
-    only: new Set((values.only ?? "").split(",").map((s) => s.trim()).filter(Boolean)),
+    only: new Set(
+      (values.only ?? "")
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean),
+    ),
   });
 }
 
