@@ -249,10 +249,7 @@ describe("incomeBySource", () => {
   });
 
   it("falls back to 'other' for incomes without a type", () => {
-    const r = incomeBySource(
-      [{ id: "1", date: "2026-04-05", amount: "100.00" }],
-      "2026-04",
-    );
+    const r = incomeBySource([{ id: "1", date: "2026-04-05", amount: "100.00" }], "2026-04");
     expect(r).toEqual([{ key: "other", total: "100.00", count: 1 }]);
   });
 });
