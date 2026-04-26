@@ -4,6 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import { requireUser } from "@/lib/auth/session";
+import { TAGS, invalidate } from "@/lib/cache/tags";
 import { db, schema } from "@/lib/db";
 import {
   fixedExpenseFormSchema,
@@ -52,6 +53,7 @@ export async function createFixedExpense(
     isActive: data.isActive,
   });
 
+  invalidate(TAGS.fixedExpenses);
   revalidatePath("/expenses/fixed");
   return { ok: true };
 }
@@ -86,6 +88,7 @@ export async function updateFixedExpense(
     })
     .where(and(eq(schema.fixedExpenses.id, id), eq(schema.fixedExpenses.userId, user.id)));
 
+  invalidate(TAGS.fixedExpenses);
   revalidatePath("/expenses/fixed");
   return { ok: true };
 }
@@ -95,6 +98,7 @@ export async function deleteFixedExpense(id: string): Promise<FixedExpenseAction
   await db
     .delete(schema.fixedExpenses)
     .where(and(eq(schema.fixedExpenses.id, id), eq(schema.fixedExpenses.userId, user.id)));
+  invalidate(TAGS.fixedExpenses);
   revalidatePath("/expenses/fixed");
   return { ok: true };
 }

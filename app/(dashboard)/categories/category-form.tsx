@@ -118,7 +118,12 @@ export function CategoryForm({ category, onSuccess }: Props) {
             control={form.control}
             name="color"
             render={({ field }) => (
-              <Select value={field.value} onValueChange={field.onChange} disabled={isPending}>
+              <Select
+                value={field.value}
+                onValueChange={field.onChange}
+                disabled={isPending}
+                items={COLOR_LABEL}
+              >
                 <SelectTrigger id="cat-color" className="w-full">
                   <SelectValue />
                 </SelectTrigger>
