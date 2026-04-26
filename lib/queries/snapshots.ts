@@ -3,19 +3,28 @@ import "server-only";
 import { and, desc, eq, lt } from "drizzle-orm";
 
 import { requireUser } from "@/lib/auth/session";
+import { TAGS } from "@/lib/cache/tags";
+import { cachedQuery } from "@/lib/cache/with-cache";
 import { db, schema } from "@/lib/db";
 
 export type SnapshotRow = typeof schema.monthlySnapshots.$inferSelect;
 
-export async function listSnapshots(): Promise<SnapshotRow[]> {
-  const user = await requireUser();
-  return db
-    .select()
-    .from(schema.monthlySnapshots)
-    .where(eq(schema.monthlySnapshots.userId, user.id))
-    .orderBy(desc(schema.monthlySnapshots.referenceMonth));
-}
+export const listSnapshots = cachedQuery(
+  "listSnapshots",
+  [TAGS.snapshots],
+  (userId): Promise<SnapshotRow[]> =>
+    db
+      .select()
+      .from(schema.monthlySnapshots)
+      .where(eq(schema.monthlySnapshots.userId, userId))
+      .orderBy(desc(schema.monthlySnapshots.referenceMonth)),
+);
 
+/**
+ * Single-row reads from snapshot actions are intentionally uncached: they run
+ * inside `upsertMonthlySnapshot` immediately before a write, where stale data
+ * would corrupt the cumulative `total_save` calculation.
+ */
 export async function getSnapshot(referenceMonth: string): Promise<SnapshotRow | null> {
   const user = await requireUser();
   const rows = await db
@@ -31,10 +40,6 @@ export async function getSnapshot(referenceMonth: string): Promise<SnapshotRow |
   return rows[0] ?? null;
 }
 
-/**
- * Returns the most recent snapshot strictly before `referenceMonth`. Used
- * to compute cumulative total_save when generating a new snapshot.
- */
 export async function getPreviousSnapshot(referenceMonth: string): Promise<SnapshotRow | null> {
   const user = await requireUser();
   const rows = await db

@@ -113,7 +113,12 @@ export function CashReceivableForm({ receivable, onSuccess }: Props) {
               control={form.control}
               name="loanType"
               render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange} disabled={isPending}>
+                <Select
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  disabled={isPending}
+                  items={LOAN_TYPE_LABEL}
+                >
                   <SelectTrigger id="cr-loan-type" className="w-full">
                     <SelectValue />
                   </SelectTrigger>

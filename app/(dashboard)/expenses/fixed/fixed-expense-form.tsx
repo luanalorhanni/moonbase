@@ -81,6 +81,10 @@ export function FixedExpenseForm({ expense, cards, subcategories, onSuccess }: P
   });
 
   const grouped = groupByCategory(subcategories);
+  const subcategoryLabels = Object.fromEntries(subcategories.map((s) => [s.id, s.name]));
+  const cardLabels = Object.fromEntries(
+    cards.map((c) => [c.id, c.bank ? `${c.name} — ${c.bank}` : c.name]),
+  );
 
   function onSubmit(values: FixedExpenseFormInput) {
     startTransition(async () => {
@@ -128,7 +132,12 @@ export function FixedExpenseForm({ expense, cards, subcategories, onSuccess }: P
             control={form.control}
             name="subcategoryId"
             render={({ field }) => (
-              <Select value={field.value} onValueChange={field.onChange} disabled={isPending}>
+              <Select
+                value={field.value}
+                onValueChange={field.onChange}
+                disabled={isPending}
+                items={subcategoryLabels}
+              >
                 <SelectTrigger id="fe-subcategory" className="w-full">
                   <SelectValue placeholder="Selecione…" />
                 </SelectTrigger>
@@ -162,7 +171,12 @@ export function FixedExpenseForm({ expense, cards, subcategories, onSuccess }: P
               control={form.control}
               name="cardId"
               render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange} disabled={isPending}>
+                <Select
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  disabled={isPending}
+                  items={cardLabels}
+                >
                   <SelectTrigger id="fe-card" className="w-full">
                     <SelectValue placeholder="Selecione…" />
                   </SelectTrigger>
@@ -188,7 +202,12 @@ export function FixedExpenseForm({ expense, cards, subcategories, onSuccess }: P
               control={form.control}
               name="paymentMethod"
               render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange} disabled={isPending}>
+                <Select
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  disabled={isPending}
+                  items={PAYMENT_METHOD_LABEL}
+                >
                   <SelectTrigger id="fe-method" className="w-full">
                     <SelectValue />
                   </SelectTrigger>

@@ -4,6 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import { requireUser } from "@/lib/auth/session";
+import { TAGS, invalidate } from "@/lib/cache/tags";
 import { db, schema } from "@/lib/db";
 import {
   fixedIncomeFormSchema,
@@ -45,6 +46,7 @@ export async function createLiquidSavings(
 
   const data = normaliseLiquidSavingsForm(parsed.data);
   await db.insert(schema.liquidSavings).values({ userId: user.id, ...data });
+  invalidate(TAGS.liquidSavings);
   revalidatePath("/investments");
   return { ok: true };
 }
@@ -68,6 +70,7 @@ export async function updateLiquidSavings(
     .update(schema.liquidSavings)
     .set(data)
     .where(and(eq(schema.liquidSavings.id, id), eq(schema.liquidSavings.userId, user.id)));
+  invalidate(TAGS.liquidSavings);
   revalidatePath("/investments");
   return { ok: true };
 }
@@ -77,6 +80,7 @@ export async function deleteLiquidSavings(id: string): Promise<InvestmentActionR
   await db
     .delete(schema.liquidSavings)
     .where(and(eq(schema.liquidSavings.id, id), eq(schema.liquidSavings.userId, user.id)));
+  invalidate(TAGS.liquidSavings);
   revalidatePath("/investments");
   return { ok: true };
 }
@@ -98,6 +102,7 @@ export async function createFixedIncome(
 
   const data = normaliseFixedIncomeForm(parsed.data);
   await db.insert(schema.fixedIncome).values({ userId: user.id, ...data });
+  invalidate(TAGS.fixedIncome);
   revalidatePath("/investments");
   return { ok: true };
 }
@@ -121,6 +126,7 @@ export async function updateFixedIncome(
     .update(schema.fixedIncome)
     .set(data)
     .where(and(eq(schema.fixedIncome.id, id), eq(schema.fixedIncome.userId, user.id)));
+  invalidate(TAGS.fixedIncome);
   revalidatePath("/investments");
   return { ok: true };
 }
@@ -130,6 +136,7 @@ export async function deleteFixedIncome(id: string): Promise<InvestmentActionRes
   await db
     .delete(schema.fixedIncome)
     .where(and(eq(schema.fixedIncome.id, id), eq(schema.fixedIncome.userId, user.id)));
+  invalidate(TAGS.fixedIncome);
   revalidatePath("/investments");
   return { ok: true };
 }

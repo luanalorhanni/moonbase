@@ -1,8 +1,9 @@
 import "server-only";
 
-import { and, asc, eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 
-import { requireUser } from "@/lib/auth/session";
+import { TAGS } from "@/lib/cache/tags";
+import { cachedQuery } from "@/lib/cache/with-cache";
 import { db, schema } from "@/lib/db";
 
 /**
@@ -13,23 +14,17 @@ import { db, schema } from "@/lib/db";
  * application-level scoping is the actual enforcement here.
  */
 
-export async function listCards() {
-  const user = await requireUser();
-  return db
+export const listCards = cachedQuery("listCards", [TAGS.cards], (userId) =>
+  db
     .select()
     .from(schema.cards)
-    .where(eq(schema.cards.userId, user.id))
-    .orderBy(asc(schema.cards.name));
-}
+    .where(eq(schema.cards.userId, userId))
+    .orderBy(asc(schema.cards.name)),
+);
 
 export async function getCard(id: string) {
-  const user = await requireUser();
-  const rows = await db
-    .select()
-    .from(schema.cards)
-    .where(and(eq(schema.cards.id, id), eq(schema.cards.userId, user.id)))
-    .limit(1);
-  return rows[0] ?? null;
+  const cards = await listCards();
+  return cards.find((c) => c.id === id) ?? null;
 }
 
 export type CardRow = Awaited<ReturnType<typeof listCards>>[number];

@@ -52,6 +52,10 @@ export function CreditExpenseForm({ expense, cards, subcategories, onSuccess }: 
   const [isPending, startTransition] = useTransition();
 
   const creditCards = cards.filter((c) => c.type === "credit");
+  const cardLabels = Object.fromEntries(
+    creditCards.map((c) => [c.id, c.bank ? `${c.name} — ${c.bank}` : c.name]),
+  );
+  const subcategoryLabels = Object.fromEntries(subcategories.map((s) => [s.id, s.name]));
 
   const form = useForm<CreditExpenseFormInput>({
     resolver: zodResolver(creditExpenseFormSchema),
@@ -124,7 +128,12 @@ export function CreditExpenseForm({ expense, cards, subcategories, onSuccess }: 
             control={form.control}
             name="cardId"
             render={({ field }) => (
-              <Select value={field.value} onValueChange={field.onChange} disabled={isPending}>
+              <Select
+                value={field.value}
+                onValueChange={field.onChange}
+                disabled={isPending}
+                items={cardLabels}
+              >
                 <SelectTrigger id="ce-card" className="w-full">
                   <SelectValue placeholder="Selecione…" />
                 </SelectTrigger>
@@ -150,7 +159,12 @@ export function CreditExpenseForm({ expense, cards, subcategories, onSuccess }: 
             control={form.control}
             name="subcategoryId"
             render={({ field }) => (
-              <Select value={field.value} onValueChange={field.onChange} disabled={isPending}>
+              <Select
+                value={field.value}
+                onValueChange={field.onChange}
+                disabled={isPending}
+                items={subcategoryLabels}
+              >
                 <SelectTrigger id="ce-subcategory" className="w-full">
                   <SelectValue placeholder="Selecione…" />
                 </SelectTrigger>

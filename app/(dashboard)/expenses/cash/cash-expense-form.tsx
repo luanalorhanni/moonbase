@@ -74,6 +74,10 @@ export function CashExpenseForm({ expense, cards, subcategories, onSuccess }: Pr
   });
 
   const grouped = groupByCategory(subcategories);
+  const subcategoryLabels = Object.fromEntries(subcategories.map((s) => [s.id, s.name]));
+  const cardLabels = Object.fromEntries(
+    cards.map((c) => [c.id, c.bank ? `${c.name} — ${c.bank}` : c.name]),
+  );
 
   function onSubmit(values: CashExpenseFormInput) {
     startTransition(async () => {
@@ -121,7 +125,12 @@ export function CashExpenseForm({ expense, cards, subcategories, onSuccess }: Pr
             control={form.control}
             name="subcategoryId"
             render={({ field }) => (
-              <Select value={field.value} onValueChange={field.onChange} disabled={isPending}>
+              <Select
+                value={field.value}
+                onValueChange={field.onChange}
+                disabled={isPending}
+                items={subcategoryLabels}
+              >
                 <SelectTrigger id="ce-subcategory" className="w-full">
                   <SelectValue placeholder="Selecione…" />
                 </SelectTrigger>
@@ -154,7 +163,12 @@ export function CashExpenseForm({ expense, cards, subcategories, onSuccess }: Pr
             control={form.control}
             name="cardId"
             render={({ field }) => (
-              <Select value={field.value} onValueChange={field.onChange} disabled={isPending}>
+              <Select
+                value={field.value}
+                onValueChange={field.onChange}
+                disabled={isPending}
+                items={cardLabels}
+              >
                 <SelectTrigger id="ce-card" className="w-full">
                   <SelectValue placeholder="Selecione…" />
                 </SelectTrigger>
@@ -180,7 +194,12 @@ export function CashExpenseForm({ expense, cards, subcategories, onSuccess }: Pr
             control={form.control}
             name="method"
             render={({ field }) => (
-              <Select value={field.value} onValueChange={field.onChange} disabled={isPending}>
+              <Select
+                value={field.value}
+                onValueChange={field.onChange}
+                disabled={isPending}
+                items={CASH_METHOD_LABEL}
+              >
                 <SelectTrigger id="ce-method" className="w-full">
                   <SelectValue />
                 </SelectTrigger>

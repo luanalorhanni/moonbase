@@ -4,6 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import { requireUser } from "@/lib/auth/session";
+import { TAGS, invalidate } from "@/lib/cache/tags";
 import { db, schema } from "@/lib/db";
 import {
   cashReceivableFormSchema,
@@ -50,6 +51,7 @@ export async function createCashReceivable(
     actualPaymentDate: data.actualPaymentDate,
   });
 
+  invalidate(TAGS.cashReceivables);
   revalidatePath("/receivables");
   return { ok: true };
 }
@@ -82,6 +84,7 @@ export async function updateCashReceivable(
     })
     .where(and(eq(schema.cashReceivables.id, id), eq(schema.cashReceivables.userId, user.id)));
 
+  invalidate(TAGS.cashReceivables);
   revalidatePath("/receivables");
   return { ok: true };
 }
@@ -97,6 +100,7 @@ export async function markCashReceivableAsPaid(id: string): Promise<CashReceivab
     .set({ isPaid: true, actualPaymentDate: todayStr })
     .where(and(eq(schema.cashReceivables.id, id), eq(schema.cashReceivables.userId, user.id)));
 
+  invalidate(TAGS.cashReceivables);
   revalidatePath("/receivables");
   return { ok: true };
 }
@@ -106,6 +110,7 @@ export async function deleteCashReceivable(id: string): Promise<CashReceivableAc
   await db
     .delete(schema.cashReceivables)
     .where(and(eq(schema.cashReceivables.id, id), eq(schema.cashReceivables.userId, user.id)));
+  invalidate(TAGS.cashReceivables);
   revalidatePath("/receivables");
   return { ok: true };
 }
