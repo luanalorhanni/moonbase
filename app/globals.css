@@ -61,9 +61,9 @@
 
 @theme inline {
   --font-sans: var(--font-onest), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-onest), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
   --font-mono: var(--font-jet-mono), ui-monospace, SFMono-Regular, monospace;
-  --font-heading: var(--font-onest), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-fraunces), ui-serif, Georgia, serif;
 
   --color-background: var(--background);
   --color-background-deep: var(--background-deep);
@@ -146,95 +146,56 @@
   .numeric {
     font-family: var(--font-mono);
   }
+
+  /* Display serif — used for big page titles and hero numbers. The Fraunces
+     SOFT axis adds gentle terminals; opsz scales optical sizing. */
+  .font-display {
+    font-family: var(--font-display);
+    font-feature-settings:
+      "ss01" on,
+      "ss02" on,
+      "ss03" on,
+      "ss04" on;
+    font-variation-settings:
+      "SOFT" 30,
+      "WONK" 0,
+      "opsz" 144;
+    letter-spacing: -0.02em;
+  }
+
+  /* Use on hero numbers — same family but with mono-equivalent figures. */
+  .display-numeric {
+    font-family: var(--font-display);
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings:
+      "tnum" on,
+      "lnum" on,
+      "ss01" on;
+    font-variation-settings:
+      "SOFT" 20,
+      "opsz" 144;
+    letter-spacing: -0.025em;
+  }
 }
 
 /* ──────────────────────────────────────────────────────────────────────── */
-/*  starfield — pure CSS                                                    */
+/*  ambient — a single fixed gradient, no animation                         */
 /* ──────────────────────────────────────────────────────────────────────── */
 
-.starfield {
+.ambient {
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  overflow: hidden;
   background:
-    radial-gradient(ellipse at 18% -10%, oklch(0.3 0.1 280 / 0.4), transparent 55%),
-    radial-gradient(ellipse at 82% 110%, oklch(0.28 0.08 240 / 0.3), transparent 50%),
-    var(--background);
+    radial-gradient(ellipse 80% 50% at 22% 0%, oklch(0.26 0.08 280 / 0.35), transparent 60%),
+    radial-gradient(ellipse 60% 40% at 88% 100%, oklch(0.24 0.06 240 / 0.25), transparent 60%);
 }
 
-.starfield::before,
-.starfield::after {
-  content: "";
-  position: absolute;
-  inset: -10%;
-  background-image:
-    radial-gradient(1px 1px at 7% 12%, var(--star-bright), transparent 50%),
-    radial-gradient(1px 1px at 14% 47%, var(--star-dim), transparent 50%),
-    radial-gradient(1px 1px at 23% 81%, var(--star-bright), transparent 50%),
-    radial-gradient(1.5px 1.5px at 33% 22%, var(--star-bright), transparent 50%),
-    radial-gradient(1px 1px at 41% 64%, var(--star-dim), transparent 50%),
-    radial-gradient(1px 1px at 49% 9%, var(--star-bright), transparent 50%),
-    radial-gradient(1px 1px at 57% 38%, var(--star-dim), transparent 50%),
-    radial-gradient(2px 2px at 63% 73%, var(--star-bright), transparent 50%),
-    radial-gradient(1px 1px at 71% 16%, var(--star-dim), transparent 50%),
-    radial-gradient(1px 1px at 79% 54%, var(--star-bright), transparent 50%),
-    radial-gradient(1px 1px at 86% 88%, var(--star-dim), transparent 50%),
-    radial-gradient(1.5px 1.5px at 92% 31%, var(--star-bright), transparent 50%),
-    radial-gradient(1px 1px at 4% 71%, var(--star-dim), transparent 50%),
-    radial-gradient(1px 1px at 96% 6%, var(--star-bright), transparent 50%);
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
-  animation: twinkle 6s ease-in-out infinite;
-}
-.starfield::after {
-  background-image:
-    radial-gradient(1px 1px at 11% 31%, var(--star-dim), transparent 50%),
-    radial-gradient(1.5px 1.5px at 27% 58%, var(--star-bright), transparent 50%),
-    radial-gradient(1px 1px at 39% 92%, var(--star-dim), transparent 50%),
-    radial-gradient(1px 1px at 53% 24%, var(--star-bright), transparent 50%),
-    radial-gradient(1px 1px at 67% 49%, var(--star-dim), transparent 50%),
-    radial-gradient(2px 2px at 81% 78%, var(--star-bright), transparent 50%),
-    radial-gradient(1px 1px at 19% 4%, var(--star-bright), transparent 50%);
-  animation-delay: -3s;
-  animation-duration: 9s;
-}
-@keyframes twinkle {
-  0%,
-  100% {
-    opacity: 0.6;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-
+/* legacy class kept as no-op so any leftover usage doesn't break */
+.starfield,
 .comet {
-  position: absolute;
-  top: 8%;
-  left: -10%;
-  width: 120px;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--star-bright), transparent);
-  filter: drop-shadow(0 0 4px var(--primary));
-  opacity: 0;
-  transform: rotate(15deg);
-  animation: streak 47s linear infinite;
-}
-@keyframes streak {
-  0%,
-  92% {
-    opacity: 0;
-    transform: translate(0, 0) rotate(15deg);
-  }
-  93% {
-    opacity: 0.8;
-  }
-  100% {
-    opacity: 0;
-    transform: translate(120vw, 30vh) rotate(15deg);
-  }
+  display: none;
 }
 
 /* ──────────────────────────────────────────────────────────────────────── */
