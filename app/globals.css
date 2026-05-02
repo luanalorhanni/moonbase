@@ -5,65 +5,127 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ──────────────────────────────────────────────────────────────────────── */
-/*  observatory log — dark-by-default lunar palette                         */
+/*  light is the default — financial monitoring tool                        */
 /* ──────────────────────────────────────────────────────────────────────── */
 
+/*
+ * Palette — nynatrema "electric aqua / dusty mauve" set:
+ *   #8BE2E8  Electric Aqua    →  oklch(0.86 0.08 200)
+ *   #7E82AA  Lavender Grey    →  oklch(0.55 0.05 265)
+ *   #A788A3  Dusty Mauve      →  oklch(0.62 0.045 325)
+ *   #D2AF99  Desert Sand      →  oklch(0.75 0.06 55)
+ *   #38394E  Space Indigo     →  oklch(0.30 0.04 280)
+ *
+ * Light mode: pale lavender-grey surfaces with Space Indigo ink, Lavender
+ * Grey as primary, Electric Aqua as accent. Dark mode: Space Indigo deep
+ * with Electric Aqua primary, Dusty Mauve accent.
+ */
+
 :root {
-  --background: oklch(0.155 0.022 260);
-  --background-deep: oklch(0.115 0.02 260);
-  --foreground: oklch(0.965 0.008 85);
+  --background: oklch(0.97 0.012 265);
+  --background-deep: oklch(0.93 0.018 265);
+  --foreground: oklch(0.30 0.04 280);
 
-  --card: oklch(0.205 0.022 260);
-  --card-foreground: oklch(0.965 0.008 85);
-  --popover: oklch(0.215 0.022 260);
-  --popover-foreground: oklch(0.965 0.008 85);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.30 0.04 280);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.30 0.04 280);
 
-  --secondary: oklch(0.235 0.02 260);
-  --secondary-foreground: oklch(0.965 0.008 85);
+  --secondary: oklch(0.94 0.014 265);
+  --secondary-foreground: oklch(0.30 0.04 280);
 
-  --muted: oklch(0.245 0.02 260);
-  --muted-foreground: oklch(0.685 0.015 260);
+  --muted: oklch(0.95 0.014 265);
+  --muted-foreground: oklch(0.55 0.05 265);
 
-  --border: oklch(1 0 0 / 0.07);
-  --border-strong: oklch(1 0 0 / 0.14);
-  --input: oklch(0.245 0.02 260);
-  --ring: oklch(0.78 0.12 80 / 0.5);
+  --border: oklch(0.30 0.04 280 / 0.10);
+  --border-strong: oklch(0.30 0.04 280 / 0.18);
+  --input: oklch(0.95 0.014 265);
+  --ring: oklch(0.62 0.10 200 / 0.55);
 
-  --primary: oklch(0.82 0.13 78);
-  --primary-foreground: oklch(0.15 0.02 260);
-  --accent: oklch(0.66 0.18 285);
-  --accent-foreground: oklch(0.97 0.005 85);
+  --primary: oklch(0.55 0.05 265);
+  --primary-foreground: oklch(0.97 0.012 265);
+  --accent: oklch(0.65 0.10 200);
+  --accent-foreground: oklch(0.30 0.04 280);
+  --success: oklch(0.50 0.13 160);
+  --warning: oklch(0.74 0.06 55);
+  --destructive: oklch(0.55 0.20 22);
+  --destructive-foreground: oklch(0.97 0.012 265);
+
+  --chart-1: oklch(0.55 0.05 265);
+  --chart-2: oklch(0.65 0.10 200);
+  --chart-3: oklch(0.62 0.045 325);
+  --chart-4: oklch(0.74 0.06 55);
+  --chart-5: oklch(0.30 0.04 280);
+
+  --sidebar: oklch(0.945 0.018 265);
+  --sidebar-foreground: oklch(0.30 0.04 280);
+  --sidebar-border: oklch(0.30 0.04 280 / 0.08);
+  --sidebar-accent: oklch(0.91 0.022 265);
+  --sidebar-accent-foreground: oklch(0.30 0.04 280);
+  --sidebar-primary: oklch(0.55 0.05 265);
+  --sidebar-primary-foreground: oklch(0.97 0.012 265);
+  --sidebar-ring: oklch(0.62 0.10 200 / 0.55);
+
+  --star-bright: oklch(0.55 0.05 265);
+  --star-dim: oklch(0.62 0.045 325);
+
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: oklch(0.21 0.035 280);
+  --background-deep: oklch(0.16 0.035 280);
+  --foreground: oklch(0.93 0.014 265);
+
+  --card: oklch(0.27 0.035 280);
+  --card-foreground: oklch(0.93 0.014 265);
+  --popover: oklch(0.29 0.035 280);
+  --popover-foreground: oklch(0.93 0.014 265);
+
+  --secondary: oklch(0.31 0.035 280);
+  --secondary-foreground: oklch(0.93 0.014 265);
+
+  --muted: oklch(0.32 0.035 280);
+  --muted-foreground: oklch(0.72 0.05 265);
+
+  --border: oklch(1 0 0 / 0.08);
+  --border-strong: oklch(1 0 0 / 0.16);
+  --input: oklch(0.31 0.035 280);
+  --ring: oklch(0.86 0.08 200 / 0.55);
+
+  --primary: oklch(0.86 0.08 200);
+  --primary-foreground: oklch(0.18 0.035 280);
+  --accent: oklch(0.65 0.045 325);
+  --accent-foreground: oklch(0.93 0.014 265);
   --success: oklch(0.74 0.13 160);
-  --warning: oklch(0.8 0.14 70);
+  --warning: oklch(0.80 0.10 55);
   --destructive: oklch(0.68 0.16 22);
-  --destructive-foreground: oklch(0.97 0.005 85);
+  --destructive-foreground: oklch(0.93 0.014 265);
 
-  --chart-1: oklch(0.82 0.13 78);
-  --chart-2: oklch(0.66 0.18 285);
-  --chart-3: oklch(0.74 0.13 160);
-  --chart-4: oklch(0.8 0.14 70);
-  --chart-5: oklch(0.68 0.16 22);
+  --chart-1: oklch(0.86 0.08 200);
+  --chart-2: oklch(0.65 0.045 325);
+  --chart-3: oklch(0.78 0.06 55);
+  --chart-4: oklch(0.72 0.05 265);
+  --chart-5: oklch(0.93 0.014 265);
 
-  --sidebar: oklch(0.135 0.022 260);
-  --sidebar-foreground: oklch(0.965 0.008 85);
-  --sidebar-border: oklch(1 0 0 / 0.05);
-  --sidebar-accent: oklch(0.235 0.02 260);
-  --sidebar-accent-foreground: oklch(0.965 0.008 85);
-  --sidebar-primary: oklch(0.82 0.13 78);
-  --sidebar-primary-foreground: oklch(0.15 0.02 260);
-  --sidebar-ring: oklch(0.78 0.12 80 / 0.5);
+  --sidebar: oklch(0.16 0.035 280);
+  --sidebar-foreground: oklch(0.93 0.014 265);
+  --sidebar-border: oklch(1 0 0 / 0.06);
+  --sidebar-accent: oklch(0.30 0.035 280);
+  --sidebar-accent-foreground: oklch(0.93 0.014 265);
+  --sidebar-primary: oklch(0.86 0.08 200);
+  --sidebar-primary-foreground: oklch(0.18 0.035 280);
+  --sidebar-ring: oklch(0.86 0.08 200 / 0.55);
 
-  --star-bright: oklch(0.97 0.005 85);
-  --star-dim: oklch(0.78 0.02 260);
-
-  --radius: 1rem;
+  --star-bright: oklch(0.86 0.08 200);
+  --star-dim: oklch(0.65 0.045 325);
 }
 
 @theme inline {
   --font-sans: var(--font-onest), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
   --font-mono: var(--font-jet-mono), ui-monospace, SFMono-Regular, monospace;
-  --font-heading: var(--font-fraunces), ui-serif, Georgia, serif;
+  --font-heading: var(--font-onest), ui-sans-serif, system-ui, sans-serif;
 
   --color-background: var(--background);
   --color-background-deep: var(--background-deep);
@@ -102,12 +164,12 @@
   --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  --radius-sm: calc(var(--radius) - 0.5rem);
-  --radius-md: calc(var(--radius) - 0.25rem);
-  --radius-lg: var(--radius);
+  --radius-sm: calc(var(--radius) - 0.125rem);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 0.125rem);
   --radius-xl: calc(var(--radius) + 0.25rem);
-  --radius-2xl: calc(var(--radius) + 0.75rem);
-  --radius-3xl: calc(var(--radius) + 1.25rem);
+  --radius-2xl: calc(var(--radius) + 0.5rem);
+  --radius-3xl: calc(var(--radius) + 0.75rem);
 }
 
 @layer base {
@@ -147,8 +209,6 @@
     font-family: var(--font-mono);
   }
 
-  /* Display serif — used for big page titles and hero numbers. The Fraunces
-     SOFT axis adds gentle terminals; opsz scales optical sizing. */
   .font-display {
     font-family: var(--font-display);
     font-feature-settings:
@@ -163,7 +223,6 @@
     letter-spacing: -0.02em;
   }
 
-  /* Use on hero numbers — same family but with mono-equivalent figures. */
   .display-numeric {
     font-family: var(--font-display);
     font-variant-numeric: tabular-nums lining-nums;
@@ -179,7 +238,7 @@
 }
 
 /* ──────────────────────────────────────────────────────────────────────── */
-/*  ambient — a single fixed gradient, no animation                         */
+/*  ambient — subtle gradient only on dark mode                             */
 /* ──────────────────────────────────────────────────────────────────────── */
 
 .ambient {
@@ -188,26 +247,150 @@
   pointer-events: none;
   z-index: 0;
   background:
-    radial-gradient(ellipse 80% 50% at 22% 0%, oklch(0.26 0.08 280 / 0.35), transparent 60%),
-    radial-gradient(ellipse 60% 40% at 88% 100%, oklch(0.24 0.06 240 / 0.25), transparent 60%);
+    radial-gradient(ellipse 70% 40% at 15% -10%, oklch(0.65 0.10 200 / 0.10), transparent 60%),
+    radial-gradient(ellipse 60% 35% at 92% 110%, oklch(0.62 0.045 325 / 0.08), transparent 60%);
 }
 
-/* legacy class kept as no-op so any leftover usage doesn't break */
-.starfield,
+.dark .ambient {
+  background:
+    radial-gradient(ellipse 80% 50% at 22% 0%, oklch(0.55 0.10 200 / 0.40), transparent 60%),
+    radial-gradient(ellipse 60% 40% at 88% 100%, oklch(0.55 0.06 325 / 0.30), transparent 60%);
+}
+
+/* ──────────────────────────────────────────────────────────────────────── */
+/*  starfield — pure CSS, twin-layer twinkle + occasional comet streak      */
+/* ──────────────────────────────────────────────────────────────────────── */
+
+.starfield {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.starfield::before,
+.starfield::after {
+  content: "";
+  position: absolute;
+  inset: -10%;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-image:
+    radial-gradient(1px 1px at 7% 12%, var(--star-bright), transparent 50%),
+    radial-gradient(1px 1px at 14% 47%, var(--star-dim), transparent 50%),
+    radial-gradient(1px 1px at 23% 81%, var(--star-bright), transparent 50%),
+    radial-gradient(1.5px 1.5px at 33% 22%, var(--star-bright), transparent 50%),
+    radial-gradient(1px 1px at 41% 64%, var(--star-dim), transparent 50%),
+    radial-gradient(1px 1px at 49% 9%, var(--star-bright), transparent 50%),
+    radial-gradient(1px 1px at 57% 38%, var(--star-dim), transparent 50%),
+    radial-gradient(2px 2px at 63% 73%, var(--star-bright), transparent 50%),
+    radial-gradient(1px 1px at 71% 16%, var(--star-dim), transparent 50%),
+    radial-gradient(1px 1px at 79% 54%, var(--star-bright), transparent 50%),
+    radial-gradient(1px 1px at 86% 88%, var(--star-dim), transparent 50%),
+    radial-gradient(1.5px 1.5px at 92% 31%, var(--star-bright), transparent 50%),
+    radial-gradient(1px 1px at 4% 71%, var(--star-dim), transparent 50%),
+    radial-gradient(1px 1px at 96% 6%, var(--star-bright), transparent 50%);
+  animation: twinkle 6s ease-in-out infinite;
+}
+
+.starfield::after {
+  background-image:
+    radial-gradient(1px 1px at 11% 31%, var(--star-dim), transparent 50%),
+    radial-gradient(1.5px 1.5px at 27% 58%, var(--star-bright), transparent 50%),
+    radial-gradient(1px 1px at 39% 92%, var(--star-dim), transparent 50%),
+    radial-gradient(1px 1px at 53% 24%, var(--star-bright), transparent 50%),
+    radial-gradient(1px 1px at 67% 49%, var(--star-dim), transparent 50%),
+    radial-gradient(2px 2px at 81% 78%, var(--star-bright), transparent 50%),
+    radial-gradient(1px 1px at 19% 4%, var(--star-bright), transparent 50%);
+  animation-delay: -3s;
+  animation-duration: 9s;
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* In light mode the field exists but is much subtler — would otherwise read
+   as dirt on a parchment background. */
+.starfield {
+  opacity: 0.5;
+}
+.dark .starfield {
+  opacity: 1;
+}
+
 .comet {
-  display: none;
+  position: absolute;
+  top: 8%;
+  left: -10%;
+  width: 120px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--star-bright), transparent);
+  filter: drop-shadow(0 0 4px var(--primary));
+  opacity: 0;
+  transform: rotate(15deg);
+  animation: streak 47s linear infinite;
+}
+
+@keyframes streak {
+  0%,
+  92% {
+    opacity: 0;
+    transform: translate(0, 0) rotate(15deg);
+  }
+  93% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(120vw, 30vh) rotate(15deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .starfield::before,
+  .starfield::after,
+  .comet {
+    animation: none !important;
+  }
 }
 
 /* ──────────────────────────────────────────────────────────────────────── */
-/*  glass card                                                              */
+/*  panel — financial app card style (replaces .glass)                      */
 /* ──────────────────────────────────────────────────────────────────────── */
+
+.panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.dark .panel {
+  background: color-mix(in oklab, var(--card) 80%, transparent);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  box-shadow:
+    inset 0 1px 0 0 var(--border-strong),
+    0 1px 1px 0 oklch(0 0 0 / 0.4);
+}
 
 .glass {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.dark .glass {
   background: color-mix(in oklab, var(--card) 78%, transparent);
   backdrop-filter: blur(20px) saturate(140%);
   -webkit-backdrop-filter: blur(20px) saturate(140%);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-2xl);
   box-shadow:
     inset 0 1px 0 0 var(--border-strong),
     0 1px 1px 0 oklch(0 0 0 / 0.4),
@@ -224,7 +407,7 @@
   inset: -1px;
   border-radius: inherit;
   padding: 1px;
-  background: linear-gradient(135deg, oklch(0.78 0.12 80 / 0.4), transparent 40%);
+  background: linear-gradient(135deg, oklch(0.50 0.17 290 / 0.35), transparent 40%);
   mask:
     linear-gradient(#000 0 0) content-box,
     linear-gradient(#000 0 0);
@@ -239,6 +422,9 @@
 }
 .glass-glow:hover::after {
   opacity: 1;
+}
+.dark .glass-glow::after {
+  background: linear-gradient(135deg, oklch(0.74 0.16 290 / 0.4), transparent 40%);
 }
 
 /* ──────────────────────────────────────────────────────────────────────── */
@@ -265,44 +451,21 @@
 }
 
 .enter > * {
-  animation: enter 600ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation: enter 400ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
-.enter > *:nth-child(1) {
-  animation-delay: 50ms;
-}
-.enter > *:nth-child(2) {
-  animation-delay: 120ms;
-}
-.enter > *:nth-child(3) {
-  animation-delay: 200ms;
-}
-.enter > *:nth-child(4) {
-  animation-delay: 290ms;
-}
-.enter > *:nth-child(5) {
-  animation-delay: 380ms;
-}
-.enter > *:nth-child(6) {
-  animation-delay: 470ms;
-}
-.enter > *:nth-child(n + 7) {
-  animation: none;
-}
+.enter > *:nth-child(1) { animation-delay: 30ms; }
+.enter > *:nth-child(2) { animation-delay: 80ms; }
+.enter > *:nth-child(3) { animation-delay: 140ms; }
+.enter > *:nth-child(4) { animation-delay: 200ms; }
+.enter > *:nth-child(5) { animation-delay: 260ms; }
+.enter > *:nth-child(6) { animation-delay: 320ms; }
+.enter > *:nth-child(n + 7) { animation: none; }
 @keyframes enter {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .starfield::before,
-  .starfield::after,
-  .comet,
   .enter > * {
     animation: none !important;
     opacity: 1;

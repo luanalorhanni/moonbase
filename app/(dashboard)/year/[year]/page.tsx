@@ -3,7 +3,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { TrendChart } from "@/components/charts/trend-chart";
-import { PixelMoonFull } from "@/components/decorative/pixel-icons";
 import { cumulativeBalance } from "@/lib/finance/aggregate";
 import { formatMonthShort, type MonthRef } from "@/lib/finance/month";
 import { loadFullDataset, toAggregateInputs } from "@/lib/queries/month";
@@ -34,7 +33,6 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
       ? Number(
           cumulativeBalance(
             inputs,
-            // month before year-start
             previousMonthRef(summary.months[0].reference as MonthRef),
           ),
         )
@@ -42,133 +40,123 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
   const yearDelta = yearEndCumulative - yearStartCumulative;
 
   return (
-    <div className="enter mx-auto w-full max-w-4xl px-6 pt-12 pb-24 md:pt-20">
-      {/* ── header ───────────────────────────────────────────────────────── */}
-      <header className="flex flex-col gap-7">
-        <div className="flex items-center justify-between gap-3">
-          <div className="text-muted-foreground flex items-center gap-3 font-mono text-[10px] tracking-[0.22em]">
-            <span>almanac · annual ledger</span>
-            <span className="bg-border-strong h-px max-w-32 flex-1" />
-          </div>
-          <div className="flex items-center gap-1">
-            <Link
-              href={`/year/${summary.year - 1}`}
-              aria-label={`previous year (${summary.year - 1})`}
-              className="border-border-strong text-muted-foreground hover:bg-card hover:text-foreground flex size-8 items-center justify-center rounded-full border transition-colors"
-            >
-              <ChevronLeft className="size-3.5" strokeWidth={1.6} />
-            </Link>
-            <span className="text-muted-foreground px-2 font-mono text-[11px] tracking-[0.16em] tabular-nums">
-              {summary.year}
-            </span>
-            <Link
-              href={`/year/${summary.year + 1}`}
-              aria-label={`next year (${summary.year + 1})`}
-              className="border-border-strong text-muted-foreground hover:bg-card hover:text-foreground flex size-8 items-center justify-center rounded-full border transition-colors"
-            >
-              <ChevronRight className="size-3.5" strokeWidth={1.6} />
-            </Link>
-          </div>
-        </div>
-
-        <div className="flex items-end justify-between gap-6">
-          <h1 className="font-display text-foreground text-[80px] leading-[0.95] font-light tracking-[-0.03em] md:text-[120px]">
+    <div className="enter flex h-full min-h-0 flex-col">
+      {/* ── top bar ─────────────────────────────────────────────────── */}
+      <div className="border-border bg-background/95 supports-backdrop-blur:bg-background/70 flex shrink-0 items-center justify-between gap-4 border-b px-5 py-3 backdrop-blur">
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/year/${summary.year - 1}`}
+            aria-label={`previous year (${summary.year - 1})`}
+            className="border-border-strong text-muted-foreground hover:bg-muted hover:text-foreground inline-flex size-7 items-center justify-center rounded-md border transition-colors"
+          >
+            <ChevronLeft className="size-3.5" strokeWidth={1.7} />
+          </Link>
+          <h1 className="text-foreground min-w-[80px] text-center text-[14px] font-semibold tracking-tight tabular-nums">
             {summary.year}
-            <span className="text-muted-foreground italic">.</span>
           </h1>
-          <div className="hidden shrink-0 md:block">
-            <PixelMoonFull size={36} className="text-foreground/40" />
-          </div>
+          <Link
+            href={`/year/${summary.year + 1}`}
+            aria-label={`next year (${summary.year + 1})`}
+            className="border-border-strong text-muted-foreground hover:bg-muted hover:text-foreground inline-flex size-7 items-center justify-center rounded-md border transition-colors"
+          >
+            <ChevronRight className="size-3.5" strokeWidth={1.7} />
+          </Link>
+          <span className="text-muted-foreground/70 ml-2 font-mono text-[11px] tracking-[0.16em]">
+            annual ledger
+          </span>
         </div>
-      </header>
+        <span
+          className={cn(
+            "numeric text-[13px]",
+            yearDelta < 0 && "text-destructive",
+            yearDelta >= 0 && "text-success",
+          )}
+        >
+          {yearDelta >= 0 ? "+" : "−"} {formatCurrency(Math.abs(yearDelta))}{" "}
+          <span className="text-muted-foreground/70">net</span>
+        </span>
+      </div>
 
-      {/* ── year totals ──────────────────────────────────────────────────── */}
-      <section className="border-border-strong mt-14 grid gap-6 border-t pt-7 md:grid-cols-3">
-        <YearStat label="incomes" value={summary.totalIncomes} tone="success" />
-        <YearStat label="expenses" value={summary.totalExpenses} tone="muted" />
-        <YearStat
+      {/* ── kpi strip ───────────────────────────────────────────────── */}
+      <div className="border-border grid shrink-0 grid-cols-3 border-b">
+        <YearKpi label="incomes" value={summary.totalIncomes} accent="success" />
+        <YearKpi label="expenses" value={summary.totalExpenses} accent="muted" />
+        <YearKpi
           label="balance"
           value={summary.balance}
-          tone={Number(summary.balance) < 0 ? "destructive" : "primary"}
+          accent={Number(summary.balance) < 0 ? "destructive" : "primary"}
           highlight
         />
-      </section>
+      </div>
 
-      {/* ── trend ────────────────────────────────────────────────────────── */}
-      <section className="mt-16 flex flex-col gap-4">
-        <SectionHead
-          eyebrow="trend · twelve months"
-          title="the year in saving"
-          aside={`${yearDelta >= 0 ? "+" : "−"} ${formatCurrency(Math.abs(yearDelta))}`}
-          legend={[
-            { label: "cumulative", tone: "primary" },
-            { label: "monthly net", tone: "success" },
-          ]}
-        />
-        <div className="text-foreground/80 -mx-2">
-          <TrendChart data={trendData} />
+      {/* ── trend + months ──────────────────────────────────────────── */}
+      <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-12">
+        <div className="border-border flex min-h-0 flex-col lg:col-span-7 lg:border-r">
+          <PanelHeader title="trend" subtitle="cumulative · monthly net" />
+          <div className="min-h-[280px] flex-1 px-2 pt-2">
+            <TrendChart data={trendData} />
+          </div>
         </div>
-      </section>
 
-      {/* ── month list ───────────────────────────────────────────────────── */}
-      <section className="mt-16 flex flex-col gap-4">
-        <SectionHead eyebrow="logbook · month by month" title="entries" />
-        <ul className="divide-border-strong/60 divide-y">
-          {summary.months.map((m) => {
-            const balanceNum = Number(m.balance);
-            const isEmpty = Number(m.totalIncomes) === 0 && Number(m.totalExpenses) === 0;
-            const monthLabel = formatMonthShort(m.reference).split("/")[0];
-            return (
-              <li key={m.reference}>
-                <Link
-                  href={`/month/${m.reference}`}
-                  className="group hover:bg-accent/[0.03] flex items-center gap-5 py-3.5 transition-colors"
-                >
-                  <span
-                    className={cn(
-                      "w-10 font-mono text-[11px] tracking-[0.18em] tabular-nums",
-                      isEmpty ? "text-muted-foreground/40" : "text-foreground/70",
-                    )}
+        <div className="flex min-h-0 flex-col lg:col-span-5">
+          <PanelHeader title="month by month" />
+          <ul className="divide-border min-h-0 flex-1 divide-y overflow-auto">
+            {summary.months.map((m) => {
+              const balanceNum = Number(m.balance);
+              const isEmpty = Number(m.totalIncomes) === 0 && Number(m.totalExpenses) === 0;
+              const monthLabel = formatMonthShort(m.reference).split("/")[0];
+              return (
+                <li key={m.reference}>
+                  <Link
+                    href={`/month/${m.reference}`}
+                    className="group hover:bg-muted/50 flex items-center gap-4 px-5 py-3 transition-colors"
                   >
-                    {monthLabel}
-                  </span>
-                  <div className="flex flex-1 items-baseline gap-6 text-[13px]">
-                    <ColumnStat
-                      label="in"
-                      value={m.totalIncomes}
-                      dim={isEmpty || Number(m.totalIncomes) === 0}
+                    <span
+                      className={cn(
+                        "w-9 font-mono text-[11.5px] tracking-[0.18em] tabular-nums",
+                        isEmpty ? "text-muted-foreground/50" : "text-foreground/70",
+                      )}
+                    >
+                      {monthLabel}
+                    </span>
+                    <div className="flex flex-1 items-baseline gap-4 text-[12.5px]">
+                      <ColumnStat
+                        label="in"
+                        value={m.totalIncomes}
+                        dim={isEmpty || Number(m.totalIncomes) === 0}
+                      />
+                      <ColumnStat
+                        label="out"
+                        value={m.totalExpenses}
+                        dim={isEmpty || Number(m.totalExpenses) === 0}
+                      />
+                    </div>
+                    <span
+                      className={cn(
+                        "numeric text-[13px] tabular-nums",
+                        balanceNum < 0 && "text-destructive/85",
+                        balanceNum > 0 && "text-foreground",
+                        isEmpty && "text-muted-foreground/40",
+                      )}
+                    >
+                      {formatCurrency(m.balance)}
+                    </span>
+                    <ArrowUpRight
+                      className="text-muted-foreground/30 size-3 shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
+                      strokeWidth={1.6}
                     />
-                    <ColumnStat
-                      label="out"
-                      value={m.totalExpenses}
-                      dim={isEmpty || Number(m.totalExpenses) === 0}
-                    />
-                  </div>
-                  <span
-                    className={cn(
-                      "numeric text-[14px] tabular-nums",
-                      balanceNum < 0 && "text-destructive/85",
-                      balanceNum > 0 && "text-foreground",
-                      isEmpty && "text-muted-foreground/40",
-                    )}
-                  >
-                    {formatCurrency(m.balance)}
-                  </span>
-                  <ArrowUpRight
-                    className="text-muted-foreground/30 size-3 shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
-                    strokeWidth={1.6}
-                  />
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </section>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      </div>
     </div>
   );
 }
 
-/* ────────────────────────────────────────────────────────────────────────── */
+/* ────────────────────────────────────────────────────────────────────── */
 
 function previousMonthRef(monthRef: MonthRef): MonthRef {
   const [y, m] = monthRef.split("-").map(Number);
@@ -178,32 +166,45 @@ function previousMonthRef(monthRef: MonthRef): MonthRef {
   return `${ny}-${String(nm).padStart(2, "0")}`;
 }
 
-function YearStat({
+function PanelHeader({ title, subtitle }: { title: string; subtitle?: string }) {
+  return (
+    <div className="border-border flex shrink-0 items-baseline justify-between gap-3 border-b px-5 py-3">
+      <div className="flex items-baseline gap-2.5">
+        <h2 className="text-foreground text-[13px] font-medium tracking-tight">{title}</h2>
+        {subtitle && <span className="text-muted-foreground text-[11px]">{subtitle}</span>}
+      </div>
+    </div>
+  );
+}
+
+function YearKpi({
   label,
   value,
-  tone,
+  accent,
   highlight,
 }: {
   label: string;
   value: string;
-  tone: "success" | "muted" | "primary" | "destructive";
+  accent: "success" | "muted" | "primary" | "destructive";
   highlight?: boolean;
 }) {
   return (
     <div
       className={cn(
-        "flex flex-col gap-2",
-        highlight && "border-border-strong/60 rounded-2xl border px-5 py-4",
+        "border-border flex flex-col gap-1 border-r px-6 py-4 last:border-r-0",
+        highlight && "bg-primary/[0.04]",
       )}
     >
-      <span className="text-muted-foreground font-mono text-[10px] tracking-[0.22em]">{label}</span>
+      <span className="text-muted-foreground font-mono text-[11px] tracking-[0.18em]">
+        {label}
+      </span>
       <span
         className={cn(
-          "display-numeric text-[34px] leading-none font-light tabular-nums md:text-[42px]",
-          tone === "success" && "text-success/90",
-          tone === "muted" && "text-foreground/85",
-          tone === "primary" && "text-primary",
-          tone === "destructive" && "text-destructive/85",
+          "numeric text-[22px] font-semibold tracking-tight tabular-nums",
+          accent === "success" && "text-success",
+          accent === "muted" && "text-foreground",
+          accent === "primary" && "text-primary",
+          accent === "destructive" && "text-destructive",
         )}
       >
         {formatCurrency(value)}
@@ -212,58 +213,10 @@ function YearStat({
   );
 }
 
-function SectionHead({
-  eyebrow,
-  title,
-  aside,
-  legend,
-}: {
-  eyebrow: string;
-  title: string;
-  aside?: string;
-  legend?: { label: string; tone: "primary" | "success" }[];
-}) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <div className="flex items-baseline justify-between gap-3">
-        <span className="text-muted-foreground font-mono text-[10px] tracking-[0.22em]">
-          {eyebrow}
-        </span>
-        {aside ? (
-          <span className="numeric text-foreground/85 text-[15px] tabular-nums">{aside}</span>
-        ) : null}
-      </div>
-      <div className="flex items-baseline justify-between gap-3">
-        <h2 className="font-display text-foreground text-[26px] leading-tight font-light tracking-[-0.015em] italic">
-          {title}
-        </h2>
-        {legend ? (
-          <ul className="text-muted-foreground hidden items-baseline gap-4 font-mono text-[10px] tracking-[0.16em] sm:flex">
-            {legend.map((l) => (
-              <li key={l.label} className="flex items-baseline gap-1.5">
-                <span
-                  aria-hidden
-                  className={cn(
-                    "size-1.5 translate-y-[-1px] rounded-full",
-                    l.tone === "primary" && "bg-primary/85",
-                    l.tone === "success" && "bg-success/85",
-                  )}
-                />
-                {l.label}
-              </li>
-            ))}
-          </ul>
-        ) : null}
-      </div>
-      <span className="bg-border-strong h-px w-full" />
-    </div>
-  );
-}
-
 function ColumnStat({ label, value, dim }: { label: string; value: string; dim: boolean }) {
   return (
     <span className="flex items-baseline gap-1.5">
-      <span className="text-muted-foreground/70 font-mono text-[10px] tracking-[0.18em]">
+      <span className="text-muted-foreground/70 font-mono text-[9.5px] tracking-[0.18em]">
         {label}
       </span>
       <span
