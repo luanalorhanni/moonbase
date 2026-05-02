@@ -97,13 +97,11 @@ export function ColorPicker({ id, value, onChange, disabled }: Props) {
           placeholder="#7e82aa"
           spellCheck={false}
           className={cn(
-            "border-input bg-transparent placeholder:text-muted-foreground/60 focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-32 rounded-md border px-3 font-mono text-[12px] tabular-nums transition-colors focus-visible:ring-3 focus-visible:outline-none",
+            "border-input placeholder:text-muted-foreground/60 focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-32 rounded-md border bg-transparent px-3 font-mono text-[12px] tabular-nums transition-colors focus-visible:ring-3 focus-visible:outline-none",
             disabled && "cursor-not-allowed opacity-50",
           )}
         />
-        <span className="text-muted-foreground font-mono text-[10px] tracking-wider">
-          hex
-        </span>
+        <span className="text-muted-foreground font-mono text-[10px] tracking-wider">hex</span>
       </div>
 
       {/* preset swatches */}
@@ -120,9 +118,7 @@ export function ColorPicker({ id, value, onChange, disabled }: Props) {
               aria-pressed={active}
               className={cn(
                 "ring-border-strong relative size-7 rounded-md ring-1 transition-all",
-                disabled
-                  ? "cursor-not-allowed opacity-50"
-                  : "hover:scale-110 hover:ring-2",
+                disabled ? "cursor-not-allowed opacity-50" : "hover:scale-110 hover:ring-2",
                 active && "ring-foreground ring-[2px]",
               )}
               style={{ backgroundColor: preset }}

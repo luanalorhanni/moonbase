@@ -68,7 +68,6 @@ type DialogState =
   | { kind: "create" }
   | { kind: "edit"; expense: CreditExpenseWithDetails };
 
-
 const EN_MONTH_SHORT = [
   "jan",
   "feb",
@@ -157,8 +156,7 @@ export function CreditExpensesList({ initialExpenses, cards, subcategories }: Pr
   }, [initialExpenses, query, cardFilter, categoryFilter, purchaseRange, parcelRange, periodRange]);
 
   const filteredTotal = useMemo(
-    () =>
-      filteredExpenses.reduce((acc, e) => acc + Number(e.parcelValue) * e.totalParcels, 0),
+    () => filteredExpenses.reduce((acc, e) => acc + Number(e.parcelValue) * e.totalParcels, 0),
     [filteredExpenses],
   );
 
@@ -223,174 +221,171 @@ export function CreditExpensesList({ initialExpenses, cards, subcategories }: Pr
               </Button>
             </div>
           ) : (
-        <Table>
-          <TableHeader>
-            <TableRow className="hover:bg-transparent">
-              <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
-                <ColumnSearch label="description" query={query} setQuery={setQuery} />
-              </TableHead>
-              <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
-                <ColumnFilter
-                  label="card"
-                  active={cardFilter !== null}
-                  activeChip={
-                    cardFilter
-                      ? {
-                          label: filterOptions.cards.find((c) => c.id === cardFilter)?.name ?? "",
-                          color: filterOptions.cards.find((c) => c.id === cardFilter)?.color,
-                        }
-                      : null
-                  }
-                  onClear={() => setCardFilter(null)}
-                >
-                  {filterOptions.cards.map((c) => (
-                    <FilterOption
-                      key={c.id}
-                      label={c.name}
-                      color={c.color}
-                      active={cardFilter === c.id}
-                      onClick={() =>
-                        setCardFilter(cardFilter === c.id ? null : c.id)
+            <Table>
+              <TableHeader>
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
+                    <ColumnSearch label="description" query={query} setQuery={setQuery} />
+                  </TableHead>
+                  <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
+                    <ColumnFilter
+                      label="card"
+                      active={cardFilter !== null}
+                      activeChip={
+                        cardFilter
+                          ? {
+                              label:
+                                filterOptions.cards.find((c) => c.id === cardFilter)?.name ?? "",
+                              color: filterOptions.cards.find((c) => c.id === cardFilter)?.color,
+                            }
+                          : null
                       }
-                    />
-                  ))}
-                </ColumnFilter>
-              </TableHead>
-              <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
-                <ColumnFilter
-                  label="category"
-                  active={categoryFilter !== null}
-                  activeChip={categoryFilter ? { label: categoryFilter } : null}
-                  onClear={() => setCategoryFilter(null)}
-                >
-                  {filterOptions.categories.map((cat) => (
-                    <FilterOption
-                      key={cat}
-                      label={cat}
-                      active={categoryFilter === cat}
-                      onClick={() =>
-                        setCategoryFilter(categoryFilter === cat ? null : cat)
-                      }
-                    />
-                  ))}
-                </ColumnFilter>
-              </TableHead>
-              <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
-                <ColumnDateRange
-                  label="purchase"
-                  value={purchaseRange}
-                  onChange={setPurchaseRange}
-                  granularity="day"
-                />
-              </TableHead>
-              <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
-                <ColumnAmountRange
-                  label="installments"
-                  value={parcelRange}
-                  onChange={setParcelRange}
-                />
-              </TableHead>
-              <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
-                <ColumnDateRange
-                  label="period"
-                  value={periodRange}
-                  onChange={setPeriodRange}
-                  granularity="month"
-                />
-              </TableHead>
-              <TableHead className="w-10 py-2" />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredExpenses.map((expense) => (
-              <TableRow key={expense.id}>
-                <TableCell className="py-3">
-                  <div className="text-[13px] font-medium">{expense.description}</div>
-                </TableCell>
-                <TableCell className="py-3">
-                  <span className="flex items-center gap-2">
-                    <span
-                      className="size-2 shrink-0 rounded-full"
-                      style={{ backgroundColor: expense.cardColor }}
-                      aria-hidden
-                    />
-                    <span
-                      className="border-border bg-card/60 truncate rounded-md border px-2 py-0.5 text-[12px]"
-                      style={{
-                        borderColor: `color-mix(in oklab, ${expense.cardColor} 35%, var(--border))`,
-                      }}
+                      onClear={() => setCardFilter(null)}
                     >
-                      {expense.cardName}
-                    </span>
-                  </span>
-                </TableCell>
-                <TableCell className="py-3 text-[12px]">
-                  <span className="flex items-center gap-2">
-                    {expense.categoryIcon ? (
-                      <span
-                        aria-hidden
-                        className="border-border bg-card/60 flex size-5 shrink-0 items-center justify-center rounded-md border"
-                        style={{
-                          borderColor: `color-mix(in oklab, ${expense.categoryColor} 35%, var(--border))`,
-                        }}
-                      >
-                        <CategoryIcon
-                          icon={expense.categoryIcon}
-                          color={expense.categoryColor}
-                          size={12}
+                      {filterOptions.cards.map((c) => (
+                        <FilterOption
+                          key={c.id}
+                          label={c.name}
+                          color={c.color}
+                          active={cardFilter === c.id}
+                          onClick={() => setCardFilter(cardFilter === c.id ? null : c.id)}
                         />
-                      </span>
-                    ) : null}
-                    <span className="min-w-0 truncate">
-                      <span className="text-muted-foreground">{expense.categoryName}</span>
-                      <span className="text-muted-foreground/40 mx-1">/</span>
-                      <span className="text-foreground">{expense.subcategoryName}</span>
-                    </span>
-                  </span>
-                </TableCell>
-                <TableCell className="py-3 font-mono text-[12px] tabular-nums">
-                  {formatDate(expense.purchaseDate)}
-                </TableCell>
-                <TableCell className="numeric py-3 text-[12.5px] tabular-nums">
-                  {expense.totalParcels}× {formatAmount(expense.parcelValue)}
-                </TableCell>
-                <TableCell className="py-3 font-mono text-[12px] tabular-nums">
-                  {expense.firstParcelMonth && expense.lastParcelMonth ? (
-                    <span>
-                      {formatMonth(expense.firstParcelMonth)}
-                      {expense.totalParcels > 1
-                        ? ` → ${formatMonth(expense.lastParcelMonth)}`
-                        : ""}
-                    </span>
-                  ) : (
-                    <span className="text-muted-foreground">—</span>
-                  )}
-                </TableCell>
-                <TableCell className="py-3">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger
-                      aria-label="actions"
-                      className="hover:bg-muted aria-expanded:bg-muted focus-visible:ring-ring/50 inline-flex size-7 items-center justify-center rounded-md transition-colors focus-visible:ring-3 focus-visible:outline-none"
+                      ))}
+                    </ColumnFilter>
+                  </TableHead>
+                  <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
+                    <ColumnFilter
+                      label="category"
+                      active={categoryFilter !== null}
+                      activeChip={categoryFilter ? { label: categoryFilter } : null}
+                      onClear={() => setCategoryFilter(null)}
                     >
-                      <MoreHorizontal aria-hidden className="size-3.5" />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => setDialog({ kind: "edit", expense })}>
-                        edit
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        variant="destructive"
-                        onClick={() => setPendingDelete(expense)}
-                      >
-                        delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                      {filterOptions.categories.map((cat) => (
+                        <FilterOption
+                          key={cat}
+                          label={cat}
+                          active={categoryFilter === cat}
+                          onClick={() => setCategoryFilter(categoryFilter === cat ? null : cat)}
+                        />
+                      ))}
+                    </ColumnFilter>
+                  </TableHead>
+                  <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
+                    <ColumnDateRange
+                      label="purchase"
+                      value={purchaseRange}
+                      onChange={setPurchaseRange}
+                      granularity="day"
+                    />
+                  </TableHead>
+                  <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
+                    <ColumnAmountRange
+                      label="installments"
+                      value={parcelRange}
+                      onChange={setParcelRange}
+                    />
+                  </TableHead>
+                  <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
+                    <ColumnDateRange
+                      label="period"
+                      value={periodRange}
+                      onChange={setPeriodRange}
+                      granularity="month"
+                    />
+                  </TableHead>
+                  <TableHead className="w-10 py-2" />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredExpenses.map((expense) => (
+                  <TableRow key={expense.id}>
+                    <TableCell className="py-3">
+                      <div className="text-[13px] font-medium">{expense.description}</div>
+                    </TableCell>
+                    <TableCell className="py-3">
+                      <span className="flex items-center gap-2">
+                        <span
+                          className="size-2 shrink-0 rounded-full"
+                          style={{ backgroundColor: expense.cardColor }}
+                          aria-hidden
+                        />
+                        <span
+                          className="border-border bg-card/60 truncate rounded-md border px-2 py-0.5 text-[12px]"
+                          style={{
+                            borderColor: `color-mix(in oklab, ${expense.cardColor} 35%, var(--border))`,
+                          }}
+                        >
+                          {expense.cardName}
+                        </span>
+                      </span>
+                    </TableCell>
+                    <TableCell className="py-3 text-[12px]">
+                      <span className="flex items-center gap-2">
+                        {expense.categoryIcon ? (
+                          <span
+                            aria-hidden
+                            className="border-border bg-card/60 flex size-5 shrink-0 items-center justify-center rounded-md border"
+                            style={{
+                              borderColor: `color-mix(in oklab, ${expense.categoryColor} 35%, var(--border))`,
+                            }}
+                          >
+                            <CategoryIcon
+                              icon={expense.categoryIcon}
+                              color={expense.categoryColor}
+                              size={12}
+                            />
+                          </span>
+                        ) : null}
+                        <span className="min-w-0 truncate">
+                          <span className="text-muted-foreground">{expense.categoryName}</span>
+                          <span className="text-muted-foreground/40 mx-1">/</span>
+                          <span className="text-foreground">{expense.subcategoryName}</span>
+                        </span>
+                      </span>
+                    </TableCell>
+                    <TableCell className="py-3 font-mono text-[12px] tabular-nums">
+                      {formatDate(expense.purchaseDate)}
+                    </TableCell>
+                    <TableCell className="numeric py-3 text-[12.5px] tabular-nums">
+                      {expense.totalParcels}× {formatAmount(expense.parcelValue)}
+                    </TableCell>
+                    <TableCell className="py-3 font-mono text-[12px] tabular-nums">
+                      {expense.firstParcelMonth && expense.lastParcelMonth ? (
+                        <span>
+                          {formatMonth(expense.firstParcelMonth)}
+                          {expense.totalParcels > 1
+                            ? ` → ${formatMonth(expense.lastParcelMonth)}`
+                            : ""}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="py-3">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger
+                          aria-label="actions"
+                          className="hover:bg-muted aria-expanded:bg-muted focus-visible:ring-ring/50 inline-flex size-7 items-center justify-center rounded-md transition-colors focus-visible:ring-3 focus-visible:outline-none"
+                        >
+                          <MoreHorizontal aria-hidden className="size-3.5" />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => setDialog({ kind: "edit", expense })}>
+                            edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            variant="destructive"
+                            onClick={() => setPendingDelete(expense)}
+                          >
+                            delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           )}
         </>
       )}
@@ -432,9 +427,7 @@ export function CreditExpensesList({ initialExpenses, cards, subcategories }: Pr
           <AlertDialogHeader>
             <AlertDialogTitle>delete expense?</AlertDialogTitle>
             <AlertDialogDescription>
-              {pendingDelete
-                ? `"${pendingDelete.description}" will be removed.`
-                : null}
+              {pendingDelete ? `"${pendingDelete.description}" will be removed.` : null}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -471,4 +464,3 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
     </div>
   );
 }
-
