@@ -13,6 +13,8 @@ export type CreditExpenseWithDetails = CreditExpenseRow & {
   cardColor: string;
   subcategoryName: string;
   categoryName: string;
+  categoryIcon: string | null;
+  categoryColor: string;
 };
 
 export const listCreditExpenses = cachedQuery(
@@ -40,6 +42,8 @@ export const listCreditExpenses = cachedQuery(
         cardColor: schema.cards.color,
         subcategoryName: schema.subcategories.name,
         categoryName: schema.categories.name,
+        categoryIcon: schema.categories.icon,
+        categoryColor: schema.categories.color,
       })
       .from(schema.creditExpenses)
       .innerJoin(schema.cards, eq(schema.creditExpenses.cardId, schema.cards.id))

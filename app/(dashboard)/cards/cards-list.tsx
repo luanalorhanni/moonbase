@@ -4,6 +4,7 @@ import { CreditCard, MoreHorizontal, Plus } from "lucide-react";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
+import { PageShell } from "@/components/dashboard/page-shell";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -44,20 +45,8 @@ import { CardForm } from "./card-form";
 type DialogState = { kind: "closed" } | { kind: "create" } | { kind: "edit"; card: CardRow };
 
 const TYPE_LABEL: Record<CardRow["type"], string> = {
-  credit: "Crédito",
-  account: "Conta",
-};
-
-const COLOR_DOT_CLASS: Record<CardRow["color"], string> = {
-  red: "bg-red-500",
-  orange: "bg-orange-500",
-  yellow: "bg-yellow-400",
-  green: "bg-green-500",
-  blue: "bg-blue-500",
-  purple: "bg-purple-500",
-  pink: "bg-pink-500",
-  brown: "bg-amber-700",
-  gray: "bg-gray-400",
+  credit: "credit",
+  account: "account",
 };
 
 function formatAmount(value: string | null): string {
@@ -79,7 +68,7 @@ export function CardsList({ initialCards }: { initialCards: CardRow[] }) {
     startDeleteTransition(async () => {
       const result = await deleteCard(card.id);
       if (result.ok) {
-        toast.success("Cartão excluído.");
+        toast.success("card deleted.");
         setPendingDelete(null);
       } else {
         toast.error(result.error);
@@ -88,46 +77,42 @@ export function CardsList({ initialCards }: { initialCards: CardRow[] }) {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-8">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Cartões</h1>
-          <p className="text-muted-foreground mt-0.5 text-sm">
-            Cartões de crédito e contas para pagamentos à vista.
-          </p>
-        </div>
+    <PageShell
+      title="cards"
+      subtitle="credit cards & cash accounts"
+      toolbar={
         <Button onClick={() => setDialog({ kind: "create" })} size="sm">
-          <Plus aria-hidden className="size-4" /> Novo cartão
+          <Plus aria-hidden className="size-3.5" /> new card
         </Button>
-      </div>
-
+      }
+    >
       {initialCards.length === 0 ? (
         <EmptyState onAdd={() => setDialog({ kind: "create" })} />
       ) : (
-        <div className="border-border overflow-hidden rounded-lg border">
+        <div className="overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
-                <TableHead className="py-3 text-[11px] font-medium tracking-wider uppercase">
-                  Nome
+                <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
+                  name
                 </TableHead>
-                <TableHead className="py-3 text-[11px] font-medium tracking-wider uppercase">
-                  Tipo
+                <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
+                  type
                 </TableHead>
-                <TableHead className="py-3 text-[11px] font-medium tracking-wider uppercase">
-                  Banco
+                <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
+                  bank
                 </TableHead>
-                <TableHead className="py-3 text-right text-[11px] font-medium tracking-wider uppercase">
-                  Fechamento
+                <TableHead className="py-2 text-right font-mono text-[11px] font-normal tracking-[0.16em]">
+                  closing
                 </TableHead>
-                <TableHead className="py-3 text-right text-[11px] font-medium tracking-wider uppercase">
-                  Vencimento
+                <TableHead className="py-2 text-right font-mono text-[11px] font-normal tracking-[0.16em]">
+                  due
                 </TableHead>
-                <TableHead className="py-3 text-right text-[11px] font-medium tracking-wider uppercase">
-                  Limite
+                <TableHead className="py-2 text-right font-mono text-[11px] font-normal tracking-[0.16em]">
+                  limit
                 </TableHead>
-                <TableHead className="py-3 text-[11px] font-medium tracking-wider uppercase">
-                  Status
+                <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
+                  status
                 </TableHead>
                 <TableHead className="w-10 py-3" />
               </TableRow>
@@ -138,7 +123,8 @@ export function CardsList({ initialCards }: { initialCards: CardRow[] }) {
                   <TableCell className="py-3.5">
                     <div className="flex items-center gap-2.5">
                       <span
-                        className={`size-3 shrink-0 rounded-full ring-1 ring-black/10 ${COLOR_DOT_CLASS[card.color]}`}
+                        className="size-3 shrink-0 rounded-full ring-1 ring-black/10"
+                        style={{ backgroundColor: card.color }}
                         aria-hidden
                       />
                       <span className="font-medium">{card.name}</span>
@@ -159,13 +145,13 @@ export function CardsList({ initialCards }: { initialCards: CardRow[] }) {
                   </TableCell>
                   <TableCell className="py-3.5">
                     {card.isActive ? (
-                      <span className="bg-success/10 text-success inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium">
+                      <span className="bg-success/10 text-success inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[12px] font-medium">
                         <span className="bg-success size-1.5 rounded-full" aria-hidden />
-                        Ativo
+                        active
                       </span>
                     ) : (
-                      <span className="bg-muted text-muted-foreground inline-flex rounded-full px-2 py-0.5 text-xs">
-                        Inativo
+                      <span className="bg-muted text-muted-foreground inline-flex rounded-full px-2 py-0.5 text-[12px]">
+                        inactive
                       </span>
                     )}
                   </TableCell>
@@ -178,14 +164,14 @@ export function CardsList({ initialCards }: { initialCards: CardRow[] }) {
                         <MoreHorizontal aria-hidden className="size-3.5" />
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onSelect={() => setDialog({ kind: "edit", card })}>
-                          Editar
+                        <DropdownMenuItem onClick={() => setDialog({ kind: "edit", card })}>
+                          edit
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           variant="destructive"
-                          onSelect={() => setPendingDelete(card)}
+                          onClick={() => setPendingDelete(card)}
                         >
-                          Excluir
+                          delete
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -205,11 +191,11 @@ export function CardsList({ initialCards }: { initialCards: CardRow[] }) {
       >
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>{dialog.kind === "edit" ? "Editar cartão" : "Novo cartão"}</DialogTitle>
+            <DialogTitle>{dialog.kind === "edit" ? "edit card" : "new card"}</DialogTitle>
             <DialogDescription>
               {dialog.kind === "edit"
-                ? "Atualize os dados do cartão."
-                : "Adicione um cartão de crédito ou conta de pagamento à vista."}
+                ? "update card details."
+                : "add a credit card or cash account."}
             </DialogDescription>
           </DialogHeader>
           <CardForm
@@ -228,15 +214,15 @@ export function CardsList({ initialCards }: { initialCards: CardRow[] }) {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Excluir cartão?</AlertDialogTitle>
+            <AlertDialogTitle>delete card?</AlertDialogTitle>
             <AlertDialogDescription>
               {pendingDelete
-                ? `O cartão "${pendingDelete.name}" será removido. Esta ação não pode ser desfeita.`
+                ? `"${pendingDelete.name}" will be removed. this can't be undone.`
                 : null}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>cancel</AlertDialogCancel>
             <AlertDialogAction
               disabled={isDeleting}
               onClick={(event) => {
@@ -244,27 +230,27 @@ export function CardsList({ initialCards }: { initialCards: CardRow[] }) {
                 if (pendingDelete) handleDelete(pendingDelete);
               }}
             >
-              {isDeleting ? "Excluindo..." : "Excluir"}
+              {isDeleting ? "deleting..." : "delete"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </PageShell>
   );
 }
 
 function EmptyState({ onAdd }: { onAdd: () => void }) {
   return (
-    <div className="border-border bg-card flex flex-col items-center gap-4 rounded-lg border border-dashed px-6 py-16 text-center">
+    <div className="flex h-full flex-col items-center justify-center gap-3 px-6 py-16 text-center">
       <CreditCard className="text-muted-foreground/60 size-10" strokeWidth={1} aria-hidden />
       <div className="flex max-w-sm flex-col gap-1">
-        <h2 className="text-base font-medium">Nenhum cartão cadastrado ainda</h2>
-        <p className="text-muted-foreground text-sm">
-          Cadastre o primeiro para começar a registrar despesas.
+        <h2 className="text-foreground text-[14px] font-medium">no cards yet</h2>
+        <p className="text-muted-foreground text-[13px]">
+          add the first one to start logging expenses.
         </p>
       </div>
-      <Button onClick={onAdd} size="sm">
-        <Plus aria-hidden className="size-4" /> Novo cartão
+      <Button onClick={onAdd} size="sm" className="mt-2">
+        <Plus aria-hidden className="size-3.5" /> new card
       </Button>
     </div>
   );

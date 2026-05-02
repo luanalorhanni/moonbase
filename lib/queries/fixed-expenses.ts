@@ -13,6 +13,8 @@ export type FixedExpenseWithDetails = FixedExpenseRow & {
   cardColor: string;
   subcategoryName: string;
   categoryName: string;
+  categoryIcon: string | null;
+  categoryColor: string;
 };
 
 export const listFixedExpenses = cachedQuery(
@@ -37,6 +39,8 @@ export const listFixedExpenses = cachedQuery(
         cardColor: schema.cards.color,
         subcategoryName: schema.subcategories.name,
         categoryName: schema.categories.name,
+        categoryIcon: schema.categories.icon,
+        categoryColor: schema.categories.color,
       })
       .from(schema.fixedExpenses)
       .innerJoin(schema.cards, eq(schema.fixedExpenses.cardId, schema.cards.id))

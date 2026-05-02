@@ -6,6 +6,7 @@ import { Controller, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { ColorPicker } from "@/components/ui/color-picker";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
@@ -17,31 +18,7 @@ import {
 } from "@/components/ui/select";
 import type { CardRow } from "@/lib/queries/cards";
 import { createCard, updateCard } from "@/lib/actions/cards";
-import { CARD_COLORS, cardFormSchema, type CardFormInput } from "@/lib/validation/card";
-
-const COLOR_LABEL: Record<(typeof CARD_COLORS)[number], string> = {
-  red: "Vermelho",
-  orange: "Laranja",
-  yellow: "Amarelo",
-  green: "Verde",
-  blue: "Azul",
-  purple: "Roxo",
-  pink: "Rosa",
-  brown: "Marrom",
-  gray: "Cinza",
-};
-
-const COLOR_DOT_CLASS: Record<(typeof CARD_COLORS)[number], string> = {
-  red: "bg-red-500",
-  orange: "bg-orange-500",
-  yellow: "bg-yellow-400",
-  green: "bg-green-500",
-  blue: "bg-blue-500",
-  purple: "bg-purple-500",
-  pink: "bg-pink-500",
-  brown: "bg-amber-700",
-  gray: "bg-gray-400",
-};
+import { cardFormSchema, type CardFormInput } from "@/lib/validation/card";
 
 type Props = {
   /** When provided, the form runs in edit mode. */
@@ -57,7 +34,7 @@ function emptyDefaults(): CardFormInput {
     defaultClosingDay: "",
     dueDay: "",
     limitAmount: "",
-    color: "gray",
+    color: "#7e82aa",
     isActive: true,
   };
 }
@@ -90,7 +67,7 @@ export function CardForm({ card, onSuccess }: Props) {
       const result = card ? await updateCard(card.id, values) : await createCard(values);
 
       if (result.ok) {
-        toast.success(card ? "Cartão atualizado." : "Cartão criado.");
+        toast.success(card ? "card updated." : "card created.");
         onSuccess();
         return;
       }
@@ -111,10 +88,10 @@ export function CardForm({ card, onSuccess }: Props) {
     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
       <FieldGroup>
         <Field>
-          <FieldLabel htmlFor="name">Nome</FieldLabel>
+          <FieldLabel htmlFor="name">name</FieldLabel>
           <Input
             id="name"
-            placeholder="Ex: Nubank"
+            placeholder="ex: nubank"
             disabled={isPending}
             {...form.register("name")}
           />
@@ -124,7 +101,7 @@ export function CardForm({ card, onSuccess }: Props) {
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="type">Tipo</FieldLabel>
+          <FieldLabel htmlFor="type">type</FieldLabel>
           <Controller
             control={form.control}
             name="type"
@@ -134,52 +111,52 @@ export function CardForm({ card, onSuccess }: Props) {
                 onValueChange={field.onChange}
                 disabled={isPending}
                 items={{
-                  credit: "Cartão de crédito",
-                  account: "Conta (Pix, débito, dinheiro)",
+                  credit: "credit card",
+                  account: "account (pix, debit, cash)",
                 }}
               >
                 <SelectTrigger id="type" className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="credit">Cartão de crédito</SelectItem>
-                  <SelectItem value="account">Conta (Pix, débito, dinheiro)</SelectItem>
+                  <SelectItem value="credit">credit card</SelectItem>
+                  <SelectItem value="account">account (pix, debit, cash)</SelectItem>
                 </SelectContent>
               </Select>
             )}
           />
           <FieldDescription>
-            Contas representam meios de pagamento à vista (Pix, débito, dinheiro).
+            accounts represent immediate-payment methods (pix, debit, cash).
           </FieldDescription>
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="bank">Banco</FieldLabel>
+          <FieldLabel htmlFor="bank">bank</FieldLabel>
           <Input
             id="bank"
-            placeholder="Ex: Nubank"
+            placeholder="ex: nubank"
             disabled={isPending}
             {...form.register("bank")}
           />
-          <FieldDescription>Opcional.</FieldDescription>
+          <FieldDescription>optional.</FieldDescription>
         </Field>
 
         {isCredit ? (
           <>
             <Field>
-              <FieldLabel htmlFor="defaultClosingDay">Dia de fechamento padrão</FieldLabel>
+              <FieldLabel htmlFor="defaultClosingDay">default closing day</FieldLabel>
               <Input
                 id="defaultClosingDay"
                 type="number"
                 inputMode="numeric"
                 min={1}
                 max={31}
-                placeholder="Ex: 25"
+                placeholder="ex: 25"
                 disabled={isPending}
                 {...form.register("defaultClosingDay")}
               />
               <FieldDescription>
-                Pode ser sobrescrito mês a mês (em &ldquo;card_closings&rdquo;).
+                can be overridden month-by-month (in &ldquo;card_closings&rdquo;).
               </FieldDescription>
               {form.formState.errors.defaultClosingDay ? (
                 <FieldError>{form.formState.errors.defaultClosingDay.message}</FieldError>
@@ -187,14 +164,14 @@ export function CardForm({ card, onSuccess }: Props) {
             </Field>
 
             <Field>
-              <FieldLabel htmlFor="dueDay">Dia de vencimento</FieldLabel>
+              <FieldLabel htmlFor="dueDay">due day</FieldLabel>
               <Input
                 id="dueDay"
                 type="number"
                 inputMode="numeric"
                 min={1}
                 max={31}
-                placeholder="Ex: 5"
+                placeholder="ex: 5"
                 disabled={isPending}
                 {...form.register("dueDay")}
               />
@@ -204,15 +181,15 @@ export function CardForm({ card, onSuccess }: Props) {
             </Field>
 
             <Field>
-              <FieldLabel htmlFor="limitAmount">Limite</FieldLabel>
+              <FieldLabel htmlFor="limitAmount">limit</FieldLabel>
               <Input
                 id="limitAmount"
                 inputMode="decimal"
-                placeholder="Ex: 5000.00"
+                placeholder="ex: 5000.00"
                 disabled={isPending}
                 {...form.register("limitAmount")}
               />
-              <FieldDescription>Use ponto como separador decimal (ex: 1234.56).</FieldDescription>
+              <FieldDescription>use period as decimal separator (ex: 1234.56).</FieldDescription>
               {form.formState.errors.limitAmount ? (
                 <FieldError>{form.formState.errors.limitAmount.message}</FieldError>
               ) : null}
@@ -221,36 +198,22 @@ export function CardForm({ card, onSuccess }: Props) {
         ) : null}
 
         <Field>
-          <FieldLabel htmlFor="color">Cor</FieldLabel>
+          <FieldLabel htmlFor="color">color</FieldLabel>
           <Controller
             control={form.control}
             name="color"
             render={({ field }) => (
-              <Select
+              <ColorPicker
+                id="color"
                 value={field.value}
-                onValueChange={field.onChange}
+                onChange={field.onChange}
                 disabled={isPending}
-                items={COLOR_LABEL}
-              >
-                <SelectTrigger id="color" className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {CARD_COLORS.map((color) => (
-                    <SelectItem key={color} value={color}>
-                      <span className="flex items-center gap-2">
-                        <span
-                          className={`size-3 shrink-0 rounded-full ring-1 ring-black/10 ${COLOR_DOT_CLASS[color]}`}
-                          aria-hidden
-                        />
-                        {COLOR_LABEL[color]}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              />
             )}
           />
+          {form.formState.errors.color ? (
+            <FieldError>{form.formState.errors.color.message}</FieldError>
+          ) : null}
         </Field>
 
         <Field orientation="horizontal">
@@ -261,16 +224,16 @@ export function CardForm({ card, onSuccess }: Props) {
             className="border-input text-primary focus-visible:ring-ring/50 size-4 rounded-sm border focus-visible:ring-3"
             {...form.register("isActive")}
           />
-          <FieldLabel htmlFor="isActive">Ativo</FieldLabel>
+          <FieldLabel htmlFor="isActive">active</FieldLabel>
         </Field>
       </FieldGroup>
 
       <div className="flex justify-end gap-2">
         <Button type="button" variant="ghost" onClick={onSuccess} disabled={isPending}>
-          Cancelar
+          cancel
         </Button>
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Salvando..." : card ? "Salvar" : "Criar"}
+          {isPending ? "saving..." : card ? "save" : "create"}
         </Button>
       </div>
     </form>
