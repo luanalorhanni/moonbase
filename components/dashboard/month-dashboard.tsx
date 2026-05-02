@@ -28,7 +28,6 @@ const PT_METHOD: Record<string, string> = {
   cash: "cash",
 };
 
-
 export async function MonthDashboard({ reference }: { reference: MonthRef }) {
   const summary = await loadMonth(reference);
   const inputs = toAggregateInputs({
@@ -144,9 +143,7 @@ export async function MonthDashboard({ reference }: { reference: MonthRef }) {
       .sort((a, b) => (a.date < b.date ? 1 : -1)),
     credit: summary.data.creditExpenses
       .map((e) => {
-        const firstIdx = e.firstParcelMonth
-          ? monthIndex(e.firstParcelMonth.slice(0, 7))
-          : refIndex;
+        const firstIdx = e.firstParcelMonth ? monthIndex(e.firstParcelMonth.slice(0, 7)) : refIndex;
         const parcelNumber = Math.max(1, refIndex - firstIdx + 1);
         const remaining = Math.max(0, e.totalParcels - parcelNumber);
         const total = (Number(e.parcelValue) * e.totalParcels).toFixed(2);
@@ -267,7 +264,7 @@ export async function MonthDashboard({ reference }: { reference: MonthRef }) {
         <div className="flex items-center gap-4">
           <MoonForMonth reference={reference} />
           <div className="flex items-baseline gap-3">
-            <h2 className="font-display text-foreground text-[40px] leading-none font-light tracking-[-0.02em] italic capitalize md:text-[52px]">
+            <h2 className="font-display text-foreground text-[40px] leading-none font-light tracking-[-0.02em] capitalize italic md:text-[52px]">
               {formatMonthLong(reference).split(" ")[0]}
             </h2>
             <span className="font-display text-muted-foreground/70 text-[26px] leading-none font-light tracking-tight tabular-nums md:text-[34px]">
@@ -346,13 +343,7 @@ export async function MonthDashboard({ reference }: { reference: MonthRef }) {
               ) : (
                 <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
                   {creditByCard.map((c) => (
-                    <Tile
-                      key={c.id}
-                      label={c.name}
-                      value={c.total}
-                      accent
-                      color={c.color}
-                    />
+                    <Tile key={c.id} label={c.name} value={c.total} accent color={c.color} />
                   ))}
                 </div>
               )}
@@ -393,13 +384,16 @@ export async function MonthDashboard({ reference }: { reference: MonthRef }) {
       </div>
 
       {/* ── detail tabs (bottom, fills rest) ────────────────────────── */}
-      <DetailTabs lists={detailLists} totals={{
-        cash: summary.totalCashExpenses,
-        credit: summary.totalCreditExpenses,
-        fixed: summary.totalFixedExpenses,
-        incomes: summary.totalIncomes,
-        receivables: summary.totalReceivables,
-      }} />
+      <DetailTabs
+        lists={detailLists}
+        totals={{
+          cash: summary.totalCashExpenses,
+          credit: summary.totalCreditExpenses,
+          fixed: summary.totalFixedExpenses,
+          incomes: summary.totalIncomes,
+          receivables: summary.totalReceivables,
+        }}
+      />
     </div>
   );
 }
@@ -519,7 +513,6 @@ function PanelHeader({
   );
 }
 
-
 function Kpi({
   label,
   value,
@@ -548,13 +541,11 @@ function Kpi({
         highlight && "bg-primary/[0.05]",
       )}
     >
-      <span className="text-muted-foreground font-mono text-[11px] tracking-[0.2em]">
-        {label}
-      </span>
+      <span className="text-muted-foreground font-mono text-[11px] tracking-[0.2em]">{label}</span>
       <div className="flex items-baseline gap-2">
         <span
           className={cn(
-            "numeric text-[24px] font-semibold tracking-tight leading-none",
+            "numeric text-[24px] leading-none font-semibold tracking-tight",
             accent === "primary" && "text-primary",
             accent === "success" && "text-success",
             accent === "destructive" && "text-destructive",
@@ -578,4 +569,3 @@ function Kpi({
     </div>
   );
 }
-

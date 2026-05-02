@@ -131,9 +131,9 @@ export function SnapshotsView({ snapshots }: { snapshots: SnapshotRow[] }) {
                 <Stat label="expenses" value={snap.totalExpenses} muted />
                 <Stat
                   label="invest."
-                  value={(
-                    Number(snap.totalLiquidSavings) + Number(snap.totalFixedIncome)
-                  ).toFixed(2)}
+                  value={(Number(snap.totalLiquidSavings) + Number(snap.totalFixedIncome)).toFixed(
+                    2,
+                  )}
                   muted
                 />
               </div>
@@ -170,8 +170,8 @@ export function SnapshotsView({ snapshots }: { snapshots: SnapshotRow[] }) {
             <AlertDialogTitle>delete snapshot?</AlertDialogTitle>
             <AlertDialogDescription>
               delete the snapshot for{" "}
-              <span className="capitalize">{pendingDelete?.monthLabel}</span>? the cumulative save of
-              following months may be off until you recompute them.
+              <span className="capitalize">{pendingDelete?.monthLabel}</span>? the cumulative save
+              of following months may be off until you recompute them.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

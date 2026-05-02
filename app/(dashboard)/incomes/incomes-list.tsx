@@ -86,16 +86,16 @@ export function IncomesList({ initialIncomes }: { initialIncomes: IncomeRow[] })
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
-              <TableHead className="py-2 text-[11px] font-mono font-normal tracking-[0.16em]">
+              <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
                 description
               </TableHead>
-              <TableHead className="py-2 text-[11px] font-mono font-normal tracking-[0.16em]">
+              <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
                 type
               </TableHead>
-              <TableHead className="py-2 text-[11px] font-mono font-normal tracking-[0.16em]">
+              <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
                 date
               </TableHead>
-              <TableHead className="py-2 text-right text-[11px] font-mono font-normal tracking-[0.16em]">
+              <TableHead className="py-2 text-right font-mono text-[11px] font-normal tracking-[0.16em]">
                 amount
               </TableHead>
               <TableHead className="w-10 py-2" />
@@ -151,9 +151,7 @@ export function IncomesList({ initialIncomes }: { initialIncomes: IncomeRow[] })
           <DialogHeader>
             <DialogTitle>{dialog.kind === "edit" ? "edit income" : "new income"}</DialogTitle>
             <DialogDescription>
-              {dialog.kind === "edit"
-                ? "update income details."
-                : "log a payment received."}
+              {dialog.kind === "edit" ? "update income details." : "log a payment received."}
             </DialogDescription>
           </DialogHeader>
           <IncomeForm
@@ -174,9 +172,7 @@ export function IncomesList({ initialIncomes }: { initialIncomes: IncomeRow[] })
           <AlertDialogHeader>
             <AlertDialogTitle>delete income?</AlertDialogTitle>
             <AlertDialogDescription>
-              {pendingDelete
-                ? `"${pendingDelete.description}" will be removed.`
-                : null}
+              {pendingDelete ? `"${pendingDelete.description}" will be removed.` : null}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

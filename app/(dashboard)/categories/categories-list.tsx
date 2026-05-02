@@ -48,7 +48,6 @@ type DeleteState =
   | { kind: "category"; item: CategoryWithSubs }
   | { kind: "subcategory"; item: SubcategoryRow };
 
-
 export function CategoriesList({ initialCategories }: { initialCategories: CategoryWithSubs[] }) {
   const [dialog, setDialog] = useState<DialogState>({ kind: "closed" });
   const [pendingDelete, setPendingDelete] = useState<DeleteState>(null);
@@ -96,7 +95,7 @@ export function CategoriesList({ initialCategories }: { initialCategories: Categ
       {initialCategories.length === 0 ? (
         <EmptyState onAdd={() => setDialog({ kind: "new-category" })} />
       ) : (
-        <div className="flex flex-col px-5 py-4 gap-1.5">
+        <div className="flex flex-col gap-1.5 px-5 py-4">
           {initialCategories.map((category) => {
             const isOpen = expanded.has(category.id);
             return (
@@ -124,11 +123,7 @@ export function CategoriesList({ initialCategories }: { initialCategories: Categ
                         borderColor: `color-mix(in oklab, ${category.color} 35%, var(--border))`,
                       }}
                     >
-                      <CategoryIcon
-                        icon={category.icon}
-                        color={category.color}
-                        size={14}
-                      />
+                      <CategoryIcon icon={category.icon} color={category.color} size={14} />
                     </span>
                   ) : (
                     <span
@@ -341,9 +336,7 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
       <Tags className="text-muted-foreground/60 size-10" strokeWidth={1} aria-hidden />
       <div className="flex max-w-sm flex-col gap-1">
         <h2 className="text-foreground text-[14px] font-medium">no categories yet</h2>
-        <p className="text-muted-foreground text-[13px]">
-          create categories to classify expenses.
-        </p>
+        <p className="text-muted-foreground text-[13px]">create categories to classify expenses.</p>
       </div>
       <Button onClick={onAdd} size="sm" className="mt-2">
         <Plus aria-hidden className="size-3.5" /> new category

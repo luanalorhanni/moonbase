@@ -222,9 +222,7 @@ export function FixedExpensesList({ initialExpenses, cards, subcategories }: Pro
       >
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>
-              {dialog.kind === "edit" ? "edit recurring" : "new recurring"}
-            </DialogTitle>
+            <DialogTitle>{dialog.kind === "edit" ? "edit recurring" : "new recurring"}</DialogTitle>
             <DialogDescription>
               {dialog.kind === "edit"
                 ? "update recurring expense details."
@@ -251,9 +249,7 @@ export function FixedExpensesList({ initialExpenses, cards, subcategories }: Pro
           <AlertDialogHeader>
             <AlertDialogTitle>delete recurring?</AlertDialogTitle>
             <AlertDialogDescription>
-              {pendingDelete
-                ? `"${pendingDelete.description}" will be removed.`
-                : null}
+              {pendingDelete ? `"${pendingDelete.description}" will be removed.` : null}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

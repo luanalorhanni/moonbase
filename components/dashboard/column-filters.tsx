@@ -333,7 +333,7 @@ export function ColumnDateRange({
                 <button
                   type="button"
                   onClick={() => onChange(EMPTY_DATE_RANGE)}
-                  className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 transition-colors normal-case"
+                  className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 normal-case transition-colors"
                 >
                   <X className="size-2.5" strokeWidth={2} />
                   reset
@@ -420,7 +420,7 @@ export function ColumnAmountRange({
                 <button
                   type="button"
                   onClick={() => onChange(EMPTY_AMOUNT_RANGE)}
-                  className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 transition-colors normal-case"
+                  className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 normal-case transition-colors"
                 >
                   <X className="size-2.5" strokeWidth={2} />
                   reset

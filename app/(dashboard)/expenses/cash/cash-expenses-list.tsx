@@ -131,15 +131,7 @@ export function CashExpensesList({ initialExpenses, cards, subcategories }: Prop
         return false;
       return true;
     });
-  }, [
-    initialExpenses,
-    query,
-    cardFilter,
-    methodFilter,
-    categoryFilter,
-    dateRange,
-    amountRange,
-  ]);
+  }, [initialExpenses, query, cardFilter, methodFilter, categoryFilter, dateRange, amountRange]);
 
   const filteredTotal = useMemo(
     () => filteredExpenses.reduce((acc, e) => acc + Number(e.amount), 0),
@@ -207,171 +199,171 @@ export function CashExpensesList({ initialExpenses, cards, subcategories }: Prop
               </Button>
             </div>
           ) : (
-        <Table>
-          <TableHeader>
-            <TableRow className="hover:bg-transparent">
-              <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
-                <ColumnSearch label="description" query={query} setQuery={setQuery} />
-              </TableHead>
-              <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
-                <ColumnFilter
-                  label="category"
-                  active={categoryFilter !== null}
-                  activeChip={categoryFilter ? { label: categoryFilter } : null}
-                  onClear={() => setCategoryFilter(null)}
-                >
-                  {filterOptions.categories.map((cat) => (
-                    <FilterOption
-                      key={cat}
-                      label={cat}
-                      active={categoryFilter === cat}
-                      onClick={() => setCategoryFilter(categoryFilter === cat ? null : cat)}
-                    />
-                  ))}
-                </ColumnFilter>
-              </TableHead>
-              <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
-                <ColumnFilter
-                  label="account"
-                  active={cardFilter !== null}
-                  activeChip={
-                    cardFilter
-                      ? {
-                          label:
-                            filterOptions.cards.find((c) => c.id === cardFilter)?.name ?? "",
-                          color: filterOptions.cards.find((c) => c.id === cardFilter)?.color,
-                        }
-                      : null
-                  }
-                  onClear={() => setCardFilter(null)}
-                >
-                  {filterOptions.cards.map((c) => (
-                    <FilterOption
-                      key={c.id}
-                      label={c.name}
-                      color={c.color}
-                      active={cardFilter === c.id}
-                      onClick={() => setCardFilter(cardFilter === c.id ? null : c.id)}
-                    />
-                  ))}
-                </ColumnFilter>
-              </TableHead>
-              <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
-                <ColumnFilter
-                  label="method"
-                  active={methodFilter !== null}
-                  activeChip={
-                    methodFilter ? { label: CASH_METHOD_LABEL[methodFilter] } : null
-                  }
-                  onClear={() => setMethodFilter(null)}
-                >
-                  {(["pix", "debit", "cash"] as const).map((m) => (
-                    <FilterOption
-                      key={m}
-                      label={CASH_METHOD_LABEL[m]}
-                      active={methodFilter === m}
-                      onClick={() => setMethodFilter(methodFilter === m ? null : m)}
-                    />
-                  ))}
-                </ColumnFilter>
-              </TableHead>
-              <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
-                <ColumnDateRange
-                  label="date"
-                  value={dateRange}
-                  onChange={setDateRange}
-                  granularity="day"
-                />
-              </TableHead>
-              <TableHead className="py-2 text-right font-mono text-[11px] font-normal tracking-[0.16em]">
-                <ColumnAmountRange
-                  label="amount"
-                  value={amountRange}
-                  onChange={setAmountRange}
-                />
-              </TableHead>
-              <TableHead className="w-10 py-2" />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredExpenses.map((expense) => (
-              <TableRow key={expense.id}>
-                <TableCell className="py-3 text-[13px] font-medium">{expense.description}</TableCell>
-                <TableCell className="py-3 text-[12px]">
-                  <span className="flex items-center gap-2">
-                    {expense.categoryIcon ? (
-                      <span
-                        aria-hidden
-                        className="border-border bg-card/60 flex size-5 shrink-0 items-center justify-center rounded-md border"
-                        style={{
-                          borderColor: `color-mix(in oklab, ${expense.categoryColor} 35%, var(--border))`,
-                        }}
-                      >
-                        <CategoryIcon
-                          icon={expense.categoryIcon}
-                          color={expense.categoryColor}
-                          size={12}
+            <Table>
+              <TableHeader>
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
+                    <ColumnSearch label="description" query={query} setQuery={setQuery} />
+                  </TableHead>
+                  <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
+                    <ColumnFilter
+                      label="category"
+                      active={categoryFilter !== null}
+                      activeChip={categoryFilter ? { label: categoryFilter } : null}
+                      onClear={() => setCategoryFilter(null)}
+                    >
+                      {filterOptions.categories.map((cat) => (
+                        <FilterOption
+                          key={cat}
+                          label={cat}
+                          active={categoryFilter === cat}
+                          onClick={() => setCategoryFilter(categoryFilter === cat ? null : cat)}
                         />
-                      </span>
-                    ) : null}
-                    <span className="min-w-0 truncate">
-                      <span className="text-muted-foreground">{expense.categoryName}</span>
-                      <span className="text-muted-foreground/40 mx-1">/</span>
-                      <span className="text-foreground">{expense.subcategoryName}</span>
-                    </span>
-                  </span>
-                </TableCell>
-                <TableCell className="py-3">
-                  <span className="flex items-center gap-2">
-                    <span
-                      className="size-2 shrink-0 rounded-full"
-                      style={{ backgroundColor: expense.cardColor }}
-                      aria-hidden
+                      ))}
+                    </ColumnFilter>
+                  </TableHead>
+                  <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
+                    <ColumnFilter
+                      label="account"
+                      active={cardFilter !== null}
+                      activeChip={
+                        cardFilter
+                          ? {
+                              label:
+                                filterOptions.cards.find((c) => c.id === cardFilter)?.name ?? "",
+                              color: filterOptions.cards.find((c) => c.id === cardFilter)?.color,
+                            }
+                          : null
+                      }
+                      onClear={() => setCardFilter(null)}
+                    >
+                      {filterOptions.cards.map((c) => (
+                        <FilterOption
+                          key={c.id}
+                          label={c.name}
+                          color={c.color}
+                          active={cardFilter === c.id}
+                          onClick={() => setCardFilter(cardFilter === c.id ? null : c.id)}
+                        />
+                      ))}
+                    </ColumnFilter>
+                  </TableHead>
+                  <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
+                    <ColumnFilter
+                      label="method"
+                      active={methodFilter !== null}
+                      activeChip={methodFilter ? { label: CASH_METHOD_LABEL[methodFilter] } : null}
+                      onClear={() => setMethodFilter(null)}
+                    >
+                      {(["pix", "debit", "cash"] as const).map((m) => (
+                        <FilterOption
+                          key={m}
+                          label={CASH_METHOD_LABEL[m]}
+                          active={methodFilter === m}
+                          onClick={() => setMethodFilter(methodFilter === m ? null : m)}
+                        />
+                      ))}
+                    </ColumnFilter>
+                  </TableHead>
+                  <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
+                    <ColumnDateRange
+                      label="date"
+                      value={dateRange}
+                      onChange={setDateRange}
+                      granularity="day"
                     />
-                    <span
-                      className="border-border bg-card/60 truncate rounded-md border px-2 py-0.5 text-[12px]"
-                      style={{
-                        borderColor: `color-mix(in oklab, ${expense.cardColor} 35%, var(--border))`,
-                      }}
-                    >
-                      {expense.cardName}
-                    </span>
-                  </span>
-                </TableCell>
-                <TableCell className="py-3 text-[12px]">
-                  {CASH_METHOD_LABEL[expense.method]}
-                </TableCell>
-                <TableCell className="py-3 font-mono text-[12px] tabular-nums">
-                  {formatDate(expense.date)}
-                </TableCell>
-                <TableCell className="numeric py-3 text-right text-[13px] tabular-nums">
-                  {formatAmount(expense.amount)}
-                </TableCell>
-                <TableCell className="py-3">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger
-                      aria-label="actions"
-                      className="hover:bg-muted aria-expanded:bg-muted focus-visible:ring-ring/50 inline-flex size-7 items-center justify-center rounded-md transition-colors focus-visible:ring-3 focus-visible:outline-none"
-                    >
-                      <MoreHorizontal aria-hidden className="size-3.5" />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => setDialog({ kind: "edit", expense })}>
-                        edit
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        variant="destructive"
-                        onClick={() => setPendingDelete(expense)}
-                      >
-                        delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                  </TableHead>
+                  <TableHead className="py-2 text-right font-mono text-[11px] font-normal tracking-[0.16em]">
+                    <ColumnAmountRange
+                      label="amount"
+                      value={amountRange}
+                      onChange={setAmountRange}
+                    />
+                  </TableHead>
+                  <TableHead className="w-10 py-2" />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredExpenses.map((expense) => (
+                  <TableRow key={expense.id}>
+                    <TableCell className="py-3 text-[13px] font-medium">
+                      {expense.description}
+                    </TableCell>
+                    <TableCell className="py-3 text-[12px]">
+                      <span className="flex items-center gap-2">
+                        {expense.categoryIcon ? (
+                          <span
+                            aria-hidden
+                            className="border-border bg-card/60 flex size-5 shrink-0 items-center justify-center rounded-md border"
+                            style={{
+                              borderColor: `color-mix(in oklab, ${expense.categoryColor} 35%, var(--border))`,
+                            }}
+                          >
+                            <CategoryIcon
+                              icon={expense.categoryIcon}
+                              color={expense.categoryColor}
+                              size={12}
+                            />
+                          </span>
+                        ) : null}
+                        <span className="min-w-0 truncate">
+                          <span className="text-muted-foreground">{expense.categoryName}</span>
+                          <span className="text-muted-foreground/40 mx-1">/</span>
+                          <span className="text-foreground">{expense.subcategoryName}</span>
+                        </span>
+                      </span>
+                    </TableCell>
+                    <TableCell className="py-3">
+                      <span className="flex items-center gap-2">
+                        <span
+                          className="size-2 shrink-0 rounded-full"
+                          style={{ backgroundColor: expense.cardColor }}
+                          aria-hidden
+                        />
+                        <span
+                          className="border-border bg-card/60 truncate rounded-md border px-2 py-0.5 text-[12px]"
+                          style={{
+                            borderColor: `color-mix(in oklab, ${expense.cardColor} 35%, var(--border))`,
+                          }}
+                        >
+                          {expense.cardName}
+                        </span>
+                      </span>
+                    </TableCell>
+                    <TableCell className="py-3 text-[12px]">
+                      {CASH_METHOD_LABEL[expense.method]}
+                    </TableCell>
+                    <TableCell className="py-3 font-mono text-[12px] tabular-nums">
+                      {formatDate(expense.date)}
+                    </TableCell>
+                    <TableCell className="numeric py-3 text-right text-[13px] tabular-nums">
+                      {formatAmount(expense.amount)}
+                    </TableCell>
+                    <TableCell className="py-3">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger
+                          aria-label="actions"
+                          className="hover:bg-muted aria-expanded:bg-muted focus-visible:ring-ring/50 inline-flex size-7 items-center justify-center rounded-md transition-colors focus-visible:ring-3 focus-visible:outline-none"
+                        >
+                          <MoreHorizontal aria-hidden className="size-3.5" />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => setDialog({ kind: "edit", expense })}>
+                            edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            variant="destructive"
+                            onClick={() => setPendingDelete(expense)}
+                          >
+                            delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           )}
         </>
       )}
@@ -413,9 +405,7 @@ export function CashExpensesList({ initialExpenses, cards, subcategories }: Prop
           <AlertDialogHeader>
             <AlertDialogTitle>delete expense?</AlertDialogTitle>
             <AlertDialogDescription>
-              {pendingDelete
-                ? `"${pendingDelete.description}" will be removed.`
-                : null}
+              {pendingDelete ? `"${pendingDelete.description}" will be removed.` : null}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -442,9 +432,7 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
       <Banknote className="text-muted-foreground/60 size-10" strokeWidth={1} aria-hidden />
       <div className="flex max-w-sm flex-col gap-1">
         <h2 className="text-foreground text-[14px] font-medium">no cash expenses yet</h2>
-        <p className="text-muted-foreground text-[13px]">
-          log pix, debit, or cash payments here.
-        </p>
+        <p className="text-muted-foreground text-[13px]">log pix, debit, or cash payments here.</p>
       </div>
       <Button onClick={onAdd} size="sm" className="mt-2">
         <Plus aria-hidden className="size-3.5" /> new expense

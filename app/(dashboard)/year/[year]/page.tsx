@@ -30,12 +30,7 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
   const yearEndCumulative = trendData[trendData.length - 1]?.cumulative ?? 0;
   const yearStartCumulative =
     summary.months[0] != null
-      ? Number(
-          cumulativeBalance(
-            inputs,
-            previousMonthRef(summary.months[0].reference as MonthRef),
-          ),
-        )
+      ? Number(cumulativeBalance(inputs, previousMonthRef(summary.months[0].reference as MonthRef)))
       : 0;
   const yearDelta = yearEndCumulative - yearStartCumulative;
 
@@ -195,9 +190,7 @@ function YearKpi({
         highlight && "bg-primary/[0.04]",
       )}
     >
-      <span className="text-muted-foreground font-mono text-[11px] tracking-[0.18em]">
-        {label}
-      </span>
+      <span className="text-muted-foreground font-mono text-[11px] tracking-[0.18em]">{label}</span>
       <span
         className={cn(
           "numeric text-[22px] font-semibold tracking-tight tabular-nums",

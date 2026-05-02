@@ -236,9 +236,7 @@ export function InvestmentsPage({ liquidSavings, fixedIncome }: Props) {
           <AlertDialogHeader>
             <AlertDialogTitle>delete investment?</AlertDialogTitle>
             <AlertDialogDescription>
-              {pendingDeleteLiquid
-                ? `"${pendingDeleteLiquid.title}" will be removed.`
-                : null}
+              {pendingDeleteLiquid ? `"${pendingDeleteLiquid.title}" will be removed.` : null}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -267,9 +265,7 @@ export function InvestmentsPage({ liquidSavings, fixedIncome }: Props) {
           <AlertDialogHeader>
             <AlertDialogTitle>delete investment?</AlertDialogTitle>
             <AlertDialogDescription>
-              {pendingDeleteFixed
-                ? `"${pendingDeleteFixed.title}" will be removed.`
-                : null}
+              {pendingDeleteFixed ? `"${pendingDeleteFixed.title}" will be removed.` : null}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -355,33 +351,35 @@ function LiquidSection({
           <TableHead className="w-10 py-2" />
         </TableRow>
       </TableHeader>
-        <TableBody>
-          {items.map((item) => (
-            <TableRow key={item.id} className={item.isActive ? "" : "opacity-50"}>
-              <TableCell className="py-3">
-                <div className="text-[13px] font-medium">{item.title}</div>
-                {!item.isActive && <span className="text-muted-foreground text-[11px]">inactive</span>}
-              </TableCell>
-              <TableCell className="text-muted-foreground py-3 text-[12px]">{item.bank}</TableCell>
-              <TableCell className="numeric py-3 text-right text-[12.5px] tabular-nums">
-                {formatAmount(item.appliedAmount)}
-              </TableCell>
-              <TableCell className="numeric py-3 text-right text-[13px] tabular-nums">
-                {formatAmount(item.latestYield)}
-              </TableCell>
-              <TableCell className="py-3 font-mono text-[12px] tabular-nums">
-                {formatDate(item.applicationDate)}
-              </TableCell>
-              <TableCell className="text-muted-foreground py-3 font-mono text-[12px] tabular-nums">
-                {item.lastUpdateDate ? formatDate(item.lastUpdateDate) : "—"}
-              </TableCell>
-              <TableCell className="py-3">
-                <ActionCell onEdit={() => onEdit(item)} onDelete={() => onDelete(item)} />
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <TableBody>
+        {items.map((item) => (
+          <TableRow key={item.id} className={item.isActive ? "" : "opacity-50"}>
+            <TableCell className="py-3">
+              <div className="text-[13px] font-medium">{item.title}</div>
+              {!item.isActive && (
+                <span className="text-muted-foreground text-[11px]">inactive</span>
+              )}
+            </TableCell>
+            <TableCell className="text-muted-foreground py-3 text-[12px]">{item.bank}</TableCell>
+            <TableCell className="numeric py-3 text-right text-[12.5px] tabular-nums">
+              {formatAmount(item.appliedAmount)}
+            </TableCell>
+            <TableCell className="numeric py-3 text-right text-[13px] tabular-nums">
+              {formatAmount(item.latestYield)}
+            </TableCell>
+            <TableCell className="py-3 font-mono text-[12px] tabular-nums">
+              {formatDate(item.applicationDate)}
+            </TableCell>
+            <TableCell className="text-muted-foreground py-3 font-mono text-[12px] tabular-nums">
+              {item.lastUpdateDate ? formatDate(item.lastUpdateDate) : "—"}
+            </TableCell>
+            <TableCell className="py-3">
+              <ActionCell onEdit={() => onEdit(item)} onDelete={() => onDelete(item)} />
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   );
 }
 
@@ -436,7 +434,9 @@ function FixedSection({
           <TableRow key={item.id} className={item.isActive ? "" : "opacity-50"}>
             <TableCell className="py-3">
               <div className="text-[13px] font-medium">{item.title}</div>
-              {!item.isActive && <span className="text-muted-foreground text-[11px]">inactive</span>}
+              {!item.isActive && (
+                <span className="text-muted-foreground text-[11px]">inactive</span>
+              )}
             </TableCell>
             <TableCell className="text-muted-foreground py-3 text-[12px]">{item.bank}</TableCell>
             <TableCell className="numeric py-3 text-right text-[12.5px] tabular-nums">

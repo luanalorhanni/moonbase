@@ -164,9 +164,7 @@ function CategoryCell({
           aria-hidden
           className="border-border bg-card/60 flex size-5 shrink-0 items-center justify-center rounded-md border"
           style={{
-            borderColor: color
-              ? `color-mix(in oklab, ${color} 35%, var(--border))`
-              : undefined,
+            borderColor: color ? `color-mix(in oklab, ${color} 35%, var(--border))` : undefined,
           }}
         >
           <CategoryIcon icon={icon} color={color ?? undefined} size={12} />
@@ -214,9 +212,7 @@ function ParcelProgress({
 }) {
   if (total <= 1) {
     return (
-      <span className="text-muted-foreground font-mono text-[11.5px] tracking-wider">
-        single
-      </span>
+      <span className="text-muted-foreground font-mono text-[11.5px] tracking-wider">single</span>
     );
   }
   const pct = Math.max(0, Math.min(100, (current / total) * 100));
@@ -242,13 +238,7 @@ function ParcelProgress({
 /*  Component                                                              */
 /* ────────────────────────────────────────────────────────────────────── */
 
-export function DetailTabs({
-  lists,
-  totals,
-}: {
-  lists: DetailLists;
-  totals: Record<Tab, string>;
-}) {
+export function DetailTabs({ lists, totals }: { lists: DetailLists; totals: Record<Tab, string> }) {
   const [active, setActive] = useState<Tab>("cash");
   const empty = TABS.find((t) => t.key === active)!.emptyHint;
 
@@ -327,7 +317,9 @@ function CashTable({ rows, empty }: { rows: CashDetailRow[]; empty: string }) {
       <tbody>
         {rows.map((r) => (
           <tr key={r.id} className="border-border hover:bg-muted/30 border-b transition-colors">
-            <td className={cn(TD, "text-muted-foreground/80 font-mono text-[11.5px] tracking-wider")}>
+            <td
+              className={cn(TD, "text-muted-foreground/80 font-mono text-[11.5px] tracking-wider")}
+            >
               {formatDate(r.date)}
             </td>
             <td className={cn(TD, "text-foreground font-medium")}>{r.description}</td>
@@ -375,7 +367,9 @@ function CreditTable({ rows, empty }: { rows: CreditDetailRow[]; empty: string }
       <tbody>
         {rows.map((r) => (
           <tr key={r.id} className="border-border hover:bg-muted/30 border-b transition-colors">
-            <td className={cn(TD, "text-muted-foreground/80 font-mono text-[11.5px] tracking-wider")}>
+            <td
+              className={cn(TD, "text-muted-foreground/80 font-mono text-[11.5px] tracking-wider")}
+            >
               {formatDate(r.purchaseDate)}
             </td>
             <td className={cn(TD, "text-foreground font-medium")}>{r.description}</td>
@@ -398,12 +392,14 @@ function CreditTable({ rows, empty }: { rows: CreditDetailRow[]; empty: string }
               />
             </td>
             <td className={cn(TD, "text-right")}>
-              <AmountCell
-                value={r.parcelValue}
-                isLarge={Number(r.parcelValue) >= threshold}
-              />
+              <AmountCell value={r.parcelValue} isLarge={Number(r.parcelValue) >= threshold} />
             </td>
-            <td className={cn(TD, "text-muted-foreground/80 numeric text-right text-[12px] tabular-nums")}>
+            <td
+              className={cn(
+                TD,
+                "text-muted-foreground/80 numeric text-right text-[12px] tabular-nums",
+              )}
+            >
               {formatCurrency(r.totalValue)}
             </td>
           </tr>
@@ -444,12 +440,7 @@ function FixedTable({ rows, empty }: { rows: FixedDetailRow[]; empty: string }) 
                 color={r.categoryColor}
               />
             </td>
-            <td
-              className={cn(
-                TD,
-                "text-muted-foreground/80 font-mono text-[12px] tabular-nums",
-              )}
-            >
+            <td className={cn(TD, "text-muted-foreground/80 font-mono text-[12px] tabular-nums")}>
               {r.dueDay ? `day ${r.dueDay}` : "—"}
             </td>
             <td className={cn(TD, "text-right")}>
@@ -478,17 +469,15 @@ function IncomeTable({ rows, empty }: { rows: IncomeDetailRow[]; empty: string }
       <tbody>
         {rows.map((r) => (
           <tr key={r.id} className="border-border hover:bg-muted/30 border-b transition-colors">
-            <td className={cn(TD, "text-muted-foreground/80 font-mono text-[11.5px] tracking-wider")}>
+            <td
+              className={cn(TD, "text-muted-foreground/80 font-mono text-[11.5px] tracking-wider")}
+            >
               {formatDate(r.date)}
             </td>
             <td className={cn(TD, "text-foreground font-medium")}>{r.description}</td>
             <td className={cn(TD, "text-muted-foreground text-[12px]")}>{r.type}</td>
             <td className={cn(TD, "text-right")}>
-              <AmountCell
-                value={r.amount}
-                isLarge={Number(r.amount) >= threshold}
-                emphasized
-              />
+              <AmountCell value={r.amount} isLarge={Number(r.amount) >= threshold} emphasized />
             </td>
           </tr>
         ))}
@@ -521,7 +510,9 @@ function ReceivableTable({ rows, empty }: { rows: ReceivableDetailRow[]; empty: 
               r.status === "paid" && "opacity-60",
             )}
           >
-            <td className={cn(TD, "text-muted-foreground/80 font-mono text-[11.5px] tracking-wider")}>
+            <td
+              className={cn(TD, "text-muted-foreground/80 font-mono text-[11.5px] tracking-wider")}
+            >
               {formatDate(r.date)}
             </td>
             <td className={cn(TD, "text-foreground font-medium")}>{r.description}</td>

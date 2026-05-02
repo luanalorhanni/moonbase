@@ -79,7 +79,6 @@ function formatAmount(value: string): string {
   );
 }
 
-
 type Tab = "cash" | "credit";
 
 type CashDialog =
@@ -263,9 +262,7 @@ export function ReceivablesPage({ cashReceivables, creditReceivables, cards }: P
           <AlertDialogHeader>
             <AlertDialogTitle>delete receivable?</AlertDialogTitle>
             <AlertDialogDescription>
-              {pendingDeleteCash
-                ? `"${pendingDeleteCash.description}" will be removed.`
-                : null}
+              {pendingDeleteCash ? `"${pendingDeleteCash.description}" will be removed.` : null}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -294,9 +291,7 @@ export function ReceivablesPage({ cashReceivables, creditReceivables, cards }: P
           <AlertDialogHeader>
             <AlertDialogTitle>delete receivable?</AlertDialogTitle>
             <AlertDialogDescription>
-              {pendingDeleteCredit
-                ? `"${pendingDeleteCredit.description}" will be removed.`
-                : null}
+              {pendingDeleteCredit ? `"${pendingDeleteCredit.description}" will be removed.` : null}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -334,10 +329,7 @@ function CashSection({
 }) {
   if (receivables.length === 0) {
     return (
-      <EmptyState
-        onAdd={onAdd}
-        description="log money you've lent out and expect to get back."
-      />
+      <EmptyState onAdd={onAdd} description="log money you've lent out and expect to get back." />
     );
   }
 
