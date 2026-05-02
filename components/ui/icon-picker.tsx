@@ -23,9 +23,7 @@ export function IconPicker({ id, value, onChange, disabled }: Props) {
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return CATEGORY_ICONS;
-    return CATEGORY_ICONS.filter(
-      (i) => i.name.includes(q) || i.label.toLowerCase().includes(q),
-    );
+    return CATEGORY_ICONS.filter((i) => i.name.includes(q) || i.label.toLowerCase().includes(q));
   }, [query]);
 
   return (
@@ -54,7 +52,7 @@ export function IconPicker({ id, value, onChange, disabled }: Props) {
             onChange={(e) => setQuery(e.target.value)}
             placeholder="search icons"
             className={cn(
-              "border-input bg-transparent placeholder:text-muted-foreground/60 focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border pr-8 pl-8 text-[13px] transition-colors focus-visible:ring-3 focus-visible:outline-none",
+              "border-input placeholder:text-muted-foreground/60 focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-transparent pr-8 pl-8 text-[13px] transition-colors focus-visible:ring-3 focus-visible:outline-none",
               disabled && "cursor-not-allowed opacity-50",
             )}
           />
@@ -85,16 +83,13 @@ export function IconPicker({ id, value, onChange, disabled }: Props) {
               aria-label={label}
               aria-pressed={active}
               className={cn(
-                "border-transparent hover:bg-card hover:border-border flex size-8 items-center justify-center rounded-md border transition-colors",
+                "hover:bg-card hover:border-border flex size-8 items-center justify-center rounded-md border border-transparent transition-colors",
                 active && "bg-card border-foreground/40 text-foreground",
                 disabled && "cursor-not-allowed opacity-50",
               )}
             >
               <Icon
-                className={cn(
-                  "size-4",
-                  active ? "text-foreground" : "text-muted-foreground",
-                )}
+                className={cn("size-4", active ? "text-foreground" : "text-muted-foreground")}
                 strokeWidth={1.6}
               />
             </button>

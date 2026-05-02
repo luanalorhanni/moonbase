@@ -49,7 +49,6 @@ const TYPE_LABEL: Record<CardRow["type"], string> = {
   account: "account",
 };
 
-
 function formatAmount(value: string | null): string {
   if (value === null) return "—";
   const number = Number(value);
@@ -94,25 +93,25 @@ export function CardsList({ initialCards }: { initialCards: CardRow[] }) {
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
-                <TableHead className="py-2 text-[11px] font-mono font-normal tracking-[0.16em]">
+                <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
                   name
                 </TableHead>
-                <TableHead className="py-2 text-[11px] font-mono font-normal tracking-[0.16em]">
+                <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
                   type
                 </TableHead>
-                <TableHead className="py-2 text-[11px] font-mono font-normal tracking-[0.16em]">
+                <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
                   bank
                 </TableHead>
-                <TableHead className="py-2 text-right text-[11px] font-mono font-normal tracking-[0.16em]">
+                <TableHead className="py-2 text-right font-mono text-[11px] font-normal tracking-[0.16em]">
                   closing
                 </TableHead>
-                <TableHead className="py-2 text-right text-[11px] font-mono font-normal tracking-[0.16em]">
+                <TableHead className="py-2 text-right font-mono text-[11px] font-normal tracking-[0.16em]">
                   due
                 </TableHead>
-                <TableHead className="py-2 text-right text-[11px] font-mono font-normal tracking-[0.16em]">
+                <TableHead className="py-2 text-right font-mono text-[11px] font-normal tracking-[0.16em]">
                   limit
                 </TableHead>
-                <TableHead className="py-2 text-[11px] font-mono font-normal tracking-[0.16em]">
+                <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
                   status
                 </TableHead>
                 <TableHead className="w-10 py-3" />
