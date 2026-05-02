@@ -4,6 +4,7 @@ import { HandCoins, MoreHorizontal, Plus } from "lucide-react";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
+import { PageShell } from "@/components/dashboard/page-shell";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -45,48 +46,39 @@ import { LOAN_TYPE_LABEL } from "@/lib/validation/cash-receivable";
 import { CashReceivableForm } from "./cash-receivable-form";
 import { CreditReceivableForm } from "./credit-receivable-form";
 
-const PT_MONTH_SHORT = [
+const EN_MONTH_SHORT = [
   "jan",
-  "fev",
+  "feb",
   "mar",
-  "abr",
-  "mai",
+  "apr",
+  "may",
   "jun",
   "jul",
-  "ago",
-  "set",
-  "out",
+  "aug",
+  "sep",
+  "oct",
   "nov",
-  "dez",
+  "dec",
 ];
 
 function formatMonth(dateStr: string): string {
   const [y, m] = dateStr.split("-").map(Number);
-  return `${PT_MONTH_SHORT[m - 1]}/${String(y).slice(2)}`;
+  return `${EN_MONTH_SHORT[m - 1]}/${String(y).slice(2)}`;
 }
 
 function formatDate(dateStr: string): string {
   const [y, m, d] = dateStr.split("-").map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString("pt-BR");
+  return new Intl.DateTimeFormat("en-US", { month: "short", day: "2-digit" })
+    .format(new Date(y, m - 1, d))
+    .toLowerCase();
 }
 
 function formatAmount(value: string): string {
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: "BRL" }).format(
     Number(value),
   );
 }
 
-const COLOR_DOT_CLASS: Record<string, string> = {
-  red: "bg-red-500",
-  orange: "bg-orange-500",
-  yellow: "bg-yellow-400",
-  green: "bg-green-500",
-  blue: "bg-blue-500",
-  purple: "bg-purple-500",
-  pink: "bg-pink-500",
-  brown: "bg-amber-700",
-  gray: "bg-gray-400",
-};
 
 type Tab = "cash" | "credit";
 
@@ -121,7 +113,7 @@ export function ReceivablesPage({ cashReceivables, creditReceivables, cards }: P
     startDeleteTransition(async () => {
       const result = await deleteCashReceivable(r.id);
       if (result.ok) {
-        toast.success("Recebível excluído.");
+        toast.success("receivable removed.");
         setPendingDeleteCash(null);
       } else {
         toast.error(result.error);
@@ -133,7 +125,7 @@ export function ReceivablesPage({ cashReceivables, creditReceivables, cards }: P
     startDeleteTransition(async () => {
       const result = await deleteCreditReceivable(r.id);
       if (result.ok) {
-        toast.success("Recebível excluído.");
+        toast.success("receivable removed.");
         setPendingDeleteCredit(null);
       } else {
         toast.error(result.error);
@@ -145,7 +137,7 @@ export function ReceivablesPage({ cashReceivables, creditReceivables, cards }: P
     startMarkTransition(async () => {
       const result = await markCashReceivableAsPaid(r.id);
       if (result.ok) {
-        toast.success("Marcado como recebido.");
+        toast.success("marked as received.");
       } else {
         toast.error(result.error);
       }
@@ -153,40 +145,40 @@ export function ReceivablesPage({ cashReceivables, creditReceivables, cards }: P
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-8">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Recebíveis</h1>
-          <p className="text-muted-foreground mt-0.5 text-sm">
-            Valores a receber de terceiros, à vista ou parcelados.
-          </p>
-        </div>
+    <PageShell
+      title="receivables"
+      subtitle="amounts owed to you"
+      toolbar={
         <Button
           onClick={() =>
             tab === "cash" ? setCashDialog({ kind: "create" }) : setCreditDialog({ kind: "create" })
           }
           size="sm"
         >
-          <Plus aria-hidden className="size-4" /> Novo recebível
+          <Plus aria-hidden className="size-3.5" /> new receivable
         </Button>
-      </div>
-
+      }
+    >
       {/* tab switcher */}
-      <div className="border-border flex gap-0 border-b">
+      <div className="border-border flex shrink-0 gap-0 border-b">
         {(["cash", "credit"] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
             className={[
-              "px-4 pb-2.5 text-sm transition-colors",
+              "relative px-4 py-3 text-[13px] transition-colors",
               tab === t
-                ? "border-primary text-foreground border-b-2 font-medium"
-                : "text-muted-foreground hover:text-foreground -mb-px",
+                ? "text-foreground bg-background"
+                : "text-muted-foreground hover:text-foreground bg-muted/40",
             ].join(" ")}
           >
-            {t === "cash" ? "À vista" : "Parcelado"}
+            {tab === t && (
+              <span aria-hidden className="bg-primary absolute inset-x-0 -top-px h-[2px]" />
+            )}
+            {t === "cash" ? "cash loans" : "installments"}
           </button>
         ))}
+        <div className="bg-muted/40 flex-1" />
       </div>
 
       {tab === "cash" ? (
@@ -217,12 +209,12 @@ export function ReceivablesPage({ cashReceivables, creditReceivables, cards }: P
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>
-              {cashDialog.kind === "edit" ? "Editar recebível" : "Novo recebível à vista"}
+              {cashDialog.kind === "edit" ? "edit receivable" : "new cash receivable"}
             </DialogTitle>
             <DialogDescription>
               {cashDialog.kind === "edit"
-                ? "Atualize os dados do recebível."
-                : "Registre um valor a receber de volta."}
+                ? "update receivable details."
+                : "log an amount you'll receive back."}
             </DialogDescription>
           </DialogHeader>
           <CashReceivableForm
@@ -243,12 +235,12 @@ export function ReceivablesPage({ cashReceivables, creditReceivables, cards }: P
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>
-              {creditDialog.kind === "edit" ? "Editar recebível" : "Novo recebível parcelado"}
+              {creditDialog.kind === "edit" ? "edit receivable" : "new installment receivable"}
             </DialogTitle>
             <DialogDescription>
               {creditDialog.kind === "edit"
-                ? "Atualize os dados do recebível."
-                : "Registre uma compra no cartão que será paga em parcelas por terceiros."}
+                ? "update receivable details."
+                : "log a card purchase someone else will pay back in installments."}
             </DialogDescription>
           </DialogHeader>
           <CreditReceivableForm
@@ -269,15 +261,15 @@ export function ReceivablesPage({ cashReceivables, creditReceivables, cards }: P
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Excluir recebível?</AlertDialogTitle>
+            <AlertDialogTitle>delete receivable?</AlertDialogTitle>
             <AlertDialogDescription>
               {pendingDeleteCash
-                ? `"${pendingDeleteCash.description}" será removido permanentemente.`
+                ? `"${pendingDeleteCash.description}" will be removed.`
                 : null}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>cancel</AlertDialogCancel>
             <AlertDialogAction
               disabled={isDeleting}
               onClick={(e) => {
@@ -285,7 +277,7 @@ export function ReceivablesPage({ cashReceivables, creditReceivables, cards }: P
                 if (pendingDeleteCash) handleDeleteCash(pendingDeleteCash);
               }}
             >
-              {isDeleting ? "Excluindo..." : "Excluir"}
+              {isDeleting ? "deleting..." : "delete"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -300,15 +292,15 @@ export function ReceivablesPage({ cashReceivables, creditReceivables, cards }: P
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Excluir recebível?</AlertDialogTitle>
+            <AlertDialogTitle>delete receivable?</AlertDialogTitle>
             <AlertDialogDescription>
               {pendingDeleteCredit
-                ? `"${pendingDeleteCredit.description}" será removido permanentemente.`
+                ? `"${pendingDeleteCredit.description}" will be removed.`
                 : null}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>cancel</AlertDialogCancel>
             <AlertDialogAction
               disabled={isDeleting}
               onClick={(e) => {
@@ -316,12 +308,12 @@ export function ReceivablesPage({ cashReceivables, creditReceivables, cards }: P
                 if (pendingDeleteCredit) handleDeleteCredit(pendingDeleteCredit);
               }}
             >
-              {isDeleting ? "Excluindo..." : "Excluir"}
+              {isDeleting ? "deleting..." : "delete"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </PageShell>
   );
 }
 
@@ -344,88 +336,86 @@ function CashSection({
     return (
       <EmptyState
         onAdd={onAdd}
-        description="Registre valores emprestados que você precisa receber de volta."
+        description="log money you've lent out and expect to get back."
       />
     );
   }
 
   return (
-    <div className="border-border overflow-hidden rounded-lg border">
-      <Table>
-        <TableHeader>
-          <TableRow className="hover:bg-transparent">
-            <TableHead className="py-3 text-[11px] font-medium tracking-wider uppercase">
-              Descrição
-            </TableHead>
-            <TableHead className="py-3 text-[11px] font-medium tracking-wider uppercase">
-              Método
-            </TableHead>
-            <TableHead className="py-3 text-right text-[11px] font-medium tracking-wider uppercase">
-              Valor
-            </TableHead>
-            <TableHead className="py-3 text-[11px] font-medium tracking-wider uppercase">
-              Emprestado em
-            </TableHead>
-            <TableHead className="py-3 text-[11px] font-medium tracking-wider uppercase">
-              Mês previsto
-            </TableHead>
-            <TableHead className="py-3 text-[11px] font-medium tracking-wider uppercase">
-              Status
-            </TableHead>
-            <TableHead className="w-10 py-3" />
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {receivables.map((r) => (
-            <TableRow key={r.id} className={r.isPaid ? "opacity-50" : ""}>
-              <TableCell className="py-3.5 font-medium">{r.description}</TableCell>
-              <TableCell className="text-muted-foreground py-3.5 text-sm">
-                {LOAN_TYPE_LABEL[r.loanType]}
-              </TableCell>
-              <TableCell className="py-3.5 text-right text-sm tabular-nums">
-                {formatAmount(r.amount)}
-              </TableCell>
-              <TableCell className="py-3.5 text-sm tabular-nums">
-                {formatDate(r.loanDate)}
-              </TableCell>
-              <TableCell className="py-3.5 text-sm tabular-nums">
-                {formatMonth(r.expectedPaymentMonth)}
-              </TableCell>
-              <TableCell className="py-3.5 text-sm">
-                {r.isPaid ? (
-                  <span className="text-muted-foreground">
-                    recebido{r.actualPaymentDate ? ` em ${formatDate(r.actualPaymentDate)}` : ""}
-                  </span>
-                ) : (
-                  <span className="text-foreground">pendente</span>
-                )}
-              </TableCell>
-              <TableCell className="py-3.5">
-                <DropdownMenu>
-                  <DropdownMenuTrigger
-                    aria-label="Ações"
-                    className="hover:bg-muted aria-expanded:bg-muted focus-visible:ring-ring/50 inline-flex size-7 items-center justify-center rounded-md transition-colors focus-visible:ring-3 focus-visible:outline-none"
-                  >
-                    <MoreHorizontal aria-hidden className="size-3.5" />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    {!r.isPaid && (
-                      <DropdownMenuItem disabled={isMarking} onSelect={() => onMarkPaid(r)}>
-                        Marcar como recebido
-                      </DropdownMenuItem>
-                    )}
-                    <DropdownMenuItem onSelect={() => onEdit(r)}>Editar</DropdownMenuItem>
-                    <DropdownMenuItem variant="destructive" onSelect={() => onDelete(r)}>
-                      Excluir
+    <Table>
+      <TableHeader>
+        <TableRow className="hover:bg-transparent">
+          <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
+            description
+          </TableHead>
+          <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
+            method
+          </TableHead>
+          <TableHead className="py-2 text-right font-mono text-[11px] font-normal tracking-[0.16em]">
+            amount
+          </TableHead>
+          <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
+            lent on
+          </TableHead>
+          <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
+            expected
+          </TableHead>
+          <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
+            status
+          </TableHead>
+          <TableHead className="w-10 py-2" />
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {receivables.map((r) => (
+          <TableRow key={r.id} className={r.isPaid ? "opacity-50" : ""}>
+            <TableCell className="py-3 text-[13px] font-medium">{r.description}</TableCell>
+            <TableCell className="text-muted-foreground py-3 text-[12px]">
+              {LOAN_TYPE_LABEL[r.loanType]}
+            </TableCell>
+            <TableCell className="numeric py-3 text-right text-[13px] tabular-nums">
+              {formatAmount(r.amount)}
+            </TableCell>
+            <TableCell className="py-3 font-mono text-[12px] tabular-nums">
+              {formatDate(r.loanDate)}
+            </TableCell>
+            <TableCell className="py-3 font-mono text-[12px] tabular-nums">
+              {formatMonth(r.expectedPaymentMonth)}
+            </TableCell>
+            <TableCell className="py-3 text-[12px]">
+              {r.isPaid ? (
+                <span className="text-muted-foreground">
+                  received{r.actualPaymentDate ? ` on ${formatDate(r.actualPaymentDate)}` : ""}
+                </span>
+              ) : (
+                <span className="text-foreground">pending</span>
+              )}
+            </TableCell>
+            <TableCell className="py-3">
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  aria-label="actions"
+                  className="hover:bg-muted aria-expanded:bg-muted focus-visible:ring-ring/50 inline-flex size-7 items-center justify-center rounded-md transition-colors focus-visible:ring-3 focus-visible:outline-none"
+                >
+                  <MoreHorizontal aria-hidden className="size-3.5" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {!r.isPaid && (
+                    <DropdownMenuItem disabled={isMarking} onClick={() => onMarkPaid(r)}>
+                      mark as received
                     </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+                  )}
+                  <DropdownMenuItem onClick={() => onEdit(r)}>edit</DropdownMenuItem>
+                  <DropdownMenuItem variant="destructive" onClick={() => onDelete(r)}>
+                    delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   );
 }
 
@@ -444,96 +434,95 @@ function CreditSection({
     return (
       <EmptyState
         onAdd={onAdd}
-        description="Registre compras no cartão feitas para terceiros que serão pagas em parcelas."
+        description="log card purchases someone else will pay back in installments."
       />
     );
   }
 
   return (
-    <div className="border-border overflow-hidden rounded-lg border">
-      <Table>
-        <TableHeader>
-          <TableRow className="hover:bg-transparent">
-            <TableHead className="py-3 text-[11px] font-medium tracking-wider uppercase">
-              Descrição
-            </TableHead>
-            <TableHead className="py-3 text-[11px] font-medium tracking-wider uppercase">
-              Compra
-            </TableHead>
-            <TableHead className="py-3 text-[11px] font-medium tracking-wider uppercase">
-              Parcelas
-            </TableHead>
-            <TableHead className="py-3 text-[11px] font-medium tracking-wider uppercase">
-              Período
-            </TableHead>
-            <TableHead className="w-10 py-3" />
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {receivables.map((r) => (
-            <TableRow key={r.id}>
-              <TableCell className="py-3.5">
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`size-2 shrink-0 rounded-full ${COLOR_DOT_CLASS[r.cardColor] ?? "bg-gray-400"}`}
-                    aria-hidden
-                  />
-                  <div>
-                    <div className="font-medium">{r.description}</div>
-                    <div className="text-muted-foreground text-xs">{r.cardName}</div>
-                  </div>
+    <Table>
+      <TableHeader>
+        <TableRow className="hover:bg-transparent">
+          <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
+            description
+          </TableHead>
+          <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
+            purchase
+          </TableHead>
+          <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
+            installments
+          </TableHead>
+          <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
+            period
+          </TableHead>
+          <TableHead className="w-10 py-2" />
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {receivables.map((r) => (
+          <TableRow key={r.id}>
+            <TableCell className="py-3">
+              <div className="flex items-center gap-2">
+                <span
+                  className="size-2 shrink-0 rounded-full"
+                  style={{ backgroundColor: r.cardColor }}
+                  aria-hidden
+                />
+                <div>
+                  <div className="text-[13px] font-medium">{r.description}</div>
+                  <div className="text-muted-foreground text-[12px]">{r.cardName}</div>
                 </div>
-              </TableCell>
-              <TableCell className="py-3.5 text-sm tabular-nums">
-                {formatDate(r.purchaseDate)}
-              </TableCell>
-              <TableCell className="py-3.5 text-sm tabular-nums">
-                {r.totalParcels}× {formatAmount(r.parcelValue)}
-              </TableCell>
-              <TableCell className="py-3.5 text-sm tabular-nums">
-                {r.firstParcelMonth && r.lastParcelMonth ? (
-                  <span>
-                    {formatMonth(r.firstParcelMonth)}
-                    {r.totalParcels > 1 ? ` → ${formatMonth(r.lastParcelMonth)}` : ""}
-                  </span>
-                ) : (
-                  <span className="text-muted-foreground">—</span>
-                )}
-              </TableCell>
-              <TableCell className="py-3.5">
-                <DropdownMenu>
-                  <DropdownMenuTrigger
-                    aria-label="Ações"
-                    className="hover:bg-muted aria-expanded:bg-muted focus-visible:ring-ring/50 inline-flex size-7 items-center justify-center rounded-md transition-colors focus-visible:ring-3 focus-visible:outline-none"
-                  >
-                    <MoreHorizontal aria-hidden className="size-3.5" />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onSelect={() => onEdit(r)}>Editar</DropdownMenuItem>
-                    <DropdownMenuItem variant="destructive" onSelect={() => onDelete(r)}>
-                      Excluir
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+              </div>
+            </TableCell>
+            <TableCell className="py-3 font-mono text-[12px] tabular-nums">
+              {formatDate(r.purchaseDate)}
+            </TableCell>
+            <TableCell className="numeric py-3 text-[12.5px] tabular-nums">
+              {r.totalParcels}× {formatAmount(r.parcelValue)}
+            </TableCell>
+            <TableCell className="py-3 font-mono text-[12px] tabular-nums">
+              {r.firstParcelMonth && r.lastParcelMonth ? (
+                <span>
+                  {formatMonth(r.firstParcelMonth)}
+                  {r.totalParcels > 1 ? ` → ${formatMonth(r.lastParcelMonth)}` : ""}
+                </span>
+              ) : (
+                <span className="text-muted-foreground">—</span>
+              )}
+            </TableCell>
+            <TableCell className="py-3">
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  aria-label="actions"
+                  className="hover:bg-muted aria-expanded:bg-muted focus-visible:ring-ring/50 inline-flex size-7 items-center justify-center rounded-md transition-colors focus-visible:ring-3 focus-visible:outline-none"
+                >
+                  <MoreHorizontal aria-hidden className="size-3.5" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => onEdit(r)}>edit</DropdownMenuItem>
+                  <DropdownMenuItem variant="destructive" onClick={() => onDelete(r)}>
+                    delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   );
 }
 
 function EmptyState({ onAdd, description }: { onAdd: () => void; description: string }) {
   return (
-    <div className="border-border bg-card flex flex-col items-center gap-4 rounded-lg border border-dashed px-6 py-16 text-center">
+    <div className="flex h-full flex-col items-center justify-center gap-3 px-6 py-16 text-center">
       <HandCoins className="text-muted-foreground/60 size-10" strokeWidth={1} aria-hidden />
       <div className="flex max-w-sm flex-col gap-1">
-        <h2 className="text-base font-medium">Nenhum recebível ainda.</h2>
-        <p className="text-muted-foreground text-sm">{description}</p>
+        <h2 className="text-foreground text-[14px] font-medium">no receivables yet</h2>
+        <p className="text-muted-foreground text-[13px]">{description}</p>
       </div>
-      <Button onClick={onAdd} size="sm">
-        <Plus aria-hidden className="size-4" /> Novo recebível
+      <Button onClick={onAdd} size="sm" className="mt-2">
+        <Plus aria-hidden className="size-3.5" /> new receivable
       </Button>
     </div>
   );

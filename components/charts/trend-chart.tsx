@@ -12,7 +12,7 @@ import {
 } from "recharts";
 
 const formatBRL = (value: number) =>
-  new Intl.NumberFormat("pt-BR", {
+  new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "BRL",
     maximumFractionDigits: 0,
@@ -38,8 +38,8 @@ export function TrendChart({ data }: { data: TrendDatum[] }) {
       <ComposedChart data={data} margin={{ top: 24, right: 16, bottom: 8, left: 0 }}>
         <defs>
           <linearGradient id="trend-fill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="oklch(0.82 0.13 78)" stopOpacity={0.32} />
-            <stop offset="100%" stopColor="oklch(0.82 0.13 78)" stopOpacity={0} />
+            <stop offset="0%" stopColor="oklch(0.65 0.10 200)" stopOpacity={0.32} />
+            <stop offset="100%" stopColor="oklch(0.65 0.10 200)" stopOpacity={0} />
           </linearGradient>
         </defs>
         <CartesianGrid stroke="oklch(1 0 0 / 0.04)" vertical={false} />
@@ -82,7 +82,7 @@ export function TrendChart({ data }: { data: TrendDatum[] }) {
         <Area
           type="monotone"
           dataKey="cumulative"
-          stroke="oklch(0.82 0.13 78)"
+          stroke="oklch(0.65 0.10 200)"
           strokeWidth={1.5}
           fill="url(#trend-fill)"
         />

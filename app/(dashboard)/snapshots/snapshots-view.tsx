@@ -4,6 +4,7 @@ import { Archive, Camera, MoreHorizontal, RefreshCw, Trash2 } from "lucide-react
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
+import { PageShell } from "@/components/dashboard/page-shell";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,7 +16,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,7 +28,7 @@ import { deleteMonthlySnapshot, upsertMonthlySnapshot } from "@/lib/actions/snap
 import { currentMonthRef, isMonthRef } from "@/lib/finance/month";
 import { previousMonthRef } from "@/lib/finance/snapshots";
 import { type SnapshotRow } from "@/lib/queries/snapshots";
-import { cn, formatBRL } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 
 export function SnapshotsView({ snapshots }: { snapshots: SnapshotRow[] }) {
   const [reference, setReference] = useState(previousMonthRef());
@@ -37,13 +37,13 @@ export function SnapshotsView({ snapshots }: { snapshots: SnapshotRow[] }) {
 
   function handleGenerate() {
     if (!isMonthRef(reference)) {
-      toast.error("Mês inválido. Use AAAA-MM.");
+      toast.error("invalid month. use yyyy-mm.");
       return;
     }
     startTransition(async () => {
       const result = await upsertMonthlySnapshot(reference);
       if (result.ok) {
-        toast.success("Snapshot gerado.");
+        toast.success("snapshot generated.");
       } else {
         toast.error(result.error);
       }
@@ -55,7 +55,7 @@ export function SnapshotsView({ snapshots }: { snapshots: SnapshotRow[] }) {
     startTransition(async () => {
       const result = await upsertMonthlySnapshot(ref);
       if (result.ok) {
-        toast.success(`${snap.monthLabel} recalculado.`);
+        toast.success(`${snap.monthLabel} recomputed.`);
       } else {
         toast.error(result.error);
       }
@@ -69,7 +69,7 @@ export function SnapshotsView({ snapshots }: { snapshots: SnapshotRow[] }) {
     startTransition(async () => {
       const result = await deleteMonthlySnapshot(target.id);
       if (result.ok) {
-        toast.success("Snapshot removido.");
+        toast.success("snapshot removed.");
       } else {
         toast.error(result.error);
       }
@@ -77,133 +77,124 @@ export function SnapshotsView({ snapshots }: { snapshots: SnapshotRow[] }) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-6 py-8 md:py-10">
-      <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <div className="flex flex-col gap-1.5">
-          <span className="text-muted-foreground text-xs tracking-wide uppercase">Histórico</span>
-          <h1 className="text-3xl font-semibold tracking-tight">Snapshots mensais</h1>
-          <p className="text-muted-foreground text-sm">
-            Cada snapshot congela os totais do mês. O cron os gera automaticamente no dia 1, mas
-            você pode forçar a geração ou recalcular um existente.
-          </p>
-        </div>
-      </header>
-
-      <Card className="mt-8">
-        <CardHeader>
-          <CardTitle className="text-base">Gerar manualmente</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-end">
-          <div className="flex max-w-xs flex-1 flex-col gap-2">
-            <Label htmlFor="snapshot-month">Mês de referência</Label>
-            <Input
-              id="snapshot-month"
-              type="month"
-              value={reference}
-              onChange={(e) => setReference(e.target.value)}
-              max={currentMonthRef()}
-              disabled={isPending}
-            />
-          </div>
-          <Button onClick={handleGenerate} disabled={isPending}>
-            <Camera className="mr-1.5 size-4" strokeWidth={1.5} />
-            {isPending ? "Gerando..." : "Gerar snapshot"}
+    <PageShell
+      title="snapshots"
+      subtitle="frozen monthly totals"
+      toolbar={
+        <div className="flex items-center gap-2">
+          <Label htmlFor="snapshot-month" className="text-muted-foreground text-[12px]">
+            month
+          </Label>
+          <Input
+            id="snapshot-month"
+            type="month"
+            value={reference}
+            onChange={(e) => setReference(e.target.value)}
+            max={currentMonthRef()}
+            disabled={isPending}
+            className="h-8 w-[140px] text-[13px]"
+          />
+          <Button onClick={handleGenerate} disabled={isPending} size="sm">
+            <Camera className="size-3.5" strokeWidth={1.5} />
+            {isPending ? "generating..." : "generate"}
           </Button>
-        </CardContent>
-      </Card>
-
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle className="text-base">Snapshots existentes</CardTitle>
-        </CardHeader>
-        <CardContent className="px-0">
-          {snapshots.length === 0 ? (
-            <div className="flex flex-col items-center gap-3 px-6 py-12 text-center">
-              <Archive className="text-muted-foreground size-10" strokeWidth={1.25} aria-hidden />
-              <p className="text-muted-foreground text-sm">
-                Nenhum snapshot ainda. Gere o primeiro usando o formulário acima.
-              </p>
-            </div>
-          ) : (
-            <ul className="divide-border divide-y">
-              {snapshots.map((snap) => (
-                <li
-                  key={snap.id}
-                  className="hover:bg-muted/40 flex items-center gap-4 px-6 py-3 transition-colors"
+        </div>
+      }
+    >
+      {snapshots.length === 0 ? (
+        <div className="flex h-full flex-col items-center justify-center gap-3 px-6 py-16 text-center">
+          <Archive className="text-muted-foreground/60 size-10" strokeWidth={1} aria-hidden />
+          <div className="flex max-w-sm flex-col gap-1">
+            <h2 className="text-foreground text-[14px] font-medium">no snapshots yet</h2>
+            <p className="text-muted-foreground text-[13px]">
+              the cron generates them on day 1; or trigger one above.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <ul className="divide-border divide-y">
+          {snapshots.map((snap) => (
+            <li
+              key={snap.id}
+              className="hover:bg-muted/40 flex items-center gap-4 px-5 py-3 transition-colors"
+            >
+              <div className="flex min-w-0 flex-1 flex-col">
+                <span className="text-foreground truncate text-[13px] font-medium capitalize">
+                  {snap.monthLabel}
+                </span>
+                <span className="text-muted-foreground truncate text-[12px]">
+                  cumulative · {formatCurrency(snap.totalSave)}
+                </span>
+              </div>
+              <div className="hidden items-baseline gap-5 md:flex">
+                <Stat label="incomes" value={snap.totalIncomes} />
+                <Stat label="expenses" value={snap.totalExpenses} muted />
+                <Stat
+                  label="invest."
+                  value={(
+                    Number(snap.totalLiquidSavings) + Number(snap.totalFixedIncome)
+                  ).toFixed(2)}
+                  muted
+                />
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  aria-label="actions"
+                  disabled={isPending}
+                  className="hover:bg-muted aria-expanded:bg-muted focus-visible:ring-ring/50 inline-flex size-7 items-center justify-center rounded-md transition-colors focus-visible:ring-3 focus-visible:outline-none"
                 >
-                  <div className="flex min-w-0 flex-1 flex-col">
-                    <span className="text-foreground truncate text-sm font-medium capitalize">
-                      {snap.monthLabel}
-                    </span>
-                    <span className="text-muted-foreground truncate text-xs">
-                      total acumulado · {formatBRL(snap.totalSave)}
-                    </span>
-                  </div>
-                  <div className="hidden items-baseline gap-6 text-sm md:flex">
-                    <Stat label="receitas" value={snap.totalIncomes} />
-                    <Stat label="despesas" value={snap.totalExpenses} muted />
-                    <Stat
-                      label="invest."
-                      value={(
-                        Number(snap.totalLiquidSavings) + Number(snap.totalFixedIncome)
-                      ).toFixed(2)}
-                      muted
-                    />
-                  </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger
-                      aria-label="Ações"
-                      disabled={isPending}
-                      className="hover:bg-muted aria-expanded:bg-muted focus-visible:ring-ring/50 inline-flex size-7 items-center justify-center rounded-md transition-colors focus-visible:ring-3 focus-visible:outline-none"
-                    >
-                      <MoreHorizontal aria-hidden className="size-3.5" />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onSelect={() => handleRecalculate(snap)}>
-                        <RefreshCw className="mr-2 size-4" strokeWidth={1.5} />
-                        Recalcular
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onSelect={() => setPendingDelete(snap)}
-                        className="text-destructive focus:text-destructive"
-                      >
-                        <Trash2 className="mr-2 size-4" strokeWidth={1.5} />
-                        Excluir
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </li>
-              ))}
-            </ul>
-          )}
-        </CardContent>
-      </Card>
+                  <MoreHorizontal aria-hidden className="size-3.5" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => handleRecalculate(snap)}>
+                    <RefreshCw className="mr-2 size-3.5" strokeWidth={1.5} />
+                    recompute
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setPendingDelete(snap)}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <Trash2 className="mr-2 size-3.5" strokeWidth={1.5} />
+                    delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </li>
+          ))}
+        </ul>
+      )}
 
       <AlertDialog open={pendingDelete !== null} onOpenChange={(o) => !o && setPendingDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Excluir snapshot</AlertDialogTitle>
+            <AlertDialogTitle>delete snapshot?</AlertDialogTitle>
             <AlertDialogDescription>
-              Excluir o snapshot de <span className="capitalize">{pendingDelete?.monthLabel}</span>?
-              O total acumulado dos meses seguintes pode ficar incorreto até você recalculá-los.
+              delete the snapshot for{" "}
+              <span className="capitalize">{pendingDelete?.monthLabel}</span>? the cumulative save of
+              following months may be off until you recompute them.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete}>Excluir</AlertDialogAction>
+            <AlertDialogCancel>cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </PageShell>
   );
 }
 
 function Stat({ label, value, muted }: { label: string; value: string; muted?: boolean }) {
   return (
     <span className="flex items-baseline gap-1.5">
-      <span className="text-muted-foreground text-xs uppercase">{label}</span>
-      <span className={cn("tabular-nums", muted ? "text-muted-foreground" : "text-foreground")}>
-        {formatBRL(value)}
+      <span className="text-muted-foreground/70 font-mono text-[11px] tracking-wider">{label}</span>
+      <span
+        className={cn(
+          "numeric text-[12.5px] tabular-nums",
+          muted ? "text-muted-foreground" : "text-foreground",
+        )}
+      >
+        {formatCurrency(value)}
       </span>
     </span>
   );

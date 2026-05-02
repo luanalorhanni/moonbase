@@ -1,22 +1,12 @@
 import { z } from "zod";
 
-export const CATEGORY_COLORS = [
-  "red",
-  "orange",
-  "yellow",
-  "green",
-  "blue",
-  "purple",
-  "pink",
-  "brown",
-  "gray",
-] as const;
-
-export type CategoryColor = (typeof CATEGORY_COLORS)[number];
+const hexPattern = /^#[0-9a-fA-F]{6}$/;
 
 export const categoryFormSchema = z.object({
-  name: z.string().trim().min(1, "Informe o nome da categoria"),
-  color: z.enum(CATEGORY_COLORS),
+  name: z.string().trim().min(1, "name is required"),
+  color: z.string().refine((v) => hexPattern.test(v), {
+    message: "use a hex color like #a855f7",
+  }),
   icon: z.string(),
 });
 
@@ -24,21 +14,21 @@ export type CategoryFormInput = z.infer<typeof categoryFormSchema>;
 
 export type CategoryActionData = {
   name: string;
-  color: CategoryColor;
+  color: string;
   icon: string | null;
 };
 
 export function normaliseCategoryForm(input: CategoryFormInput): CategoryActionData {
   return {
     name: input.name.trim(),
-    color: input.color,
+    color: input.color.toLowerCase(),
     icon: input.icon.trim() === "" ? null : input.icon.trim(),
   };
 }
 
 export const subcategoryFormSchema = z.object({
-  name: z.string().trim().min(1, "Informe o nome da subcategoria"),
-  categoryId: z.string().uuid("Selecione uma categoria"),
+  name: z.string().trim().min(1, "name is required"),
+  categoryId: z.string().uuid("select a category"),
 });
 
 export type SubcategoryFormInput = z.infer<typeof subcategoryFormSchema>;
