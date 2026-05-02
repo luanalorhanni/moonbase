@@ -4,6 +4,7 @@ import { MoreHorizontal, Plus, Repeat } from "lucide-react";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
+import { PageShell } from "@/components/dashboard/page-shell";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,6 +16,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { CategoryIcon } from "@/components/ui/category-icon";
 import {
   Dialog,
   DialogContent,
@@ -49,28 +51,28 @@ type DialogState =
   | { kind: "create" }
   | { kind: "edit"; expense: FixedExpenseWithDetails };
 
-const PT_MONTH_SHORT = [
+const EN_MONTH_SHORT = [
   "jan",
-  "fev",
+  "feb",
   "mar",
-  "abr",
-  "mai",
+  "apr",
+  "may",
   "jun",
   "jul",
-  "ago",
-  "set",
-  "out",
+  "aug",
+  "sep",
+  "oct",
   "nov",
-  "dez",
+  "dec",
 ];
 
 function formatMonth(dateStr: string): string {
   const [y, m] = dateStr.split("-").map(Number);
-  return `${PT_MONTH_SHORT[m - 1]}/${String(y).slice(2)}`;
+  return `${EN_MONTH_SHORT[m - 1]}/${String(y).slice(2)}`;
 }
 
 function formatAmount(value: string): string {
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: "BRL" }).format(
     Number(value),
   );
 }
@@ -90,7 +92,7 @@ export function FixedExpensesList({ initialExpenses, cards, subcategories }: Pro
     startDeleteTransition(async () => {
       const result = await deleteFixedExpense(expense.id);
       if (result.ok) {
-        toast.success("Despesa excluída.");
+        toast.success("expense deleted.");
         setPendingDelete(null);
       } else {
         toast.error(result.error);
@@ -99,104 +101,117 @@ export function FixedExpensesList({ initialExpenses, cards, subcategories }: Pro
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-8">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Despesas fixas</h1>
-          <p className="text-muted-foreground mt-0.5 text-sm">
-            Assinaturas e despesas recorrentes com valor estável.
-          </p>
-        </div>
+    <PageShell
+      title="recurring"
+      subtitle="subscriptions and monthly fixed costs"
+      toolbar={
         <Button onClick={() => setDialog({ kind: "create" })} size="sm">
-          <Plus aria-hidden className="size-4" /> Nova despesa
+          <Plus aria-hidden className="size-3.5" /> new recurring
         </Button>
-      </div>
-
+      }
+    >
       {initialExpenses.length === 0 ? (
         <EmptyState onAdd={() => setDialog({ kind: "create" })} />
       ) : (
-        <div className="border-border overflow-hidden rounded-lg border">
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                <TableHead className="py-3 text-[11px] font-medium tracking-wider uppercase">
-                  Descrição
-                </TableHead>
-                <TableHead className="py-3 text-[11px] font-medium tracking-wider uppercase">
-                  Subcategoria
-                </TableHead>
-                <TableHead className="py-3 text-[11px] font-medium tracking-wider uppercase">
-                  Cartão / Método
-                </TableHead>
-                <TableHead className="py-3 text-[11px] font-medium tracking-wider uppercase">
-                  Vencimento
-                </TableHead>
-                <TableHead className="py-3 text-right text-[11px] font-medium tracking-wider uppercase">
-                  Mensal
-                </TableHead>
-                <TableHead className="py-3 text-[11px] font-medium tracking-wider uppercase">
-                  Período
-                </TableHead>
-                <TableHead className="w-10 py-3" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {initialExpenses.map((expense) => (
-                <TableRow key={expense.id} className={expense.isActive ? "" : "opacity-50"}>
-                  <TableCell className="py-3.5">
-                    <div className="font-medium">{expense.description}</div>
-                    {!expense.isActive && (
-                      <span className="text-muted-foreground text-xs">inativa</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="py-3.5 text-sm">
-                    <span className="text-muted-foreground text-xs">{expense.categoryName}</span>
-                    <span className="text-muted-foreground mx-1 text-xs">/</span>
-                    {expense.subcategoryName}
-                  </TableCell>
-                  <TableCell className="py-3.5 text-sm">
-                    <div>{expense.cardName}</div>
-                    <div className="text-muted-foreground text-xs">
-                      {PAYMENT_METHOD_LABEL[expense.paymentMethod]}
-                    </div>
-                  </TableCell>
-                  <TableCell className="py-3.5 text-sm tabular-nums">
-                    {expense.dueDay !== null ? `dia ${expense.dueDay}` : "—"}
-                  </TableCell>
-                  <TableCell className="py-3.5 text-right text-sm tabular-nums">
-                    {formatAmount(expense.monthlyAmount)}
-                  </TableCell>
-                  <TableCell className="py-3.5 text-sm tabular-nums">
-                    {formatMonth(expense.startDate)}
-                    {" → "}
-                    {expense.endDate ? formatMonth(expense.endDate) : "…"}
-                  </TableCell>
-                  <TableCell className="py-3.5">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger
-                        aria-label="Ações"
-                        className="hover:bg-muted aria-expanded:bg-muted focus-visible:ring-ring/50 inline-flex size-7 items-center justify-center rounded-md transition-colors focus-visible:ring-3 focus-visible:outline-none"
+        <Table>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent">
+              <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
+                description
+              </TableHead>
+              <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
+                subcategory
+              </TableHead>
+              <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
+                card / method
+              </TableHead>
+              <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
+                due
+              </TableHead>
+              <TableHead className="py-2 text-right font-mono text-[11px] font-normal tracking-[0.16em]">
+                monthly
+              </TableHead>
+              <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
+                period
+              </TableHead>
+              <TableHead className="w-10 py-2" />
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {initialExpenses.map((expense) => (
+              <TableRow key={expense.id} className={expense.isActive ? "" : "opacity-50"}>
+                <TableCell className="py-3">
+                  <div className="text-[13px] font-medium">{expense.description}</div>
+                  {!expense.isActive && (
+                    <span className="text-muted-foreground text-[11px]">inactive</span>
+                  )}
+                </TableCell>
+                <TableCell className="py-3 text-[12px]">
+                  <span className="flex items-center gap-2">
+                    {expense.categoryIcon ? (
+                      <span
+                        aria-hidden
+                        className="border-border bg-card/60 flex size-5 shrink-0 items-center justify-center rounded-md border"
+                        style={{
+                          borderColor: `color-mix(in oklab, ${expense.categoryColor} 35%, var(--border))`,
+                        }}
                       >
-                        <MoreHorizontal aria-hidden className="size-3.5" />
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onSelect={() => setDialog({ kind: "edit", expense })}>
-                          Editar
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          variant="destructive"
-                          onSelect={() => setPendingDelete(expense)}
-                        >
-                          Excluir
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+                        <CategoryIcon
+                          icon={expense.categoryIcon}
+                          color={expense.categoryColor}
+                          size={12}
+                        />
+                      </span>
+                    ) : null}
+                    <span className="min-w-0 truncate">
+                      <span className="text-muted-foreground">{expense.categoryName}</span>
+                      <span className="text-muted-foreground mx-1">/</span>
+                      {expense.subcategoryName}
+                    </span>
+                  </span>
+                </TableCell>
+                <TableCell className="py-3 text-[12px]">
+                  <div>{expense.cardName}</div>
+                  <div className="text-muted-foreground text-[11px]">
+                    {PAYMENT_METHOD_LABEL[expense.paymentMethod]}
+                  </div>
+                </TableCell>
+                <TableCell className="py-3 font-mono text-[12px] tabular-nums">
+                  {expense.dueDay !== null ? `day ${expense.dueDay}` : "—"}
+                </TableCell>
+                <TableCell className="numeric py-3 text-right text-[13px] tabular-nums">
+                  {formatAmount(expense.monthlyAmount)}
+                </TableCell>
+                <TableCell className="py-3 font-mono text-[12px] tabular-nums">
+                  {formatMonth(expense.startDate)}
+                  {" → "}
+                  {expense.endDate ? formatMonth(expense.endDate) : "…"}
+                </TableCell>
+                <TableCell className="py-3">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      aria-label="actions"
+                      className="hover:bg-muted aria-expanded:bg-muted focus-visible:ring-ring/50 inline-flex size-7 items-center justify-center rounded-md transition-colors focus-visible:ring-3 focus-visible:outline-none"
+                    >
+                      <MoreHorizontal aria-hidden className="size-3.5" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => setDialog({ kind: "edit", expense })}>
+                        edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        variant="destructive"
+                        onClick={() => setPendingDelete(expense)}
+                      >
+                        delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       )}
 
       <Dialog
@@ -208,12 +223,12 @@ export function FixedExpensesList({ initialExpenses, cards, subcategories }: Pro
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>
-              {dialog.kind === "edit" ? "Editar despesa fixa" : "Nova despesa fixa"}
+              {dialog.kind === "edit" ? "edit recurring" : "new recurring"}
             </DialogTitle>
             <DialogDescription>
               {dialog.kind === "edit"
-                ? "Atualize os dados da despesa."
-                : "Registre uma assinatura ou despesa recorrente mensal."}
+                ? "update recurring expense details."
+                : "log a subscription or monthly fixed cost."}
             </DialogDescription>
           </DialogHeader>
           <FixedExpenseForm
@@ -234,15 +249,15 @@ export function FixedExpensesList({ initialExpenses, cards, subcategories }: Pro
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Excluir despesa?</AlertDialogTitle>
+            <AlertDialogTitle>delete recurring?</AlertDialogTitle>
             <AlertDialogDescription>
               {pendingDelete
-                ? `A despesa "${pendingDelete.description}" será removida permanentemente.`
+                ? `"${pendingDelete.description}" will be removed.`
                 : null}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>cancel</AlertDialogCancel>
             <AlertDialogAction
               disabled={isDeleting}
               onClick={(e) => {
@@ -250,27 +265,27 @@ export function FixedExpensesList({ initialExpenses, cards, subcategories }: Pro
                 if (pendingDelete) handleDelete(pendingDelete);
               }}
             >
-              {isDeleting ? "Excluindo..." : "Excluir"}
+              {isDeleting ? "deleting..." : "delete"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </PageShell>
   );
 }
 
 function EmptyState({ onAdd }: { onAdd: () => void }) {
   return (
-    <div className="border-border bg-card flex flex-col items-center gap-4 rounded-lg border border-dashed px-6 py-16 text-center">
+    <div className="flex h-full flex-col items-center justify-center gap-3 px-6 py-16 text-center">
       <Repeat className="text-muted-foreground/60 size-10" strokeWidth={1} aria-hidden />
       <div className="flex max-w-sm flex-col gap-1">
-        <h2 className="text-base font-medium">Nenhuma despesa fixa ainda.</h2>
-        <p className="text-muted-foreground text-sm">
-          Registre assinaturas e despesas recorrentes com valor mensal estável.
+        <h2 className="text-foreground text-[14px] font-medium">no recurring expenses yet</h2>
+        <p className="text-muted-foreground text-[13px]">
+          subscriptions, gym, taxes, anything that repeats monthly.
         </p>
       </div>
-      <Button onClick={onAdd} size="sm">
-        <Plus aria-hidden className="size-4" /> Nova despesa
+      <Button onClick={onAdd} size="sm" className="mt-2">
+        <Plus aria-hidden className="size-3.5" /> new recurring
       </Button>
     </div>
   );
