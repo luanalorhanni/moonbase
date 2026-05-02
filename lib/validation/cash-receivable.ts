@@ -4,24 +4,24 @@ export const LOAN_TYPES = ["pix", "debit", "cash"] as const;
 export type LoanType = (typeof LOAN_TYPES)[number];
 
 export const LOAN_TYPE_LABEL: Record<LoanType, string> = {
-  pix: "Pix",
-  debit: "Débito",
-  cash: "Dinheiro",
+  pix: "pix",
+  debit: "debit",
+  cash: "cash",
 };
 
 const amountPattern = /^\d+(\.\d{1,2})?$/;
 
 export const cashReceivableFormSchema = z.object({
-  description: z.string().trim().min(1, "Informe a descrição"),
+  description: z.string().trim().min(1, "description is required"),
   loanType: z.enum(LOAN_TYPES),
   amount: z.string().refine((v) => amountPattern.test(v.trim()), {
-    message: "Use o formato 1234.56 (ponto como separador decimal)",
+    message: "use 1234.56 format (period as decimal)",
   }),
-  loanDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Data inválida"),
-  expectedPaymentMonth: z.string().regex(/^\d{4}-\d{2}$/, "Mês inválido (AAAA-MM)"),
+  loanDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "invalid date"),
+  expectedPaymentMonth: z.string().regex(/^\d{4}-\d{2}$/, "invalid month (yyyy-mm)"),
   isPaid: z.boolean(),
   actualPaymentDate: z.string().refine((v) => v === "" || /^\d{4}-\d{2}-\d{2}$/.test(v), {
-    message: "Data inválida",
+    message: "invalid date",
   }),
 });
 

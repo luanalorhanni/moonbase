@@ -48,7 +48,7 @@ export function SidebarNav() {
             href={item.href}
             aria-current={isActive ? "page" : undefined}
             className={cn(
-              "group relative flex items-center gap-3 overflow-hidden rounded-xl px-3 py-2 text-[13px] transition-all duration-200",
+              "group relative flex items-center gap-3 overflow-hidden rounded-xl px-3 py-2 text-[14px] transition-all duration-200",
               isActive
                 ? "bg-sidebar-accent text-foreground"
                 : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-foreground",
@@ -58,7 +58,7 @@ export function SidebarNav() {
               aria-hidden
               className={cn(
                 "absolute inset-0 -z-0 opacity-0 transition-opacity duration-300",
-                "bg-[radial-gradient(circle_at_0%_50%,oklch(0.82_0.13_78/0.18),transparent_60%)]",
+                "bg-[radial-gradient(circle_at_0%_50%,oklch(0.65_0.10_200/0.20),transparent_60%)]",
                 "group-hover:opacity-100",
                 isActive && "opacity-60",
               )}

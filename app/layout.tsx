@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, JetBrains_Mono, Onest } from "next/font/google";
 
+import { Starfield } from "@/components/decorative/starfield";
 import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register";
+import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
@@ -29,13 +31,13 @@ const jetMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "moonbase",
-  description: "personal finance, charted from a quiet observatory.",
+  description: "personal finance monitoring.",
   manifest: "/manifest.json",
   applicationName: "moonbase",
   appleWebApp: {
     capable: true,
     title: "moonbase",
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default",
   },
   icons: {
     icon: [
@@ -48,21 +50,29 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#1a1d2e",
-  colorScheme: "dark",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#fafafa" },
+    { media: "(prefers-color-scheme: dark)", color: "#1a1d2e" },
+  ],
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${onest.variable} ${fraunces.variable} ${jetMono.variable} h-full antialiased`}
     >
       <body className="bg-background relative flex min-h-full flex-col overflow-x-hidden">
-        <div className="ambient" aria-hidden />
-        <div className="relative z-10 flex min-h-full flex-1 flex-col">{children}</div>
-        <ServiceWorkerRegister />
-        <Toaster richColors closeButton position="top-right" theme="dark" />
+        <ThemeProvider>
+          <div className="ambient" aria-hidden />
+          <Starfield />
+          <div className="relative z-10 flex min-h-full flex-1 flex-col">{children}</div>
+          <ServiceWorkerRegister />
+          <Toaster richColors closeButton position="top-right" />
+        </ThemeProvider>
       </body>
     </html>
   );

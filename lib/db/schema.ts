@@ -44,17 +44,12 @@ export const incomeTypeEnum = pgEnum("income_type", [
 ]);
 export const loanTypeEnum = pgEnum("loan_type", ["pix", "debit", "cash"]);
 export const snapshotStatusEnum = pgEnum("snapshot_status", ["locked", "draft"]);
-export const colorEnum = pgEnum("color", [
-  "red",
-  "orange",
-  "yellow",
-  "green",
-  "blue",
-  "purple",
-  "pink",
-  "brown",
-  "gray",
-]);
+
+/**
+ * Color is stored as a free-form text string holding a 6-digit hex code
+ * (e.g. "#a855f7"). Was previously a fixed `pgEnum`; the migration
+ * 0002_hex_colors.sql converts the existing values.
+ */
 
 // ---------------------------------------------------------------------------
 // Tables
@@ -64,7 +59,7 @@ export const categories = pgTable("categories", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: uuid("user_id").notNull(),
   name: text("name").notNull(),
-  color: colorEnum("color").notNull().default("gray"),
+  color: text("color").notNull().default("#a855f7"),
   icon: text("icon"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
@@ -88,7 +83,7 @@ export const cards = pgTable("cards", {
   defaultClosingDay: integer("default_closing_day"),
   dueDay: integer("due_day"),
   limitAmount: numeric("limit_amount", { precision: 12, scale: 2 }),
-  color: colorEnum("color").notNull().default("gray"),
+  color: text("color").notNull().default("#a855f7"),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });

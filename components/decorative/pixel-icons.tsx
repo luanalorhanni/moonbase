@@ -18,7 +18,7 @@ export function PixelMoonFull({ size = 16, className }: PixelProps) {
         <rect x="3" y="12" width="10" height="1" />
         <rect x="5" y="13" width="6" height="1" />
       </g>
-      <g fill="oklch(0.55 0.020 260)" opacity="0.7">
+      <g fill="oklch(0.55 0.05 265)" opacity="0.7">
         <rect x="5" y="6" width="2" height="2" />
         <rect x="9" y="5" width="1" height="1" />
         <rect x="10" y="9" width="2" height="1" />
@@ -99,7 +99,7 @@ export function PixelPlanet({ size = 16, className }: PixelProps) {
         <rect x="4" y="10" width="8" height="1" />
         <rect x="6" y="11" width="4" height="1" />
       </g>
-      <g fill="oklch(0.78 0.12 80)" opacity="0.65">
+      <g fill="oklch(0.65 0.10 200)" opacity="0.65">
         <rect x="0" y="9" width="3" height="1" />
         <rect x="13" y="6" width="3" height="1" />
       </g>
