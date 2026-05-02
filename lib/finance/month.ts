@@ -107,15 +107,24 @@ export function subtractNumeric(a: string, b: string): string {
   return (Number(a) - Number(b)).toFixed(2);
 }
 
-export type GroupBucket = { key: string; label: string; total: string; color?: string };
+export type GroupBucket = {
+  key: string;
+  label: string;
+  total: string;
+  color?: string;
+  icon?: string | null;
+};
 
 export function groupSum<T>(
   items: ReadonlyArray<T>,
   keyFn: (item: T) => string,
   amountFn: (item: T) => string,
-  metaFn: (item: T) => { label: string; color?: string },
+  metaFn: (item: T) => { label: string; color?: string; icon?: string | null },
 ): GroupBucket[] {
-  const buckets = new Map<string, { label: string; total: number; color?: string }>();
+  const buckets = new Map<
+    string,
+    { label: string; total: number; color?: string; icon?: string | null }
+  >();
   for (const item of items) {
     const key = keyFn(item);
     const meta = metaFn(item);
@@ -123,15 +132,21 @@ export function groupSum<T>(
     if (existing) {
       existing.total += Number(amountFn(item));
     } else {
-      buckets.set(key, { label: meta.label, color: meta.color, total: Number(amountFn(item)) });
+      buckets.set(key, {
+        label: meta.label,
+        color: meta.color,
+        icon: meta.icon,
+        total: Number(amountFn(item)),
+      });
     }
   }
   return Array.from(buckets.entries())
-    .map(([key, { label, total, color }]) => ({
+    .map(([key, { label, total, color, icon }]) => ({
       key,
       label,
       total: total.toFixed(2),
       color,
+      icon,
     }))
     .sort((a, b) => Number(b.total) - Number(a.total));
 }

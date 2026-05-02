@@ -10,8 +10,11 @@ export type CashExpenseRow = typeof schema.cashExpenses.$inferSelect;
 
 export type CashExpenseWithDetails = CashExpenseRow & {
   cardName: string;
+  cardColor: string;
   subcategoryName: string;
   categoryName: string;
+  categoryIcon: string | null;
+  categoryColor: string;
 };
 
 export const listCashExpenses = cachedQuery(
@@ -31,8 +34,11 @@ export const listCashExpenses = cachedQuery(
         originalSpreadsheetId: schema.cashExpenses.originalSpreadsheetId,
         createdAt: schema.cashExpenses.createdAt,
         cardName: schema.cards.name,
+        cardColor: schema.cards.color,
         subcategoryName: schema.subcategories.name,
         categoryName: schema.categories.name,
+        categoryIcon: schema.categories.icon,
+        categoryColor: schema.categories.color,
       })
       .from(schema.cashExpenses)
       .innerJoin(schema.cards, eq(schema.cashExpenses.cardId, schema.cards.id))

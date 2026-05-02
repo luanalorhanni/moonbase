@@ -4,6 +4,8 @@ import { ChevronDown, ChevronRight, MoreHorizontal, Plus, Tags } from "lucide-re
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
+import { PageShell } from "@/components/dashboard/page-shell";
+import { CategoryIcon } from "@/components/ui/category-icon";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,17 +48,6 @@ type DeleteState =
   | { kind: "category"; item: CategoryWithSubs }
   | { kind: "subcategory"; item: SubcategoryRow };
 
-const COLOR_DOT_CLASS: Record<string, string> = {
-  red: "bg-red-500",
-  orange: "bg-orange-500",
-  yellow: "bg-yellow-400",
-  green: "bg-green-500",
-  blue: "bg-blue-500",
-  purple: "bg-purple-500",
-  pink: "bg-pink-500",
-  brown: "bg-amber-700",
-  gray: "bg-gray-400",
-};
 
 export function CategoriesList({ initialCategories }: { initialCategories: CategoryWithSubs[] }) {
   const [dialog, setDialog] = useState<DialogState>({ kind: "closed" });
@@ -83,7 +74,7 @@ export function CategoriesList({ initialCategories }: { initialCategories: Categ
 
       if (result.ok) {
         toast.success(
-          pendingDelete.kind === "category" ? "Categoria excluída." : "Subcategoria excluída.",
+          pendingDelete.kind === "category" ? "category deleted." : "subcategory deleted.",
         );
         setPendingDelete(null);
       } else {
@@ -93,23 +84,19 @@ export function CategoriesList({ initialCategories }: { initialCategories: Categ
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-8">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Categorias</h1>
-          <p className="text-muted-foreground mt-0.5 text-sm">
-            Categorias e subcategorias para classificar despesas.
-          </p>
-        </div>
+    <PageShell
+      title="categories"
+      subtitle="classification for expenses"
+      toolbar={
         <Button onClick={() => setDialog({ kind: "new-category" })} size="sm">
-          <Plus aria-hidden className="size-4" /> Nova categoria
+          <Plus aria-hidden className="size-3.5" /> new category
         </Button>
-      </div>
-
+      }
+    >
       {initialCategories.length === 0 ? (
         <EmptyState onAdd={() => setDialog({ kind: "new-category" })} />
       ) : (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col px-5 py-4 gap-1.5">
           {initialCategories.map((category) => {
             const isOpen = expanded.has(category.id);
             return (
@@ -119,7 +106,7 @@ export function CategoriesList({ initialCategories }: { initialCategories: Categ
                     type="button"
                     onClick={() => toggleExpand(category.id)}
                     aria-expanded={isOpen}
-                    aria-label={isOpen ? "Recolher subcategorias" : "Expandir subcategorias"}
+                    aria-label={isOpen ? "collapse subcategories" : "expand subcategories"}
                     className="text-muted-foreground hover:text-foreground shrink-0 transition-colors"
                   >
                     {isOpen ? (
@@ -130,42 +117,53 @@ export function CategoriesList({ initialCategories }: { initialCategories: Categ
                   </button>
 
                   {category.icon ? (
-                    <span className="w-5 shrink-0 text-center text-base leading-none" aria-hidden>
-                      {category.icon}
+                    <span
+                      className="border-border bg-card flex size-6 shrink-0 items-center justify-center rounded-md border"
+                      aria-hidden
+                      style={{
+                        borderColor: `color-mix(in oklab, ${category.color} 35%, var(--border))`,
+                      }}
+                    >
+                      <CategoryIcon
+                        icon={category.icon}
+                        color={category.color}
+                        size={14}
+                      />
                     </span>
                   ) : (
                     <span
-                      className={`size-3 shrink-0 rounded-full ring-1 ring-black/10 ${COLOR_DOT_CLASS[category.color]}`}
+                      className="size-3 shrink-0 rounded-full ring-1 ring-black/10"
+                      style={{ backgroundColor: category.color }}
                       aria-hidden
                     />
                   )}
 
                   <span className="flex-1 font-medium">{category.name}</span>
 
-                  <span className="text-muted-foreground shrink-0 text-xs tabular-nums">
+                  <span className="text-muted-foreground shrink-0 font-mono text-[11.5px] tracking-wider tabular-nums">
                     {category.subcategories.length === 0
-                      ? "sem subcategorias"
-                      : `${category.subcategories.length} subcategoria${category.subcategories.length !== 1 ? "s" : ""}`}
+                      ? "no subcategories"
+                      : `${category.subcategories.length} sub${category.subcategories.length !== 1 ? "s" : ""}`}
                   </span>
 
                   <DropdownMenu>
                     <DropdownMenuTrigger
-                      aria-label="Ações da categoria"
+                      aria-label="category actions"
                       className="hover:bg-muted aria-expanded:bg-muted focus-visible:ring-ring/50 inline-flex size-7 shrink-0 items-center justify-center rounded-md transition-colors focus-visible:ring-3 focus-visible:outline-none"
                     >
                       <MoreHorizontal aria-hidden className="size-3.5" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem
-                        onSelect={() => setDialog({ kind: "edit-category", category })}
+                        onClick={() => setDialog({ kind: "edit-category", category })}
                       >
-                        Editar
+                        edit
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         variant="destructive"
-                        onSelect={() => setPendingDelete({ kind: "category", item: category })}
+                        onClick={() => setPendingDelete({ kind: "category", item: category })}
                       >
-                        Excluir
+                        delete
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -176,7 +174,7 @@ export function CategoriesList({ initialCategories }: { initialCategories: Categ
                     {category.subcategories.map((sub) => (
                       <div
                         key={sub.id}
-                        className="border-border flex items-center gap-3 border-b px-4 py-2.5 last:border-b-0"
+                        className="border-border flex items-center gap-3 border-b px-4 py-3 last:border-b-0"
                       >
                         <span className="w-4 shrink-0" aria-hidden />
                         <ChevronRight
@@ -186,14 +184,14 @@ export function CategoriesList({ initialCategories }: { initialCategories: Categ
                         <span className="flex-1 text-sm">{sub.name}</span>
                         <DropdownMenu>
                           <DropdownMenuTrigger
-                            aria-label="Ações da subcategoria"
+                            aria-label="subcategory actions"
                             className="hover:bg-muted aria-expanded:bg-muted focus-visible:ring-ring/50 inline-flex size-7 shrink-0 items-center justify-center rounded-md transition-colors focus-visible:ring-3 focus-visible:outline-none"
                           >
                             <MoreHorizontal aria-hidden className="size-3.5" />
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem
-                              onSelect={() =>
+                              onClick={() =>
                                 setDialog({
                                   kind: "edit-subcategory",
                                   subcategory: sub,
@@ -201,20 +199,20 @@ export function CategoriesList({ initialCategories }: { initialCategories: Categ
                                 })
                               }
                             >
-                              Editar
+                              edit
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               variant="destructive"
-                              onSelect={() => setPendingDelete({ kind: "subcategory", item: sub })}
+                              onClick={() => setPendingDelete({ kind: "subcategory", item: sub })}
                             >
-                              Excluir
+                              delete
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
                     ))}
 
-                    <div className="px-4 py-2.5">
+                    <div className="px-4 py-3">
                       <button
                         type="button"
                         onClick={() =>
@@ -224,10 +222,10 @@ export function CategoriesList({ initialCategories }: { initialCategories: Categ
                             categoryName: category.name,
                           })
                         }
-                        className="text-muted-foreground hover:text-foreground flex items-center gap-1.5 text-xs transition-colors"
+                        className="text-muted-foreground hover:text-foreground flex items-center gap-1.5 text-[12px] transition-colors"
                       >
                         <Plus className="size-3" aria-hidden />
-                        Adicionar subcategoria
+                        add subcategory
                       </button>
                     </div>
                   </div>
@@ -247,12 +245,12 @@ export function CategoriesList({ initialCategories }: { initialCategories: Categ
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>
-              {dialog.kind === "edit-category" ? "Editar categoria" : "Nova categoria"}
+              {dialog.kind === "edit-category" ? "edit category" : "new category"}
             </DialogTitle>
             <DialogDescription>
               {dialog.kind === "edit-category"
-                ? "Atualize os dados da categoria."
-                : "Crie uma nova categoria para classificar despesas."}
+                ? "update category details."
+                : "create a category to classify expenses."}
             </DialogDescription>
           </DialogHeader>
           <CategoryForm
@@ -272,12 +270,12 @@ export function CategoriesList({ initialCategories }: { initialCategories: Categ
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>
-              {dialog.kind === "edit-subcategory" ? "Editar subcategoria" : "Nova subcategoria"}
+              {dialog.kind === "edit-subcategory" ? "edit subcategory" : "new subcategory"}
             </DialogTitle>
             <DialogDescription>
               {dialog.kind === "new-subcategory"
-                ? `Em: ${dialog.categoryName}`
-                : "Atualize o nome da subcategoria."}
+                ? `under: ${dialog.categoryName}`
+                : "rename the subcategory."}
             </DialogDescription>
           </DialogHeader>
           {(dialog.kind === "new-subcategory" || dialog.kind === "edit-subcategory") && (
@@ -308,19 +306,19 @@ export function CategoriesList({ initialCategories }: { initialCategories: Categ
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {pendingDelete?.kind === "category" ? "Excluir categoria?" : "Excluir subcategoria?"}
+              {pendingDelete?.kind === "category" ? "delete category?" : "delete subcategory?"}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {pendingDelete?.kind === "category"
-                ? `A categoria "${pendingDelete.item.name}" será removida permanentemente.`
+                ? `"${pendingDelete.item.name}" will be removed.`
                 : pendingDelete?.kind === "subcategory"
-                  ? `A subcategoria "${pendingDelete.item.name}" será removida.`
+                  ? `"${pendingDelete.item.name}" will be removed.`
                   : null}{" "}
-              Esta ação não pode ser desfeita.
+              this can't be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>cancel</AlertDialogCancel>
             <AlertDialogAction
               disabled={isDeleting}
               onClick={(e) => {
@@ -328,27 +326,27 @@ export function CategoriesList({ initialCategories }: { initialCategories: Categ
                 handleDelete();
               }}
             >
-              {isDeleting ? "Excluindo..." : "Excluir"}
+              {isDeleting ? "deleting..." : "delete"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </PageShell>
   );
 }
 
 function EmptyState({ onAdd }: { onAdd: () => void }) {
   return (
-    <div className="border-border bg-card flex flex-col items-center gap-4 rounded-lg border border-dashed px-6 py-16 text-center">
+    <div className="flex h-full flex-col items-center justify-center gap-3 px-6 py-16 text-center">
       <Tags className="text-muted-foreground/60 size-10" strokeWidth={1} aria-hidden />
       <div className="flex max-w-sm flex-col gap-1">
-        <h2 className="text-base font-medium">Nenhuma categoria ainda</h2>
-        <p className="text-muted-foreground text-sm">
-          Crie categorias para classificar suas despesas.
+        <h2 className="text-foreground text-[14px] font-medium">no categories yet</h2>
+        <p className="text-muted-foreground text-[13px]">
+          create categories to classify expenses.
         </p>
       </div>
-      <Button onClick={onAdd} size="sm">
-        <Plus aria-hidden className="size-4" /> Nova categoria
+      <Button onClick={onAdd} size="sm" className="mt-2">
+        <Plus aria-hidden className="size-3.5" /> new category
       </Button>
     </div>
   );

@@ -28,6 +28,8 @@ export type AggregateInputs = {
     cardColor?: string;
     subcategoryId: string;
     categoryName: string;
+    categoryIcon?: string | null;
+    categoryColor?: string;
     method?: string;
   }>;
   creditExpenses: ReadonlyArray<{
@@ -40,6 +42,8 @@ export type AggregateInputs = {
     cardColor?: string;
     subcategoryId: string;
     categoryName: string;
+    categoryIcon?: string | null;
+    categoryColor?: string;
     description?: string;
     totalParcels?: number;
     purchaseDate?: string;
@@ -56,6 +60,8 @@ export type AggregateInputs = {
     cardColor?: string;
     subcategoryId: string;
     categoryName: string;
+    categoryIcon?: string | null;
+    categoryColor?: string;
   }>;
   incomes: ReadonlyArray<{
     id: string;
@@ -117,21 +123,31 @@ export function aggregateMonth(rows: AggregateInputs, reference: MonthRef): Mont
 
   const byCategory = groupSum(
     [
-      ...cash.map((e) => ({ key: e.categoryName, amount: e.amount, label: e.categoryName })),
+      ...cash.map((e) => ({
+        key: e.categoryName,
+        amount: e.amount,
+        label: e.categoryName,
+        icon: e.categoryIcon,
+        color: e.categoryColor,
+      })),
       ...credit.map((e) => ({
         key: e.categoryName,
         amount: e.parcelValue,
         label: e.categoryName,
+        icon: e.categoryIcon,
+        color: e.categoryColor,
       })),
       ...fixed.map((e) => ({
         key: e.categoryName,
         amount: e.monthlyAmount,
         label: e.categoryName,
+        icon: e.categoryIcon,
+        color: e.categoryColor,
       })),
     ],
     (r) => r.key,
     (r) => r.amount,
-    (r) => ({ label: r.label }),
+    (r) => ({ label: r.label, icon: r.icon, color: r.color }),
   );
 
   type CardBucket = { key: string; amount: string; label: string; color?: string };
