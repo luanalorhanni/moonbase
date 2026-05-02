@@ -1,9 +1,26 @@
 "use client";
 
 import { Banknote, MoreHorizontal, Plus } from "lucide-react";
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 
+import {
+  amountInRange,
+  ColumnAmountRange,
+  ColumnDateRange,
+  ColumnFilter,
+  ColumnSearch,
+  dateInRange,
+  EMPTY_AMOUNT_RANGE,
+  EMPTY_DATE_RANGE,
+  FilterOption,
+  isAmountRangeActive,
+  isDateRangeActive,
+  StatusBar,
+  type AmountRange,
+  type DateRange,
+} from "@/components/dashboard/column-filters";
+import { PageShell } from "@/components/dashboard/page-shell";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,6 +32,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { CategoryIcon } from "@/components/ui/category-icon";
 import {
   Dialog,
   DialogContent,
@@ -50,14 +68,16 @@ type DialogState =
   | { kind: "edit"; expense: CashExpenseWithDetails };
 
 function formatAmount(value: string): string {
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: "BRL" }).format(
     Number(value),
   );
 }
 
 function formatDate(dateStr: string): string {
   const [y, m, d] = dateStr.split("-").map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString("pt-BR");
+  return new Intl.DateTimeFormat("en-US", { month: "short", day: "2-digit" })
+    .format(new Date(y, m - 1, d))
+    .toLowerCase();
 }
 
 type Props = {
@@ -71,11 +91,75 @@ export function CashExpensesList({ initialExpenses, cards, subcategories }: Prop
   const [pendingDelete, setPendingDelete] = useState<CashExpenseWithDetails | null>(null);
   const [isDeleting, startDeleteTransition] = useTransition();
 
+  const [query, setQuery] = useState("");
+  const [cardFilter, setCardFilter] = useState<string | null>(null);
+  const [methodFilter, setMethodFilter] = useState<"pix" | "debit" | "cash" | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+  const [dateRange, setDateRange] = useState<DateRange>(EMPTY_DATE_RANGE);
+  const [amountRange, setAmountRange] = useState<AmountRange>(EMPTY_AMOUNT_RANGE);
+
+  const filterOptions = useMemo(() => {
+    const cardSet = new Map<string, { id: string; name: string; color: string }>();
+    const categorySet = new Set<string>();
+    for (const e of initialExpenses) {
+      if (!cardSet.has(e.cardId)) {
+        cardSet.set(e.cardId, { id: e.cardId, name: e.cardName, color: e.cardColor });
+      }
+      categorySet.add(e.categoryName);
+    }
+    return {
+      cards: Array.from(cardSet.values()).sort((a, b) => a.name.localeCompare(b.name)),
+      categories: Array.from(categorySet).sort(),
+    };
+  }, [initialExpenses]);
+
+  const filteredExpenses = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return initialExpenses.filter((e) => {
+      if (cardFilter && e.cardId !== cardFilter) return false;
+      if (methodFilter && e.method !== methodFilter) return false;
+      if (categoryFilter && e.categoryName !== categoryFilter) return false;
+      if (!dateInRange(e.date, dateRange)) return false;
+      if (!amountInRange(e.amount, amountRange)) return false;
+      if (
+        q &&
+        !e.description.toLowerCase().includes(q) &&
+        !e.cardName.toLowerCase().includes(q) &&
+        !e.subcategoryName.toLowerCase().includes(q) &&
+        !e.categoryName.toLowerCase().includes(q)
+      )
+        return false;
+      return true;
+    });
+  }, [initialExpenses, query, cardFilter, methodFilter, categoryFilter, dateRange, amountRange]);
+
+  const filteredTotal = useMemo(
+    () => filteredExpenses.reduce((acc, e) => acc + Number(e.amount), 0),
+    [filteredExpenses],
+  );
+
+  const isFiltering =
+    query.trim() !== "" ||
+    cardFilter !== null ||
+    methodFilter !== null ||
+    categoryFilter !== null ||
+    isDateRangeActive(dateRange) ||
+    isAmountRangeActive(amountRange);
+
+  function clearFilters() {
+    setQuery("");
+    setCardFilter(null);
+    setMethodFilter(null);
+    setCategoryFilter(null);
+    setDateRange(EMPTY_DATE_RANGE);
+    setAmountRange(EMPTY_AMOUNT_RANGE);
+  }
+
   function handleDelete(expense: CashExpenseWithDetails) {
     startDeleteTransition(async () => {
       const result = await deleteCashExpense(expense.id);
       if (result.ok) {
-        toast.success("Despesa excluída.");
+        toast.success("expense deleted.");
         setPendingDelete(null);
       } else {
         toast.error(result.error);
@@ -84,94 +168,204 @@ export function CashExpensesList({ initialExpenses, cards, subcategories }: Prop
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-8">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Despesas à vista</h1>
-          <p className="text-muted-foreground mt-0.5 text-sm">
-            Pagamentos via Pix, débito ou dinheiro.
-          </p>
-        </div>
+    <PageShell
+      title="cash expenses"
+      subtitle="pix, debit, cash"
+      toolbar={
         <Button onClick={() => setDialog({ kind: "create" })} size="sm">
-          <Plus aria-hidden className="size-4" /> Nova despesa
+          <Plus aria-hidden className="size-3.5" /> new expense
         </Button>
-      </div>
-
+      }
+    >
       {initialExpenses.length === 0 ? (
         <EmptyState onAdd={() => setDialog({ kind: "create" })} />
       ) : (
-        <div className="border-border overflow-hidden rounded-lg border">
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                <TableHead className="py-3 text-[11px] font-medium tracking-wider uppercase">
-                  Descrição
-                </TableHead>
-                <TableHead className="py-3 text-[11px] font-medium tracking-wider uppercase">
-                  Subcategoria
-                </TableHead>
-                <TableHead className="py-3 text-[11px] font-medium tracking-wider uppercase">
-                  Conta
-                </TableHead>
-                <TableHead className="py-3 text-[11px] font-medium tracking-wider uppercase">
-                  Método
-                </TableHead>
-                <TableHead className="py-3 text-[11px] font-medium tracking-wider uppercase">
-                  Data
-                </TableHead>
-                <TableHead className="py-3 text-right text-[11px] font-medium tracking-wider uppercase">
-                  Valor
-                </TableHead>
-                <TableHead className="w-10 py-3" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {initialExpenses.map((expense) => (
-                <TableRow key={expense.id}>
-                  <TableCell className="py-3.5 font-medium">{expense.description}</TableCell>
-                  <TableCell className="py-3.5 text-sm">
-                    <span className="text-muted-foreground text-xs">{expense.categoryName}</span>
-                    <span className="text-muted-foreground mx-1 text-xs">/</span>
-                    {expense.subcategoryName}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground py-3.5 text-sm">
-                    {expense.cardName}
-                  </TableCell>
-                  <TableCell className="py-3.5 text-sm">
-                    {CASH_METHOD_LABEL[expense.method]}
-                  </TableCell>
-                  <TableCell className="py-3.5 text-sm tabular-nums">
-                    {formatDate(expense.date)}
-                  </TableCell>
-                  <TableCell className="py-3.5 text-right text-sm tabular-nums">
-                    {formatAmount(expense.amount)}
-                  </TableCell>
-                  <TableCell className="py-3.5">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger
-                        aria-label="Ações"
-                        className="hover:bg-muted aria-expanded:bg-muted focus-visible:ring-ring/50 inline-flex size-7 items-center justify-center rounded-md transition-colors focus-visible:ring-3 focus-visible:outline-none"
-                      >
-                        <MoreHorizontal aria-hidden className="size-3.5" />
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onSelect={() => setDialog({ kind: "edit", expense })}>
-                          Editar
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          variant="destructive"
-                          onSelect={() => setPendingDelete(expense)}
-                        >
-                          Excluir
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
+        <>
+          <StatusBar
+            shownCount={filteredExpenses.length}
+            totalCount={initialExpenses.length}
+            filteredTotal={filteredTotal}
+            isFiltering={isFiltering}
+            clearFilters={clearFilters}
+          />
+          {filteredExpenses.length === 0 ? (
+            <div className="flex h-[200px] flex-col items-center justify-center gap-2 px-6 text-center">
+              <p className="text-foreground text-[14px]">no matches.</p>
+              <p className="text-muted-foreground text-[12px]">
+                try a different query or clear filters.
+              </p>
+              <Button onClick={clearFilters} variant="ghost" size="sm" className="mt-1">
+                clear filters
+              </Button>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
+                    <ColumnSearch label="description" query={query} setQuery={setQuery} />
+                  </TableHead>
+                  <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
+                    <ColumnFilter
+                      label="category"
+                      active={categoryFilter !== null}
+                      activeChip={categoryFilter ? { label: categoryFilter } : null}
+                      onClear={() => setCategoryFilter(null)}
+                    >
+                      {filterOptions.categories.map((cat) => (
+                        <FilterOption
+                          key={cat}
+                          label={cat}
+                          active={categoryFilter === cat}
+                          onClick={() => setCategoryFilter(categoryFilter === cat ? null : cat)}
+                        />
+                      ))}
+                    </ColumnFilter>
+                  </TableHead>
+                  <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
+                    <ColumnFilter
+                      label="account"
+                      active={cardFilter !== null}
+                      activeChip={
+                        cardFilter
+                          ? {
+                              label:
+                                filterOptions.cards.find((c) => c.id === cardFilter)?.name ?? "",
+                              color: filterOptions.cards.find((c) => c.id === cardFilter)?.color,
+                            }
+                          : null
+                      }
+                      onClear={() => setCardFilter(null)}
+                    >
+                      {filterOptions.cards.map((c) => (
+                        <FilterOption
+                          key={c.id}
+                          label={c.name}
+                          color={c.color}
+                          active={cardFilter === c.id}
+                          onClick={() => setCardFilter(cardFilter === c.id ? null : c.id)}
+                        />
+                      ))}
+                    </ColumnFilter>
+                  </TableHead>
+                  <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
+                    <ColumnFilter
+                      label="method"
+                      active={methodFilter !== null}
+                      activeChip={methodFilter ? { label: CASH_METHOD_LABEL[methodFilter] } : null}
+                      onClear={() => setMethodFilter(null)}
+                    >
+                      {(["pix", "debit", "cash"] as const).map((m) => (
+                        <FilterOption
+                          key={m}
+                          label={CASH_METHOD_LABEL[m]}
+                          active={methodFilter === m}
+                          onClick={() => setMethodFilter(methodFilter === m ? null : m)}
+                        />
+                      ))}
+                    </ColumnFilter>
+                  </TableHead>
+                  <TableHead className="py-2 font-mono text-[11px] font-normal tracking-[0.16em]">
+                    <ColumnDateRange
+                      label="date"
+                      value={dateRange}
+                      onChange={setDateRange}
+                      granularity="day"
+                    />
+                  </TableHead>
+                  <TableHead className="py-2 text-right font-mono text-[11px] font-normal tracking-[0.16em]">
+                    <ColumnAmountRange
+                      label="amount"
+                      value={amountRange}
+                      onChange={setAmountRange}
+                    />
+                  </TableHead>
+                  <TableHead className="w-10 py-2" />
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+              </TableHeader>
+              <TableBody>
+                {filteredExpenses.map((expense) => (
+                  <TableRow key={expense.id}>
+                    <TableCell className="py-3 text-[13px] font-medium">
+                      {expense.description}
+                    </TableCell>
+                    <TableCell className="py-3 text-[12px]">
+                      <span className="flex items-center gap-2">
+                        {expense.categoryIcon ? (
+                          <span
+                            aria-hidden
+                            className="border-border bg-card/60 flex size-5 shrink-0 items-center justify-center rounded-md border"
+                            style={{
+                              borderColor: `color-mix(in oklab, ${expense.categoryColor} 35%, var(--border))`,
+                            }}
+                          >
+                            <CategoryIcon
+                              icon={expense.categoryIcon}
+                              color={expense.categoryColor}
+                              size={12}
+                            />
+                          </span>
+                        ) : null}
+                        <span className="min-w-0 truncate">
+                          <span className="text-muted-foreground">{expense.categoryName}</span>
+                          <span className="text-muted-foreground/40 mx-1">/</span>
+                          <span className="text-foreground">{expense.subcategoryName}</span>
+                        </span>
+                      </span>
+                    </TableCell>
+                    <TableCell className="py-3">
+                      <span className="flex items-center gap-2">
+                        <span
+                          className="size-2 shrink-0 rounded-full"
+                          style={{ backgroundColor: expense.cardColor }}
+                          aria-hidden
+                        />
+                        <span
+                          className="border-border bg-card/60 truncate rounded-md border px-2 py-0.5 text-[12px]"
+                          style={{
+                            borderColor: `color-mix(in oklab, ${expense.cardColor} 35%, var(--border))`,
+                          }}
+                        >
+                          {expense.cardName}
+                        </span>
+                      </span>
+                    </TableCell>
+                    <TableCell className="py-3 text-[12px]">
+                      {CASH_METHOD_LABEL[expense.method]}
+                    </TableCell>
+                    <TableCell className="py-3 font-mono text-[12px] tabular-nums">
+                      {formatDate(expense.date)}
+                    </TableCell>
+                    <TableCell className="numeric py-3 text-right text-[13px] tabular-nums">
+                      {formatAmount(expense.amount)}
+                    </TableCell>
+                    <TableCell className="py-3">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger
+                          aria-label="actions"
+                          className="hover:bg-muted aria-expanded:bg-muted focus-visible:ring-ring/50 inline-flex size-7 items-center justify-center rounded-md transition-colors focus-visible:ring-3 focus-visible:outline-none"
+                        >
+                          <MoreHorizontal aria-hidden className="size-3.5" />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => setDialog({ kind: "edit", expense })}>
+                            edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            variant="destructive"
+                            onClick={() => setPendingDelete(expense)}
+                          >
+                            delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </>
       )}
 
       <Dialog
@@ -183,12 +377,12 @@ export function CashExpensesList({ initialExpenses, cards, subcategories }: Prop
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>
-              {dialog.kind === "edit" ? "Editar despesa" : "Nova despesa à vista"}
+              {dialog.kind === "edit" ? "edit expense" : "new cash expense"}
             </DialogTitle>
             <DialogDescription>
               {dialog.kind === "edit"
-                ? "Atualize os dados da despesa."
-                : "Registre um pagamento via Pix, débito ou dinheiro."}
+                ? "update expense details."
+                : "log a pix, debit, or cash payment."}
             </DialogDescription>
           </DialogHeader>
           <CashExpenseForm
@@ -209,15 +403,13 @@ export function CashExpensesList({ initialExpenses, cards, subcategories }: Prop
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Excluir despesa?</AlertDialogTitle>
+            <AlertDialogTitle>delete expense?</AlertDialogTitle>
             <AlertDialogDescription>
-              {pendingDelete
-                ? `A despesa "${pendingDelete.description}" será removida permanentemente.`
-                : null}
+              {pendingDelete ? `"${pendingDelete.description}" will be removed.` : null}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>cancel</AlertDialogCancel>
             <AlertDialogAction
               disabled={isDeleting}
               onClick={(e) => {
@@ -225,27 +417,25 @@ export function CashExpensesList({ initialExpenses, cards, subcategories }: Prop
                 if (pendingDelete) handleDelete(pendingDelete);
               }}
             >
-              {isDeleting ? "Excluindo..." : "Excluir"}
+              {isDeleting ? "deleting..." : "delete"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </PageShell>
   );
 }
 
 function EmptyState({ onAdd }: { onAdd: () => void }) {
   return (
-    <div className="border-border bg-card flex flex-col items-center gap-4 rounded-lg border border-dashed px-6 py-16 text-center">
+    <div className="flex h-full flex-col items-center justify-center gap-3 px-6 py-16 text-center">
       <Banknote className="text-muted-foreground/60 size-10" strokeWidth={1} aria-hidden />
       <div className="flex max-w-sm flex-col gap-1">
-        <h2 className="text-base font-medium">Nenhuma despesa à vista ainda</h2>
-        <p className="text-muted-foreground text-sm">
-          Registre pagamentos via Pix, débito ou dinheiro.
-        </p>
+        <h2 className="text-foreground text-[14px] font-medium">no cash expenses yet</h2>
+        <p className="text-muted-foreground text-[13px]">log pix, debit, or cash payments here.</p>
       </div>
-      <Button onClick={onAdd} size="sm">
-        <Plus aria-hidden className="size-4" /> Nova despesa
+      <Button onClick={onAdd} size="sm" className="mt-2">
+        <Plus aria-hidden className="size-3.5" /> new expense
       </Button>
     </div>
   );

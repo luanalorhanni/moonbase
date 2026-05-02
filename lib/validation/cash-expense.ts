@@ -4,21 +4,21 @@ export const CASH_METHODS = ["pix", "debit", "cash"] as const;
 export type CashMethod = (typeof CASH_METHODS)[number];
 
 export const CASH_METHOD_LABEL: Record<CashMethod, string> = {
-  pix: "Pix",
-  debit: "Débito",
-  cash: "Dinheiro",
+  pix: "pix",
+  debit: "debit",
+  cash: "cash",
 };
 
 const amountPattern = /^\d+(\.\d{1,2})?$/;
 
 export const cashExpenseFormSchema = z.object({
-  description: z.string().trim().min(1, "Informe a descrição"),
-  cardId: z.string().uuid("Selecione um cartão"),
+  description: z.string().trim().min(1, "description is required"),
+  cardId: z.string().uuid("select an account"),
   method: z.enum(CASH_METHODS),
-  subcategoryId: z.string().uuid("Selecione uma subcategoria"),
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Data inválida"),
+  subcategoryId: z.string().uuid("select a subcategory"),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "invalid date"),
   amount: z.string().refine((v) => amountPattern.test(v.trim()), {
-    message: "Use o formato 1234.56 (ponto como separador decimal)",
+    message: "use 1234.56 format (period as decimal)",
   }),
 });
 
