@@ -135,7 +135,7 @@ function ResizableSidebarInner({ children }: { children: ReactNode }) {
     <aside
       style={{ width: effectiveWidth }}
       data-collapsed={collapsed}
-      className="bg-sidebar border-sidebar-border relative hidden shrink-0 flex-col overflow-hidden rounded-lg border transition-[width] duration-200 ease-[cubic-bezier(0.2,0.7,0.2,1)] md:flex"
+      className="bg-sidebar border-sidebar-border relative hidden shrink-0 flex-col overflow-hidden rounded-lg border transition-[width] duration-300 ease-[cubic-bezier(0.2,0.7,0.2,1)] md:flex"
     >
       {children}
 
