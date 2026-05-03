@@ -684,3 +684,35 @@
     animation: none !important;
   }
 }
+
+/* ──────────────────────────────────────────────────────────────────────── */
+/*  PWA / mobile — safe areas, dynamic viewport, no overscroll bounce       */
+/* ──────────────────────────────────────────────────────────────────────── */
+
+/* Respect iOS / Android cutouts when running as an installed PWA.
+   The dashboard layout uses `100dvh` already; here we just push the
+   first sticky surface (the mobile header) below the status bar.       */
+/* Apply via class — putting it on <body> would shrink every fullscreen
+   layout below it. Use on the mobile sticky header (top) and any
+   bottom-anchored surface (none yet, but ready).                       */
+.safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Disable the rubber-band overscroll on iOS — when running standalone
+   it makes the whole app feel like a webpage. The dashboard's
+   internal scroll containers still scroll normally.                    */
+@media (display-mode: standalone) {
+  html,
+  body {
+    overscroll-behavior: none;
+  }
+}
+
+/* Native-feeling tap target — kill the blue tap highlight on iOS. */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
