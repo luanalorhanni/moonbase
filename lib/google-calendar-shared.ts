@@ -61,3 +61,18 @@ export type CalendarEvent = {
   remindersUseDefault: boolean;
   reminders: EventReminder[];
 };
+
+/**
+ * Filter out Google's non-human "organizer" addresses. Group calendars
+ * and imported calendars surface the calendar resource id as the
+ * organizer.email (e.g. `xyz@group.calendar.google.com`), which is
+ * meaningless to a human and produces visual clutter in the UI.
+ */
+export function isHumanEmail(email: string | null | undefined): email is string {
+  if (!email) return false;
+  const lower = email.toLowerCase();
+  if (lower.endsWith("@group.calendar.google.com")) return false;
+  if (lower.endsWith("@import.calendar.google.com")) return false;
+  if (lower.endsWith(".calendar.google.com")) return false;
+  return true;
+}
