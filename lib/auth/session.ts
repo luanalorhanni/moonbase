@@ -1,25 +1,34 @@
+import "server-only";
+
+import { redirect } from "next/navigation";
+
+import { createClient } from "@/lib/auth/server";
+
 /**
- * Single-user app: there is no real auth. `requireUser()` and
- * `getCurrentUser()` return a fixed user whose id comes from the
- * MOONBASE_USER_ID env var. Set it in .env.local to the UUID of your row in
- * Supabase's auth.users table so existing data stays visible. The same UUID
- * is used as user_id for every insert.
+ * Authenticated user identity for the current request. Reads from the
+ * Supabase session cookie (refreshed by `middleware.ts`). The single
+ * source of truth for `user_id` in queries and inserts.
  */
+export type CurrentUser = {
+  id: string;
+  email: string | null;
+};
 
-const userId = process.env.MOONBASE_USER_ID;
-
-if (!userId) {
-  throw new Error(
-    "MOONBASE_USER_ID is not set. Add it to .env.local — it must match the user_id used by your existing rows.",
-  );
+export async function getCurrentUser(): Promise<CurrentUser | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.getUser();
+  if (error || !data.user) return null;
+  return { id: data.user.id, email: data.user.email ?? null };
 }
 
-const fixedUser = { id: userId } as const;
-
-export async function getCurrentUser() {
-  return fixedUser;
-}
-
-export async function requireUser() {
-  return fixedUser;
+/**
+ * Use in server actions / RSCs that strictly require an authenticated
+ * user. Mirrors the middleware's redirect — if the cookie was somehow
+ * cleared between the middleware and the action, we still bounce out
+ * cleanly instead of crashing on a null user.
+ */
+export async function requireUser(): Promise<CurrentUser> {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+  return user;
 }
