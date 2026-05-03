@@ -34,7 +34,6 @@ type NavItem = { href: string; label: string; icon: LucideIcon };
 const HOME_ITEM: NavItem = { href: "/", label: "home", icon: Sparkles };
 
 type NavGroup = {
-  /** Stable id used for persisting open/closed state. */
   id: string;
   label: string;
   icon: LucideIcon;
@@ -86,8 +85,7 @@ const GROUPS: NavGroup[] = [
 ];
 
 const STORAGE_KEY = "moonbase-sidebar-groups";
-
-const TRANSITION = "transition-[max-width,opacity,padding,margin,height] duration-300 ease-[cubic-bezier(0.2,0.7,0.2,1)]";
+const FLAT_ITEMS = [HOME_ITEM, ...GROUPS.flatMap((g) => g.items)];
 
 function isItemActive(pathname: string, href: string): boolean {
   if (href === "/") return pathname === "/";
@@ -98,6 +96,14 @@ function groupHasActive(pathname: string, group: NavGroup): boolean {
   return group.items.some((i) => isItemActive(pathname, i.href));
 }
 
+/**
+ * The two layouts (full-width grouped tree vs icon column) are very
+ * different shapes; rather than try to morph one into the other we
+ * stack them on top of each other in a grid cell and cross-fade with
+ * opacity. Each layout keeps its own clean alignment and the eye sees
+ * a smooth dissolve between them while the surrounding sidebar width
+ * animates separately.
+ */
 export function SidebarNav() {
   const pathname = usePathname();
   const { collapsed } = useSidebarCollapse();
@@ -132,44 +138,62 @@ export function SidebarNav() {
     });
   }
 
-  const homeActive = isItemActive(pathname, HOME_ITEM.href);
-
   return (
-    <nav
-      aria-label="primary"
-      data-collapsed={collapsed}
-      className={cn(
-        "flex flex-col gap-1 py-3",
-        collapsed ? "items-center px-2" : "px-3",
-      )}
-    >
-      <NavLink
-        href={HOME_ITEM.href}
-        icon={HOME_ITEM.icon}
-        label={HOME_ITEM.label}
-        isActive={homeActive}
-        collapsed={collapsed}
-      />
-
+    <div className="grid">
       <div
-        aria-hidden
+        // grid-stack the two layouts so they overlay; the visible one
+        // is in flow (decides the height), the other is opacity-0 +
+        // pointer-events-none and snaps back into place when toggled.
+        style={{ gridArea: "1 / 1" }}
+        aria-hidden={collapsed}
         className={cn(
-          "border-sidebar-border/60 mt-1 border-t pt-1",
-          TRANSITION,
-          collapsed ? "w-8 self-center" : "w-full self-stretch",
+          "transition-opacity duration-300 ease-[cubic-bezier(0.2,0.7,0.2,1)]",
+          collapsed && "pointer-events-none opacity-0",
         )}
-      />
+      >
+        <ExpandedTree
+          pathname={pathname}
+          openGroups={openGroups}
+          toggleGroup={toggleGroup}
+        />
+      </div>
+      <div
+        style={{ gridArea: "1 / 1" }}
+        aria-hidden={!collapsed}
+        className={cn(
+          "transition-opacity duration-300 ease-[cubic-bezier(0.2,0.7,0.2,1)]",
+          !collapsed && "pointer-events-none opacity-0",
+        )}
+      >
+        <CollapsedTree pathname={pathname} />
+      </div>
+    </div>
+  );
+}
+
+/* ── expanded layout (full-width grouped tree) ──────────────────── */
+
+function ExpandedTree({
+  pathname,
+  openGroups,
+  toggleGroup,
+}: {
+  pathname: string;
+  openGroups: Record<string, boolean>;
+  toggleGroup: (id: string) => void;
+}) {
+  const homeActive = isItemActive(pathname, HOME_ITEM.href);
+  return (
+    <nav aria-label="primary" className="flex flex-col gap-1 px-3 py-3">
+      <ExpandedLink item={HOME_ITEM} isActive={homeActive} />
+
+      <div className="border-sidebar-border/60 mt-1 border-t pt-1" />
 
       {GROUPS.map((group, idx) => {
         const hasActive = groupHasActive(pathname, group);
         const isOpen = openGroups[group.id] ?? true;
-        // Items always render — we let the height/opacity transition
-        // hide them when the group is collapsed, instead of unmounting.
-        // Sidebar collapsed forces all groups open; the group header
-        // itself is then hidden but icons stay in place.
-        const showItems = collapsed || isOpen || hasActive;
+        const showItems = isOpen || hasActive;
         const GroupIcon = group.icon;
-
         return (
           <div
             key={group.id}
@@ -178,21 +202,13 @@ export function SidebarNav() {
               idx > 0 && "border-sidebar-border/60 mt-1 border-t pt-1",
             )}
           >
-            {/* Group header — collapses to zero height when sidebar is
-                in icon mode, so the icons below tighten up nicely. */}
             <button
               type="button"
               onClick={() => toggleGroup(group.id)}
               aria-expanded={showItems}
-              tabIndex={collapsed ? -1 : 0}
-              aria-hidden={collapsed}
               className={cn(
-                "group/header text-muted-foreground hover:text-foreground flex items-center overflow-hidden rounded-lg text-left",
-                TRANSITION,
+                "group/header text-muted-foreground hover:text-foreground flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-left transition-colors",
                 hasActive && "text-foreground",
-                collapsed
-                  ? "pointer-events-none max-h-0 gap-0 px-0 py-0 opacity-0"
-                  : "max-h-8 gap-2.5 px-3 py-1.5 opacity-100",
               )}
             >
               <GroupIcon
@@ -200,7 +216,9 @@ export function SidebarNav() {
                 strokeWidth={1.6}
                 className={cn(
                   "size-[14px] shrink-0 transition-colors",
-                  hasActive ? "text-primary" : "opacity-60 group-hover/header:opacity-100",
+                  hasActive
+                    ? "text-primary"
+                    : "opacity-60 group-hover/header:opacity-100",
                 )}
               />
               <span className="flex-1 font-mono text-[10.5px] tracking-[0.18em] uppercase">
@@ -215,17 +233,13 @@ export function SidebarNav() {
                 )}
               />
             </button>
-
             {showItems && (
               <div className="mt-0.5 flex flex-col gap-0.5">
                 {group.items.map((item) => (
-                  <NavLink
+                  <ExpandedLink
                     key={item.href}
-                    href={item.href}
-                    icon={item.icon}
-                    label={item.label}
+                    item={item}
                     isActive={isItemActive(pathname, item.href)}
-                    collapsed={collapsed}
                   />
                 ))}
               </div>
@@ -237,49 +251,24 @@ export function SidebarNav() {
   );
 }
 
-/* ────────────────────────────────────────────────────────────────────── */
-
-/**
- * Individual nav link — one structure that handles both modes via
- * CSS. When collapsed we shrink the label to zero width (with
- * opacity 0) and zero out the gap so icons centre naturally inside
- * the 64px column.
- */
-function NavLink({
-  href,
-  icon: ItemIcon,
-  label,
-  isActive,
-  collapsed,
-}: {
-  href: string;
-  icon: LucideIcon;
-  label: string;
-  isActive: boolean;
-  collapsed: boolean;
-}) {
+function ExpandedLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
+  const Icon = item.icon;
   return (
     <Link
-      href={href}
+      href={item.href}
       aria-current={isActive ? "page" : undefined}
-      title={collapsed ? label : undefined}
       className={cn(
-        "group relative flex items-center overflow-hidden rounded-xl text-[14px] transition-[background-color,color,padding,gap] duration-200 ease-[cubic-bezier(0.2,0.7,0.2,1)]",
+        "group relative flex items-center gap-3 overflow-hidden rounded-xl px-3 py-2 text-[14px] transition-all duration-200",
         isActive
           ? "bg-sidebar-accent text-foreground"
           : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-foreground",
-        collapsed
-          ? "size-10 shrink-0 justify-center gap-0 px-0 py-0"
-          : "gap-3 px-3 py-2",
       )}
     >
       <span
         aria-hidden
         className={cn(
           "absolute inset-0 -z-0 opacity-0 transition-opacity duration-300",
-          collapsed
-            ? "bg-[radial-gradient(circle_at_50%_50%,oklch(0.65_0.10_200/0.22),transparent_70%)]"
-            : "bg-[radial-gradient(circle_at_0%_50%,oklch(0.65_0.10_200/0.20),transparent_60%)]",
+          "bg-[radial-gradient(circle_at_0%_50%,oklch(0.65_0.10_200/0.20),transparent_60%)]",
           "group-hover:opacity-100",
           isActive && "opacity-60",
         )}
@@ -288,12 +277,12 @@ function NavLink({
         aria-hidden
         className={cn(
           "absolute top-1/2 left-0 -translate-y-1/2 transition-opacity duration-200",
-          isActive && !collapsed ? "opacity-100" : "opacity-0",
+          isActive ? "opacity-100" : "opacity-0",
         )}
       >
         <PixelStarSmall size={6} className="text-primary" />
       </span>
-      <ItemIcon
+      <Icon
         className={cn(
           "relative size-[15px] shrink-0 transition-colors",
           isActive ? "text-primary" : "opacity-60 group-hover:opacity-100",
@@ -301,14 +290,55 @@ function NavLink({
         strokeWidth={1.6}
         aria-hidden
       />
-      <span
-        className={cn(
-          "relative whitespace-nowrap transition-[max-width,opacity] duration-300 ease-[cubic-bezier(0.2,0.7,0.2,1)]",
-          collapsed ? "max-w-0 opacity-0" : "max-w-[160px] opacity-100",
-        )}
-      >
-        {label}
-      </span>
+      <span className="relative whitespace-nowrap">{item.label}</span>
     </Link>
+  );
+}
+
+/* ── collapsed layout (single icon column) ──────────────────────── */
+
+function CollapsedTree({ pathname }: { pathname: string }) {
+  return (
+    <nav
+      aria-label="primary"
+      className="flex flex-col items-center gap-1 px-2 py-3"
+    >
+      {FLAT_ITEMS.map((item) => {
+        const isActive = isItemActive(pathname, item.href);
+        const Icon = item.icon;
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            aria-current={isActive ? "page" : undefined}
+            title={item.label}
+            className={cn(
+              "group relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-xl transition-colors duration-200",
+              isActive
+                ? "bg-sidebar-accent text-foreground"
+                : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-foreground",
+            )}
+          >
+            <span
+              aria-hidden
+              className={cn(
+                "absolute inset-0 -z-0 opacity-0 transition-opacity duration-300",
+                "bg-[radial-gradient(circle_at_50%_50%,oklch(0.65_0.10_200/0.22),transparent_70%)]",
+                "group-hover:opacity-100",
+                isActive && "opacity-60",
+              )}
+            />
+            <Icon
+              aria-hidden
+              strokeWidth={1.6}
+              className={cn(
+                "relative size-[16px] transition-colors",
+                isActive ? "text-primary" : "opacity-70 group-hover:opacity-100",
+              )}
+            />
+          </Link>
+        );
+      })}
+    </nav>
   );
 }
