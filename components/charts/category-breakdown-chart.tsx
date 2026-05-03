@@ -64,7 +64,14 @@ function CategoryTick({ x = 0, y = 0, payload, iconMap }: TickProps) {
 
 const VISIBLE_DEFAULT = 6;
 
-export function CategoryBreakdownChart({ data }: { data: CategoryDatum[] }) {
+export function CategoryBreakdownChart({
+  data,
+  visibleCount = VISIBLE_DEFAULT,
+}: {
+  data: CategoryDatum[];
+  /** How many categories to show before the "more" toggle. Default 6. */
+  visibleCount?: number;
+}) {
   const [expanded, setExpanded] = useState(false);
 
   if (data.length === 0) {
@@ -76,9 +83,9 @@ export function CategoryBreakdownChart({ data }: { data: CategoryDatum[] }) {
   }
 
   const sorted = [...data].sort((a, b) => b.total - a.total);
-  const visible = expanded ? sorted : sorted.slice(0, VISIBLE_DEFAULT);
-  const hidden = sorted.length - VISIBLE_DEFAULT;
-  const hiddenTotal = sorted.slice(VISIBLE_DEFAULT).reduce((acc, c) => acc + c.total, 0);
+  const visible = expanded ? sorted : sorted.slice(0, visibleCount);
+  const hidden = sorted.length - visibleCount;
+  const hiddenTotal = sorted.slice(visibleCount).reduce((acc, c) => acc + c.total, 0);
   const chartHeight = visible.length * 26 + 16;
   const iconMap = new Map(visible.map((d) => [d.label, { icon: d.icon, color: d.color }]));
 
@@ -110,12 +117,15 @@ export function CategoryBreakdownChart({ data }: { data: CategoryDatum[] }) {
           <Tooltip
             formatter={(v) => [formatBRL(Number(v)), "spent"]}
             contentStyle={{
-              background: "var(--card)",
+              background: "var(--popover)",
               border: "1px solid var(--border)",
               borderRadius: 6,
               fontSize: 11,
-              backdropFilter: "blur(12px)",
+              color: "var(--popover-foreground)",
+              boxShadow: "0 4px 12px rgb(0 0 0 / 0.08)",
             }}
+            itemStyle={{ color: "var(--popover-foreground)" }}
+            labelStyle={{ color: "var(--popover-foreground)", fontWeight: 500 }}
             cursor={{ fill: "var(--muted)", opacity: 0.35 }}
           />
           <Bar
