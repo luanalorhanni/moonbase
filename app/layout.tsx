@@ -54,6 +54,12 @@ export const viewport: Viewport = {
     { media: "(prefers-color-scheme: light)", color: "#fafafa" },
     { media: "(prefers-color-scheme: dark)", color: "#1a1d2e" },
   ],
+  // Cover the iOS notch / Android cutout area so the PWA looks edge-to-edge.
+  viewportFit: "cover",
+  // Allow user zoom for accessibility but discourage initial zoom-in.
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
