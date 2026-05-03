@@ -27,16 +27,22 @@ export function PageShell({
 }) {
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="border-border bg-background/95 supports-backdrop-blur:bg-background/70 flex shrink-0 items-center justify-between gap-4 border-b px-7 py-3 backdrop-blur">
-        <div className="flex items-baseline gap-3">
-          <h1 className="text-foreground text-[14px] font-semibold tracking-tight">{title}</h1>
-          {subtitle && <span className="text-muted-foreground text-[12px]">{subtitle}</span>}
+      <div className="border-border bg-background/95 supports-backdrop-blur:bg-background/70 flex shrink-0 flex-wrap items-center justify-between gap-2 border-b px-4 py-3 backdrop-blur sm:gap-4 md:px-7">
+        <div className="flex min-w-0 items-baseline gap-2 sm:gap-3">
+          <h1 className="text-foreground truncate text-[14px] font-semibold tracking-tight">
+            {title}
+          </h1>
+          {subtitle && (
+            <span className="text-muted-foreground truncate text-[12px]">{subtitle}</span>
+          )}
         </div>
-        {toolbar && <div className="flex items-center gap-2">{toolbar}</div>}
+        {toolbar && (
+          <div className="flex shrink-0 flex-wrap items-center gap-2">{toolbar}</div>
+        )}
       </div>
       <div
         className={cn(
-          "min-h-0 flex-1 overflow-auto px-3 py-3",
+          "min-h-0 flex-1 overflow-auto px-3 py-3 md:px-4",
           staggered && "enter",
         )}
       >

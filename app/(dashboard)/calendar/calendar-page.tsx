@@ -220,14 +220,22 @@ function ConnectedView({
   onToggleCalendar: (id: string) => void;
   onEventClick: (event: CalendarEvent) => void;
 }) {
+  // Default to week on desktop, agenda on mobile — the 7×24 grid is
+  // unusable below ~640px. We track viewport once on mount; the user
+  // can still flip the toggle manually after.
   const [view, setView] = useState<"week" | "agenda">("week");
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.matchMedia("(max-width: 639px)").matches) {
+      setView("agenda");
+    }
+  }, []);
   const allEvents = upcoming?.events ?? [];
   const calendars = upcoming?.calendars ?? [];
   const events = allEvents.filter((e) => !hiddenCalendarIds.has(e.calendarId));
   const grouped = groupByDay(events);
 
   return (
-    <div className="flex flex-col gap-4 px-5 py-5">
+    <div className="flex flex-col gap-4 px-4 py-4 md:px-5 md:py-5">
       {/* Scope upgrade prompt — when the persisted scope doesn't grant
           event-write, surface a button to re-authorize so the user can
           create events from moonbase. */}

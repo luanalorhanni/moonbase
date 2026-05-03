@@ -11,7 +11,7 @@
  * confuse the user with a fully-broken UI when their connection drops.
  */
 
-const CACHE_VERSION = "moonbase-v1";
+const CACHE_VERSION = "moonbase-v2";
 const PRECACHE_ASSETS = [
   "/manifest.json",
   "/icons/icon-192.png",
