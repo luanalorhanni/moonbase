@@ -1,6 +1,6 @@
 "use client";
 
-import { CreditCard, MoreHorizontal, Plus } from "lucide-react";
+import { CalendarClock, CreditCard, MoreHorizontal, Plus } from "lucide-react";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
@@ -38,9 +38,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { deleteCard } from "@/lib/actions/cards";
-import type { CardRow } from "@/lib/queries/cards";
+import type { CardClosingRow, CardRow } from "@/lib/queries/cards";
 
 import { CardForm } from "./card-form";
+import { CardClosingsDialog } from "./closings-dialog";
 
 type DialogState = { kind: "closed" } | { kind: "create" } | { kind: "edit"; card: CardRow };
 
@@ -59,10 +60,21 @@ function formatAmount(value: string | null): string {
   }).format(number);
 }
 
-export function CardsList({ initialCards }: { initialCards: CardRow[] }) {
+export function CardsList({
+  initialCards,
+  initialClosings,
+}: {
+  initialCards: CardRow[];
+  initialClosings: CardClosingRow[];
+}) {
   const [dialog, setDialog] = useState<DialogState>({ kind: "closed" });
   const [pendingDelete, setPendingDelete] = useState<CardRow | null>(null);
+  const [closingsCard, setClosingsCard] = useState<CardRow | null>(null);
   const [isDeleting, startDeleteTransition] = useTransition();
+
+  const closingsForCard = closingsCard
+    ? initialClosings.filter((c) => c.cardId === closingsCard.id)
+    : [];
 
   function handleDelete(card: CardRow) {
     startDeleteTransition(async () => {
@@ -167,6 +179,12 @@ export function CardsList({ initialCards }: { initialCards: CardRow[] }) {
                         <DropdownMenuItem onClick={() => setDialog({ kind: "edit", card })}>
                           edit
                         </DropdownMenuItem>
+                        {card.type === "credit" && (
+                          <DropdownMenuItem onClick={() => setClosingsCard(card)}>
+                            <CalendarClock aria-hidden className="size-3.5" />
+                            closing dates
+                          </DropdownMenuItem>
+                        )}
                         <DropdownMenuItem
                           variant="destructive"
                           onClick={() => setPendingDelete(card)}
@@ -205,6 +223,17 @@ export function CardsList({ initialCards }: { initialCards: CardRow[] }) {
           />
         </DialogContent>
       </Dialog>
+
+      {closingsCard && (
+        <CardClosingsDialog
+          card={closingsCard}
+          closings={closingsForCard}
+          open={true}
+          onOpenChange={(open) => {
+            if (!open) setClosingsCard(null);
+          }}
+        />
+      )}
 
       <AlertDialog
         open={pendingDelete !== null}
