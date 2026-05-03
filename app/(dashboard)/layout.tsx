@@ -2,10 +2,16 @@ import { type ReactNode } from "react";
 
 import { ResizableSidebar } from "@/components/dashboard/resizable-sidebar";
 import { SidebarNav } from "@/components/dashboard/sidebar-nav";
+import { SidebarUser } from "@/components/dashboard/sidebar-user";
 import { PixelMoonCrescent } from "@/components/decorative/pixel-icons";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { requireUser } from "@/lib/auth/session";
 
-export default function DashboardLayout({ children }: { children: ReactNode }) {
+export default async function DashboardLayout({ children }: { children: ReactNode }) {
+  // Defense in depth — middleware already redirects unauthed users,
+  // but if the cookie disappears between requests we still bounce out
+  // cleanly here instead of rendering an empty shell.
+  const user = await requireUser();
   return (
     <div className="flex h-screen gap-[15px] overflow-hidden p-[15px]">
       <ResizableSidebar>
@@ -23,10 +29,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         <div className="min-h-0 flex-1 overflow-y-auto">
           <SidebarNav />
         </div>
-        <div className="border-sidebar-border flex shrink-0 items-center justify-between gap-3 border-t px-5 py-3">
-          <span className="text-muted-foreground/70 truncate font-mono text-[11px] tracking-[0.12em]">
-            luana lorhanni
-          </span>
+        <div className="border-sidebar-border flex shrink-0 items-center gap-2 border-t px-5 py-3">
+          <SidebarUser email={user.email} />
           <ThemeToggle />
         </div>
       </ResizableSidebar>
