@@ -52,11 +52,15 @@ export function DailySpendingChart({
         <Tooltip
           formatter={(v) => [formatBRL(Number(v)), "spent"]}
           contentStyle={{
-            background: "var(--card)",
+            background: "var(--popover)",
             border: "1px solid var(--border)",
             borderRadius: 6,
             fontSize: 11,
+            color: "var(--popover-foreground)",
+            boxShadow: "0 4px 12px rgb(0 0 0 / 0.08)",
           }}
+          itemStyle={{ color: "var(--popover-foreground)" }}
+          labelStyle={{ color: "var(--popover-foreground)", fontWeight: 500 }}
           labelFormatter={(label) => `day ${label}`}
           cursor={{ fill: "var(--muted)", opacity: 0.4 }}
         />
