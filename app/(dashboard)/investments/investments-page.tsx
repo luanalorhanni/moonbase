@@ -15,6 +15,7 @@ import { toast } from "sonner";
 
 import { InvestmentsAllocationChart } from "@/components/charts/investments-allocation-chart";
 import { InvestmentsBalanceChart } from "@/components/charts/investments-balance-chart";
+import { EditorialHero } from "@/components/dashboard/editorial-hero";
 import { PageShell } from "@/components/dashboard/page-shell";
 import {
   AlertDialog,
@@ -302,6 +303,13 @@ export function InvestmentsPage({ liquidSavings, fixedIncome }: Props) {
         </DropdownMenu>
       }
     >
+      <EditorialHero
+        caption="portfolio"
+        title="investments"
+        subtitle="liquid savings and fixed income, growing over time"
+        tone="aqua"
+      />
+
       {/* ── KPI strip ─────────────────────────────────────────────── */}
       <div className="border-border grid shrink-0 grid-cols-1 border-b sm:grid-cols-2 lg:grid-cols-5">
         <Kpi

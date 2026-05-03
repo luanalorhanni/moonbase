@@ -20,6 +20,7 @@ import {
   type AmountRange,
   type DateRange,
 } from "@/components/dashboard/column-filters";
+import { EditorialHero } from "@/components/dashboard/editorial-hero";
 import { PageShell } from "@/components/dashboard/page-shell";
 import {
   AlertDialog,
@@ -184,6 +185,14 @@ export function CashExpensesList({
         </Button>
       }
     >
+      <EditorialHero
+        caption="paid now"
+        title="cash"
+        accent="expenses"
+        subtitle="pix · debit · cash"
+        tone="aqua"
+      />
+
       {initialExpenses.length === 0 ? (
         <EmptyState onAdd={() => setDialog({ kind: "create" })} />
       ) : (
