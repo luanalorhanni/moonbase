@@ -4,6 +4,7 @@ import { MoreHorizontal, Plus, Repeat } from "lucide-react";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
+import { EditorialHero } from "@/components/dashboard/editorial-hero";
 import { PageShell } from "@/components/dashboard/page-shell";
 import {
   AlertDialog,
@@ -110,6 +111,14 @@ export function FixedExpensesList({ initialExpenses, cards, subcategories }: Pro
         </Button>
       }
     >
+      <EditorialHero
+        caption="every month"
+        title="recurring"
+        accent="expenses"
+        subtitle="subscriptions and monthly fixed costs"
+        tone="sand"
+      />
+
       {initialExpenses.length === 0 ? (
         <EmptyState onAdd={() => setDialog({ kind: "create" })} />
       ) : (

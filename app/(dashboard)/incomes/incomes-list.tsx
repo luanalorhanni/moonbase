@@ -4,6 +4,7 @@ import { ArrowDownToLine, MoreHorizontal, Plus } from "lucide-react";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
+import { EditorialHero } from "@/components/dashboard/editorial-hero";
 import { PageShell } from "@/components/dashboard/page-shell";
 import {
   AlertDialog,
@@ -80,6 +81,13 @@ export function IncomesList({ initialIncomes }: { initialIncomes: IncomeRow[] })
         </Button>
       }
     >
+      <EditorialHero
+        caption="inflow"
+        title="incomes"
+        subtitle="salaries · grants · refunds · sales"
+        tone="aqua"
+      />
+
       {initialIncomes.length === 0 ? (
         <EmptyState onAdd={() => setDialog({ kind: "create" })} />
       ) : (
