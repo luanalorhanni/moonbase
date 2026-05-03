@@ -600,3 +600,87 @@
     transform: none;
   }
 }
+
+/* ──────────────────────────────────────────────────────────────────────── */
+/* Motion polish — page transitions, lift on hover, gentle fade-up
+   utility, and a subtle "saved" pulse for save-feedback moments.
+   All wrapped in prefers-reduced-motion guards.                            */
+/* ──────────────────────────────────────────────────────────────────────── */
+
+.page-transition {
+  animation: page-enter 360ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Single-element fade-up — used for cards/sections that mount on demand. */
+.fade-up {
+  animation: fade-up 320ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Subtle hover lift — for table rows, list items, cards. Pair with a
+   border or background highlight so the motion has an anchor.            */
+.lift-hover {
+  transition:
+    transform 180ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    box-shadow 180ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    background-color 180ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  will-change: transform;
+}
+.lift-hover:hover {
+  transform: translateY(-1px);
+}
+
+/* "Saved" pulse — wraps a brief glow around a form/card after a
+   successful mutation. Add `data-saved="true"` to the element and
+   remove ~700ms later (handled in the form code).                         */
+[data-saved="true"] {
+  animation: saved-pulse 700ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@keyframes saved-pulse {
+  0% {
+    box-shadow: 0 0 0 0 oklch(from var(--primary) l c h / 0.35);
+  }
+  60% {
+    box-shadow: 0 0 0 6px oklch(from var(--primary) l c h / 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 oklch(from var(--primary) l c h / 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-transition,
+  .fade-up {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
+  .lift-hover {
+    transition: none !important;
+  }
+  .lift-hover:hover {
+    transform: none !important;
+  }
+  [data-saved="true"] {
+    animation: none !important;
+  }
+}
