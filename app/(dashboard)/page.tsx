@@ -1,6 +1,12 @@
-import { MonthDashboard } from "@/components/dashboard/month-dashboard";
-import { currentMonthRef } from "@/lib/finance/month";
+import { getUserSettings } from "@/lib/queries/user-settings";
 
-export default function HomePage() {
-  return <MonthDashboard reference={currentMonthRef()} />;
+import { HomePage } from "./home-page";
+
+export const metadata = {
+  title: "moonbase",
+};
+
+export default async function Home() {
+  const settings = await getUserSettings();
+  return <HomePage settings={settings} />;
 }
