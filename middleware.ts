@@ -15,6 +15,29 @@ import { type NextRequest, NextResponse } from "next/server";
 const PUBLIC_PATHS = ["/login", "/forgot-password", "/reset-password"];
 
 export async function middleware(request: NextRequest) {
+  // Recovery / magic-link safety net: if Supabase redirected the user
+  // back to ANY path (e.g. just "/" because the exact callback URL
+  // wasn't whitelisted) but the URL still carries the one-time `code`,
+  // funnel it through our auth-callback handler so the session
+  // exchange actually happens. We preserve the original path as `next`
+  // so they land where Supabase intended after the exchange.
+  const codeParam = request.nextUrl.searchParams.get("code");
+  if (codeParam && request.nextUrl.pathname !== "/api/auth-callback") {
+    const url = request.nextUrl.clone();
+    const originalPath = url.pathname;
+    const type = url.searchParams.get("type");
+    url.pathname = "/api/auth-callback";
+    url.searchParams.set("code", codeParam);
+    // Recovery flows always end on the reset-password screen, no
+    // matter where Supabase decided to land the user.
+    if (type === "recovery") {
+      url.searchParams.set("next", "/reset-password");
+    } else if (originalPath !== "/" && !url.searchParams.has("next")) {
+      url.searchParams.set("next", originalPath);
+    }
+    return NextResponse.redirect(url);
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
