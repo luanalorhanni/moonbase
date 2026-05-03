@@ -21,6 +21,7 @@ import { createCashExpense, updateCashExpense } from "@/lib/actions/cash-expense
 import type { CardRow } from "@/lib/queries/cards";
 import type { CashExpenseRow } from "@/lib/queries/cash-expenses";
 import type { SubcategoryWithCategory } from "@/lib/queries/categories";
+import type { LiquidSavingsRow } from "@/lib/queries/investments";
 import {
   CASH_METHOD_LABEL,
   CASH_METHODS,
@@ -32,6 +33,7 @@ type Props = {
   expense?: CashExpenseRow;
   cards: CardRow[];
   subcategories: SubcategoryWithCategory[];
+  liquidSavings: LiquidSavingsRow[];
   onSuccess: () => void;
 };
 
@@ -50,7 +52,13 @@ function groupByCategory(subcategories: SubcategoryWithCategory[]) {
   return groups;
 }
 
-export function CashExpenseForm({ expense, cards, subcategories, onSuccess }: Props) {
+export function CashExpenseForm({
+  expense,
+  cards,
+  subcategories,
+  liquidSavings,
+  onSuccess,
+}: Props) {
   const [isPending, startTransition] = useTransition();
   const form = useForm<CashExpenseFormInput>({
     resolver: zodResolver(cashExpenseFormSchema),
@@ -62,6 +70,7 @@ export function CashExpenseForm({ expense, cards, subcategories, onSuccess }: Pr
           subcategoryId: expense.subcategoryId,
           date: expense.date,
           amount: expense.amount,
+          liquidSavingsId: expense.liquidSavingsId ?? "",
         }
       : {
           description: "",
@@ -70,8 +79,18 @@ export function CashExpenseForm({ expense, cards, subcategories, onSuccess }: Pr
           subcategoryId: "",
           date: today(),
           amount: "",
+          liquidSavingsId: "",
         },
   });
+
+  const liquidSavingsId = form.watch("liquidSavingsId");
+  const fromCofrinho = liquidSavingsId !== "" && liquidSavingsId !== undefined;
+  const activeSavings = liquidSavings.filter(
+    (s) => s.isActive || s.id === expense?.liquidSavingsId,
+  );
+  const savingsLabels = Object.fromEntries(
+    activeSavings.map((s) => [s.id, `${s.title} — ${s.bank}`]),
+  );
 
   const grouped = groupByCategory(subcategories);
   const subcategoryLabels = Object.fromEntries(subcategories.map((s) => [s.id, s.name]));
@@ -237,6 +256,64 @@ export function CashExpenseForm({ expense, cards, subcategories, onSuccess }: Pr
             <FieldError>{form.formState.errors.amount.message}</FieldError>
           ) : null}
         </Field>
+
+        {activeSavings.length > 0 && (
+          <Field>
+            <label className="border-border bg-muted/20 hover:bg-muted/30 flex cursor-pointer items-start gap-3 rounded-md border p-3 transition-colors">
+              <input
+                type="checkbox"
+                checked={fromCofrinho}
+                disabled={isPending}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    form.setValue("liquidSavingsId", activeSavings[0]!.id, {
+                      shouldDirty: true,
+                    });
+                  } else {
+                    form.setValue("liquidSavingsId", "", { shouldDirty: true });
+                  }
+                }}
+                className="border-input mt-0.5 size-4 rounded border accent-current"
+              />
+              <span className="flex flex-1 flex-col gap-0.5">
+                <span className="text-foreground text-[13px] font-medium">
+                  Tirei do cofrinho?
+                </span>
+                <span className="text-muted-foreground text-[11.5px]">
+                  Ao marcar, o valor é descontado automaticamente do saldo da aplicação.
+                </span>
+              </span>
+            </label>
+            {fromCofrinho && (
+              <Controller
+                control={form.control}
+                name="liquidSavingsId"
+                render={({ field }) => (
+                  <Select
+                    value={field.value ?? ""}
+                    onValueChange={field.onChange}
+                    disabled={isPending}
+                    items={savingsLabels}
+                  >
+                    <SelectTrigger id="ce-liquid-savings" className="mt-2 w-full">
+                      <SelectValue placeholder="Escolha o cofrinho..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {activeSavings.map((s) => (
+                        <SelectItem key={s.id} value={s.id}>
+                          {s.title} — {s.bank}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            )}
+            {form.formState.errors.liquidSavingsId ? (
+              <FieldError>{form.formState.errors.liquidSavingsId.message}</FieldError>
+            ) : null}
+          </Field>
+        )}
       </FieldGroup>
 
       <div className="flex justify-end gap-2">
