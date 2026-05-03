@@ -31,7 +31,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
           <SidebarNav />
         </div>
         <div className="border-sidebar-border flex shrink-0 items-center gap-2 border-t px-5 py-3">
-          <SidebarUser email={user.email} />
+          <SidebarUser email={user.email} name={user.name} avatarUrl={user.avatarUrl} />
           <ThemeToggle />
         </div>
       </ResizableSidebar>
