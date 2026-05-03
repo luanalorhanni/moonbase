@@ -315,6 +315,24 @@ export const habits = pgTable("habits", {
 });
 
 /**
+ * OAuth 2.0 tokens for Google Calendar integration. Single row per
+ * user; rotated on refresh. Refresh token is nullable because Google
+ * only returns it on first consent or when prompt=consent forces a
+ * fresh handshake.
+ */
+export const googleCalendarTokens = pgTable("google_calendar_tokens", {
+  userId: uuid("user_id").primaryKey(),
+  accessToken: text("access_token").notNull(),
+  refreshToken: text("refresh_token"),
+  scope: text("scope").notNull(),
+  tokenType: text("token_type").notNull().default("Bearer"),
+  expiry: timestamp("expiry").notNull(),
+  email: text("email"),
+  connectedAt: timestamp("connected_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+/**
  * Per-user preferences (single row per user, PK is user_id). First
  * use: the home page cover image picked from Unsplash + the optional
  * quote shown alongside.

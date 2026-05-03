@@ -23,6 +23,7 @@ export const TAGS = {
   creditReceivables: "credit-receivables",
   creditReceivableParcelsPaid: "credit-receivable-parcels-paid",
   userSettings: "user-settings",
+  googleCalendarTokens: "google-calendar-tokens",
   habits: "habits",
   habitCategories: "habit-categories",
   habitLogs: "habit-logs",
