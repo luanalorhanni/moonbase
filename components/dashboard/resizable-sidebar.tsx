@@ -2,11 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
+import { SidebarCollapseProvider, useSidebarCollapse } from "@/lib/dashboard/sidebar-context";
 import { cn } from "@/lib/utils";
 
 const MIN_WIDTH = 180;
 const MAX_WIDTH = 380;
 const DEFAULT_WIDTH = 208; // matches Tailwind's w-52
+const COLLAPSED_WIDTH = 64; // icon-only column
 const STORAGE_KEY = "moonbase-sidebar-width";
 
 /**
@@ -16,6 +18,15 @@ const STORAGE_KEY = "moonbase-sidebar-width";
  * sidebar entirely, so resizing isn't relevant.
  */
 export function ResizableSidebar({ children }: { children: ReactNode }) {
+  return (
+    <SidebarCollapseProvider>
+      <ResizableSidebarInner>{children}</ResizableSidebarInner>
+    </SidebarCollapseProvider>
+  );
+}
+
+function ResizableSidebarInner({ children }: { children: ReactNode }) {
+  const { collapsed } = useSidebarCollapse();
   const [width, setWidth] = useState<number>(DEFAULT_WIDTH);
   const [isDragging, setIsDragging] = useState(false);
   // Track raw pointer state in a ref so the listeners always read the
@@ -118,37 +129,42 @@ export function ResizableSidebar({ children }: { children: ReactNode }) {
     }
   }
 
+  const effectiveWidth = collapsed ? COLLAPSED_WIDTH : width;
+
   return (
     <aside
-      style={{ width }}
-      className="bg-sidebar border-sidebar-border relative hidden shrink-0 flex-col overflow-hidden rounded-lg border md:flex"
+      style={{ width: effectiveWidth }}
+      data-collapsed={collapsed}
+      className="bg-sidebar border-sidebar-border relative hidden shrink-0 flex-col overflow-hidden rounded-lg border transition-[width] duration-200 ease-[cubic-bezier(0.2,0.7,0.2,1)] md:flex"
     >
       {children}
 
-      {/* Drag handle — sits on the right edge of the sidebar, only
-          shows its tinted line on hover/drag so it stays subtle. */}
-      <div
-        role="separator"
-        aria-orientation="vertical"
-        aria-label="resize sidebar"
-        aria-valuemin={MIN_WIDTH}
-        aria-valuemax={MAX_WIDTH}
-        aria-valuenow={Math.round(width)}
-        tabIndex={0}
-        onMouseDown={onMouseDown}
-        onKeyDown={onKeyDown}
-        className={cn(
-          "group absolute top-0 right-0 z-20 flex h-full w-2 translate-x-1/2 cursor-col-resize touch-none select-none focus-visible:outline-none",
-        )}
-      >
-        <span
-          aria-hidden
+      {/* Drag handle is only meaningful when expanded — when collapsed
+          the width is fixed and resizing would make no sense. */}
+      {!collapsed && (
+        <div
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="resize sidebar"
+          aria-valuemin={MIN_WIDTH}
+          aria-valuemax={MAX_WIDTH}
+          aria-valuenow={Math.round(width)}
+          tabIndex={0}
+          onMouseDown={onMouseDown}
+          onKeyDown={onKeyDown}
           className={cn(
-            "bg-primary/0 group-hover:bg-primary/40 group-focus-visible:bg-primary/60 mx-auto h-full w-[2px] rounded-full transition-colors",
-            isDragging && "bg-primary/60",
+            "group absolute top-0 right-0 z-20 flex h-full w-2 translate-x-1/2 cursor-col-resize touch-none select-none focus-visible:outline-none",
           )}
-        />
-      </div>
+        >
+          <span
+            aria-hidden
+            className={cn(
+              "bg-primary/0 group-hover:bg-primary/40 group-focus-visible:bg-primary/60 mx-auto h-full w-[2px] rounded-full transition-colors",
+              isDragging && "bg-primary/60",
+            )}
+          />
+        </div>
+      )}
     </aside>
   );
 }
