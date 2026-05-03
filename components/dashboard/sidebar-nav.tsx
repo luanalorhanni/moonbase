@@ -27,6 +27,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { PixelStarSmall } from "@/components/decorative/pixel-icons";
+import { useSidebarCollapse } from "@/lib/dashboard/sidebar-context";
 import { cn } from "@/lib/utils";
 
 type NavItem = { href: string; label: string; icon: LucideIcon };
@@ -97,6 +98,7 @@ function groupHasActive(pathname: string, group: NavGroup): boolean {
 
 export function SidebarNav() {
   const pathname = usePathname();
+  const { collapsed } = useSidebarCollapse();
 
   // Initialise from saved state once. Groups containing the active route
   // are forced open on every render below regardless of saved state.
@@ -131,6 +133,53 @@ export function SidebarNav() {
   }
 
   const homeActive = isItemActive(pathname, HOME_ITEM.href);
+
+  // Icon-only mode: flatten the groups into a single column of icons
+  // with native tooltips. No group headers — those need text to be
+  // useful and would just be empty rows here.
+  if (collapsed) {
+    const flat = [HOME_ITEM, ...GROUPS.flatMap((g) => g.items)];
+    return (
+      <nav aria-label="primary" className="flex flex-col items-center gap-1 px-2 py-3">
+        {flat.map((item) => {
+          const isActive = isItemActive(pathname, item.href);
+          const ItemIcon = item.icon;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              aria-current={isActive ? "page" : undefined}
+              title={item.label}
+              className={cn(
+                "group relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-xl transition-all duration-200",
+                isActive
+                  ? "bg-sidebar-accent text-foreground"
+                  : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-foreground",
+              )}
+            >
+              <span
+                aria-hidden
+                className={cn(
+                  "absolute inset-0 -z-0 opacity-0 transition-opacity duration-300",
+                  "bg-[radial-gradient(circle_at_50%_50%,oklch(0.65_0.10_200/0.22),transparent_70%)]",
+                  "group-hover:opacity-100",
+                  isActive && "opacity-60",
+                )}
+              />
+              <ItemIcon
+                aria-hidden
+                strokeWidth={1.6}
+                className={cn(
+                  "relative size-[16px] transition-colors",
+                  isActive ? "text-primary" : "opacity-70 group-hover:opacity-100",
+                )}
+              />
+            </Link>
+          );
+        })}
+      </nav>
+    );
+  }
 
   return (
     <nav aria-label="primary" className="flex flex-col gap-1 px-3 py-3">

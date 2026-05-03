@@ -233,7 +233,11 @@ function ConnectedView({
   const allEvents = upcoming?.events ?? [];
   const calendars = upcoming?.calendars ?? [];
   const events = allEvents.filter((e) => !hiddenCalendarIds.has(e.calendarId));
-  const grouped = groupByDay(events);
+  // Agenda is the "today" view — past days live in your memory, future
+  // days live in the week grid. Only filter when we're rendering it.
+  const today = todayKey();
+  const todaysEvents = events.filter((e) => isOnDay(e, today));
+  const grouped = groupByDay(view === "agenda" ? todaysEvents : events);
 
   return (
     <div className="flex flex-col gap-4 px-4 py-4 md:px-5 md:py-5">
@@ -338,18 +342,16 @@ function ConnectedView({
         </div>
       )}
 
-      {events.length === 0 && !fetchError ? (
-        <div className="flex h-[240px] flex-col items-center justify-center gap-2 px-6 text-center">
-          <CalendarIcon
-            className="text-muted-foreground/40 size-10"
-            strokeWidth={1}
-            aria-hidden
-          />
-          <p className="text-foreground text-[14px]">agenda livre por enquanto</p>
-          <p className="text-muted-foreground/70 text-[12.5px]">
-            quando você adicionar eventos no google calendar, eles aparecem aqui.
-          </p>
-        </div>
+      {fetchError ? null : view === "week" && events.length === 0 ? (
+        <EmptyAgenda
+          title="agenda livre por enquanto"
+          subtitle="quando você adicionar eventos no google calendar, eles aparecem aqui."
+        />
+      ) : view === "agenda" && todaysEvents.length === 0 ? (
+        <EmptyAgenda
+          title="nada agendado pra hoje"
+          subtitle="o que tá pra frente fica na visão semanal."
+        />
       ) : view === "week" ? (
         <WeekView events={events} onEventClick={onEventClick} />
       ) : (
@@ -387,6 +389,20 @@ function ConnectedView({
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+function EmptyAgenda({ title, subtitle }: { title: string; subtitle: string }) {
+  return (
+    <div className="flex h-[240px] flex-col items-center justify-center gap-2 px-6 text-center">
+      <CalendarIcon
+        className="text-muted-foreground/40 size-10"
+        strokeWidth={1}
+        aria-hidden
+      />
+      <p className="text-foreground text-[14px]">{title}</p>
+      <p className="text-muted-foreground/70 text-[12.5px]">{subtitle}</p>
     </div>
   );
 }
@@ -542,6 +558,21 @@ function decodeError(code: string): string {
     default:
       return code;
   }
+}
+
+/**
+ * True if the event overlaps `dayKey` (yyyy-mm-dd, in the user's local
+ * timezone). Timed events match by start day; all-day events match
+ * whenever the day falls inside their `[start, end)` range (Google's
+ * end is exclusive — a single-day event has end = next day).
+ */
+function isOnDay(event: CalendarEvent, dayKey: string): boolean {
+  if (event.isAllDay) {
+    const startKey = event.start.slice(0, 10);
+    const endKey = event.end.slice(0, 10);
+    return dayKey >= startKey && dayKey < endKey;
+  }
+  return event.start.slice(0, 10) === dayKey;
 }
 
 function todayKey(): string {
