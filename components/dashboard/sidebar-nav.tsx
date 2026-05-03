@@ -4,6 +4,7 @@ import {
   Archive,
   ArrowDownToLine,
   Banknote,
+  BookOpen,
   Calendar,
   CalendarDays,
   CalendarRange,
@@ -48,6 +49,7 @@ const GROUPS: NavGroup[] = [
     items: [
       { href: "/habits", label: "habits", icon: CircleCheckBig },
       { href: "/calendar", label: "calendar", icon: Calendar },
+      { href: "/journal", label: "journal", icon: BookOpen },
     ],
   },
   {
