@@ -12,6 +12,7 @@ import { revalidateTag } from "next/cache";
  */
 export const TAGS = {
   cards: "cards",
+  cardClosings: "card-closings",
   categories: "categories",
   subcategories: "subcategories",
   creditExpenses: "credit-expenses",
@@ -20,6 +21,7 @@ export const TAGS = {
   incomes: "incomes",
   cashReceivables: "cash-receivables",
   creditReceivables: "credit-receivables",
+  creditReceivableParcelsPaid: "credit-receivable-parcels-paid",
   liquidSavings: "liquid-savings",
   fixedIncome: "fixed-income",
   snapshots: "snapshots",
