@@ -24,6 +24,7 @@ import { PageShell } from "@/components/dashboard/page-shell";
 import { Button } from "@/components/ui/button";
 import { disconnectGoogleCalendar } from "@/lib/actions/google-calendar";
 import type { Calendar, CalendarEvent } from "@/lib/google-calendar";
+import { isHumanEmail } from "@/lib/google-calendar-shared";
 import type { GoogleCalendarConnection } from "@/lib/queries/google-calendar";
 import { cn } from "@/lib/utils";
 
@@ -489,7 +490,9 @@ function EventRow({
             )}
           </div>
         )}
-        {event.organizerEmail && (
+        {/* Hide group/imported calendar resource ids — they're long
+            opaque hashes that clutter the row without informing. */}
+        {isHumanEmail(event.organizerEmail) && (
           <span className="text-muted-foreground/60 mt-1 inline-flex items-center gap-1 font-mono text-[10.5px]">
             <Link2
               aria-hidden
