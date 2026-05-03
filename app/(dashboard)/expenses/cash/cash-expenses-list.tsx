@@ -1,6 +1,6 @@
 "use client";
 
-import { Banknote, MoreHorizontal, Plus } from "lucide-react";
+import { Banknote, MoreHorizontal, PiggyBank, Plus } from "lucide-react";
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 
@@ -58,6 +58,7 @@ import { deleteCashExpense } from "@/lib/actions/cash-expenses";
 import type { CardRow } from "@/lib/queries/cards";
 import type { CashExpenseWithDetails } from "@/lib/queries/cash-expenses";
 import type { SubcategoryWithCategory } from "@/lib/queries/categories";
+import type { LiquidSavingsRow } from "@/lib/queries/investments";
 import { CASH_METHOD_LABEL } from "@/lib/validation/cash-expense";
 
 import { CashExpenseForm } from "./cash-expense-form";
@@ -84,9 +85,15 @@ type Props = {
   initialExpenses: CashExpenseWithDetails[];
   cards: CardRow[];
   subcategories: SubcategoryWithCategory[];
+  liquidSavings: LiquidSavingsRow[];
 };
 
-export function CashExpensesList({ initialExpenses, cards, subcategories }: Props) {
+export function CashExpensesList({
+  initialExpenses,
+  cards,
+  subcategories,
+  liquidSavings,
+}: Props) {
   const [dialog, setDialog] = useState<DialogState>({ kind: "closed" });
   const [pendingDelete, setPendingDelete] = useState<CashExpenseWithDetails | null>(null);
   const [isDeleting, startDeleteTransition] = useTransition();
@@ -284,10 +291,29 @@ export function CashExpensesList({ initialExpenses, cards, subcategories }: Prop
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredExpenses.map((expense) => (
+                {filteredExpenses.map((expense) => {
+                  const cofrinho = expense.liquidSavingsId
+                    ? liquidSavings.find((s) => s.id === expense.liquidSavingsId)
+                    : null;
+                  return (
                   <TableRow key={expense.id}>
                     <TableCell className="py-3 text-[13px] font-medium">
-                      {expense.description}
+                      <span className="flex items-center gap-2">
+                        <span className="truncate">{expense.description}</span>
+                        {cofrinho && (
+                          <span
+                            className="border-border bg-primary/[0.06] text-primary inline-flex shrink-0 items-center gap-1 rounded-md border px-1.5 py-0.5 font-mono text-[10px] tracking-wider uppercase"
+                            title={`do cofrinho: ${cofrinho.title}`}
+                          >
+                            <PiggyBank
+                              aria-hidden
+                              className="size-2.5"
+                              strokeWidth={1.8}
+                            />
+                            cofrinho
+                          </span>
+                        )}
+                      </span>
                     </TableCell>
                     <TableCell className="py-3 text-[12px]">
                       <span className="flex items-center gap-2">
@@ -361,7 +387,8 @@ export function CashExpensesList({ initialExpenses, cards, subcategories }: Prop
                       </DropdownMenu>
                     </TableCell>
                   </TableRow>
-                ))}
+                  );
+                })}
               </TableBody>
             </Table>
           )}
@@ -390,6 +417,7 @@ export function CashExpensesList({ initialExpenses, cards, subcategories }: Prop
             expense={dialog.kind === "edit" ? dialog.expense : undefined}
             cards={cards}
             subcategories={subcategories}
+            liquidSavings={liquidSavings}
             onSuccess={() => setDialog({ kind: "closed" })}
           />
         </DialogContent>

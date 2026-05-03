@@ -20,6 +20,11 @@ export const cashExpenseFormSchema = z.object({
   amount: z.string().refine((v) => amountPattern.test(v.trim()), {
     message: "use 1234.56 format (period as decimal)",
   }),
+  /** Id of the liquid_savings the expense was drawn from. Empty string =
+   *  not from cofrinho (mirrors how RHF text inputs handle null). */
+  liquidSavingsId: z.string().refine((v) => v === "" || /^[0-9a-fA-F-]{36}$/.test(v), {
+    message: "invalid liquid savings reference",
+  }),
 });
 
 export type CashExpenseFormInput = z.infer<typeof cashExpenseFormSchema>;
@@ -31,6 +36,7 @@ export type CashExpenseActionData = {
   subcategoryId: string;
   date: string;
   amount: string;
+  liquidSavingsId: string | null;
 };
 
 export function normaliseCashExpenseForm(input: CashExpenseFormInput): CashExpenseActionData {
@@ -41,5 +47,6 @@ export function normaliseCashExpenseForm(input: CashExpenseFormInput): CashExpen
     subcategoryId: input.subcategoryId,
     date: input.date,
     amount: input.amount.trim(),
+    liquidSavingsId: input.liquidSavingsId.trim() !== "" ? input.liquidSavingsId : null,
   };
 }

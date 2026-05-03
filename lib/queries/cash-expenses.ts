@@ -31,6 +31,7 @@ export const listCashExpenses = cachedQuery(
         subcategoryId: schema.cashExpenses.subcategoryId,
         date: schema.cashExpenses.date,
         amount: schema.cashExpenses.amount,
+        liquidSavingsId: schema.cashExpenses.liquidSavingsId,
         originalSpreadsheetId: schema.cashExpenses.originalSpreadsheetId,
         createdAt: schema.cashExpenses.createdAt,
         cardName: schema.cards.name,
