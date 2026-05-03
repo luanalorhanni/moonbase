@@ -26,6 +26,26 @@ export const listCashReceivables = cachedQuery(
       .orderBy(asc(schema.cashReceivables.isPaid), desc(schema.cashReceivables.loanDate)),
 );
 
+export type PaidParcelRow = {
+  receivableId: string;
+  parcelNumber: number;
+  paidAt: Date;
+};
+
+export const listPaidCreditParcels = cachedQuery(
+  "listPaidCreditParcels",
+  [TAGS.creditReceivableParcelsPaid],
+  (userId): Promise<PaidParcelRow[]> =>
+    db
+      .select({
+        receivableId: schema.creditReceivableParcelsPaid.receivableId,
+        parcelNumber: schema.creditReceivableParcelsPaid.parcelNumber,
+        paidAt: schema.creditReceivableParcelsPaid.paidAt,
+      })
+      .from(schema.creditReceivableParcelsPaid)
+      .where(eq(schema.creditReceivableParcelsPaid.userId, userId)),
+);
+
 export const listCreditReceivables = cachedQuery(
   "listCreditReceivables",
   [TAGS.creditReceivables],

@@ -28,3 +28,21 @@ export async function getCard(id: string) {
 }
 
 export type CardRow = Awaited<ReturnType<typeof listCards>>[number];
+
+export type CardClosingRow = typeof schema.cardClosings.$inferSelect;
+
+export const listCardClosings = cachedQuery(
+  "listCardClosings",
+  [TAGS.cardClosings],
+  (userId): Promise<CardClosingRow[]> =>
+    db
+      .select()
+      .from(schema.cardClosings)
+      .where(eq(schema.cardClosings.userId, userId))
+      .orderBy(asc(schema.cardClosings.referenceMonth)),
+);
+
+export async function listClosingsForCard(cardId: string): Promise<CardClosingRow[]> {
+  const all = await listCardClosings();
+  return all.filter((c) => c.cardId === cardId);
+}
