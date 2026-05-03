@@ -59,7 +59,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
 function SidebarChrome({ user }: { user: CurrentUser }) {
   return (
     <>
-      <SidebarBrand />
+      <SidebarBrand themeToggle={<ThemeToggle />} />
       <div className="min-h-0 flex-1 overflow-y-auto">
         <SidebarNav />
       </div>
@@ -67,7 +67,6 @@ function SidebarChrome({ user }: { user: CurrentUser }) {
         user={
           <SidebarUser email={user.email} name={user.name} avatarUrl={user.avatarUrl} />
         }
-        themeToggle={<ThemeToggle />}
       />
     </>
   );

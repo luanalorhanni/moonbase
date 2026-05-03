@@ -6,34 +6,22 @@ import { useSidebarCollapse } from "@/lib/dashboard/sidebar-context";
 import { cn } from "@/lib/utils";
 
 /**
- * Bottom of the sidebar — holds the user chip and the theme toggle.
- * Always laid out as a column so the flex direction never flips when
- * the sidebar collapses (a flex-direction change can't transition;
- * keeping a single direction is what makes the toggle feel continuous).
- *
- * The padding shrinks when collapsed so the icons align with the rest
- * of the icon column.
+ * Bottom of the sidebar — just the user chip. Theme toggle and the
+ * collapse toggle live up in SidebarBrand now, which keeps the
+ * footer airy and avoids stacking three icons on top of each other
+ * in icon-only mode.
  */
-export function SidebarFooter({
-  user,
-  themeToggle,
-}: {
-  user: ReactNode;
-  themeToggle: ReactNode;
-}) {
+export function SidebarFooter({ user }: { user: ReactNode }) {
   const { collapsed } = useSidebarCollapse();
   return (
     <div
       className={cn(
-        "border-sidebar-border flex shrink-0 flex-col items-stretch gap-3 border-t",
-        "transition-[padding] duration-300 ease-[cubic-bezier(0.2,0.7,0.2,1)]",
-        collapsed ? "items-center px-2 py-3" : "px-5 py-3",
+        "border-sidebar-border flex shrink-0 items-center border-t",
+        "transition-[padding] duration-200 ease-[cubic-bezier(0.2,0.7,0.2,1)]",
+        collapsed ? "justify-center px-2 py-3" : "px-5 py-3",
       )}
     >
       {user}
-      <div className={cn("flex", collapsed ? "justify-center" : "justify-end")}>
-        {themeToggle}
-      </div>
     </div>
   );
 }
