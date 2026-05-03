@@ -1,5 +1,6 @@
 import { type ReactNode } from "react";
 
+import { PageTransition } from "@/components/dashboard/page-transition";
 import { ResizableSidebar } from "@/components/dashboard/resizable-sidebar";
 import { SidebarNav } from "@/components/dashboard/sidebar-nav";
 import { SidebarUser } from "@/components/dashboard/sidebar-user";
@@ -47,7 +48,9 @@ export default async function DashboardLayout({ children }: { children: ReactNod
             <ThemeToggle />
           </div>
         </header>
-        <main className="flex-1 overflow-auto">{children}</main>
+        <main className="flex-1 overflow-auto">
+          <PageTransition>{children}</PageTransition>
+        </main>
       </div>
     </div>
   );
