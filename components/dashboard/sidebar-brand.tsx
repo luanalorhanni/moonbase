@@ -7,7 +7,7 @@ import { useSidebarCollapse } from "@/lib/dashboard/sidebar-context";
 import { cn } from "@/lib/utils";
 
 const TRANSITION =
-  "transition-[max-width,opacity,padding,gap] duration-300 ease-[cubic-bezier(0.2,0.7,0.2,1)]";
+  "transition-[max-width,opacity,padding,gap] duration-200 ease-[cubic-bezier(0.2,0.7,0.2,1)]";
 
 /**
  * Top of the sidebar — moon mark + brand text + the toggle that
@@ -21,7 +21,7 @@ export function SidebarBrand() {
   return (
     <div
       className={cn(
-        "shrink-0 transition-[padding] duration-300 ease-[cubic-bezier(0.2,0.7,0.2,1)]",
+        "shrink-0 transition-[padding] duration-200 ease-[cubic-bezier(0.2,0.7,0.2,1)]",
         collapsed ? "px-2 py-3" : "px-5 py-4",
       )}
     >

@@ -85,7 +85,6 @@ const GROUPS: NavGroup[] = [
 ];
 
 const STORAGE_KEY = "moonbase-sidebar-groups";
-const FLAT_ITEMS = [HOME_ITEM, ...GROUPS.flatMap((g) => g.items)];
 
 function isItemActive(pathname: string, href: string): boolean {
   if (href === "/") return pathname === "/";
@@ -96,14 +95,6 @@ function groupHasActive(pathname: string, group: NavGroup): boolean {
   return group.items.some((i) => isItemActive(pathname, i.href));
 }
 
-/**
- * The two layouts (full-width grouped tree vs icon column) are very
- * different shapes; rather than try to morph one into the other we
- * stack them on top of each other in a grid cell and cross-fade with
- * opacity. Each layout keeps its own clean alignment and the eye sees
- * a smooth dissolve between them while the surrounding sidebar width
- * animates separately.
- */
 export function SidebarNav() {
   const pathname = usePathname();
   const { collapsed } = useSidebarCollapse();
@@ -138,36 +129,18 @@ export function SidebarNav() {
     });
   }
 
+  // Two clean layouts; React swaps between them. The sidebar's width
+  // animation is what carries the feel of the toggle — adding extra
+  // crossfades on top just made it feel slow without buying clarity.
+  if (collapsed) {
+    return <CollapsedTree pathname={pathname} />;
+  }
   return (
-    <div className="grid">
-      <div
-        // grid-stack the two layouts so they overlay; the visible one
-        // is in flow (decides the height), the other is opacity-0 +
-        // pointer-events-none and snaps back into place when toggled.
-        style={{ gridArea: "1 / 1" }}
-        aria-hidden={collapsed}
-        className={cn(
-          "transition-opacity duration-300 ease-[cubic-bezier(0.2,0.7,0.2,1)]",
-          collapsed && "pointer-events-none opacity-0",
-        )}
-      >
-        <ExpandedTree
-          pathname={pathname}
-          openGroups={openGroups}
-          toggleGroup={toggleGroup}
-        />
-      </div>
-      <div
-        style={{ gridArea: "1 / 1" }}
-        aria-hidden={!collapsed}
-        className={cn(
-          "transition-opacity duration-300 ease-[cubic-bezier(0.2,0.7,0.2,1)]",
-          !collapsed && "pointer-events-none opacity-0",
-        )}
-      >
-        <CollapsedTree pathname={pathname} />
-      </div>
-    </div>
+    <ExpandedTree
+      pathname={pathname}
+      openGroups={openGroups}
+      toggleGroup={toggleGroup}
+    />
   );
 }
 
@@ -298,12 +271,13 @@ function ExpandedLink({ item, isActive }: { item: NavItem; isActive: boolean }) 
 /* ── collapsed layout (single icon column) ──────────────────────── */
 
 function CollapsedTree({ pathname }: { pathname: string }) {
+  const flat = [HOME_ITEM, ...GROUPS.flatMap((g) => g.items)];
   return (
     <nav
       aria-label="primary"
       className="flex flex-col items-center gap-1 px-2 py-3"
     >
-      {FLAT_ITEMS.map((item) => {
+      {flat.map((item) => {
         const isActive = isItemActive(pathname, item.href);
         const Icon = item.icon;
         return (

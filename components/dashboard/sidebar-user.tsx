@@ -13,15 +13,6 @@ type Props = {
   avatarUrl: string | null;
 };
 
-/**
- * Compact user chip in the sidebar footer.
- *
- * Renders both the expanded row (avatar + name + logout) and the
- * collapsed column (avatar stacked over logout) at the same time, but
- * cross-fades between them via opacity so the toggle feels continuous
- * instead of popping. The avatar itself stays anchored in the same
- * spot in both layouts so the eye has something stable to track.
- */
 export function SidebarUser({ email, name, avatarUrl }: Props) {
   const [isPending, startTransition] = useTransition();
   const [imgFailed, setImgFailed] = useState(false);
@@ -31,78 +22,48 @@ export function SidebarUser({ email, name, avatarUrl }: Props) {
   const initial = (name ?? email ?? "?").trim().charAt(0).toUpperCase();
   const showImage = !!avatarUrl && !imgFailed;
 
-  function handleSignOut() {
-    startTransition(() => signOut());
-  }
-
-  return (
-    <div
-      className={cn(
-        "relative w-full transition-[min-height] duration-300 ease-[cubic-bezier(0.2,0.7,0.2,1)]",
-        // Row: avatar (28px) only — no need for extra height.
-        // Column: avatar + 8px gap + logout (28px) = 64px.
-        collapsed ? "min-h-[64px]" : "min-h-[28px]",
-      )}
-    >
-      {/* Expanded row */}
-      <div
-        aria-hidden={collapsed}
-        className={cn(
-          "flex min-w-0 flex-1 items-center gap-2.5 transition-opacity duration-300 ease-[cubic-bezier(0.2,0.7,0.2,1)]",
-          collapsed && "pointer-events-none opacity-0",
-        )}
-      >
-        <Avatar
-          showImage={showImage}
-          avatarUrl={avatarUrl}
-          initial={initial}
-          alt={display}
-          onError={() => setImgFailed(true)}
-        />
-        <span
-          className="text-foreground/85 min-w-0 flex-1 truncate text-[12px] font-medium leading-tight"
-          title={email ?? undefined}
-        >
-          {display}
-        </span>
-        <LogoutButton onClick={handleSignOut} disabled={isPending} />
-      </div>
-
-      {/* Collapsed column — overlays the row, only opacity differs. */}
-      <div
-        aria-hidden={!collapsed}
-        className={cn(
-          "absolute inset-0 flex flex-col items-center gap-2 transition-opacity duration-300 ease-[cubic-bezier(0.2,0.7,0.2,1)]",
-          !collapsed && "pointer-events-none opacity-0",
-        )}
-      >
-        <span title={display}>
-          <Avatar
-            showImage={showImage}
-            avatarUrl={avatarUrl}
-            initial={initial}
-            alt={display}
-            onError={() => setImgFailed(true)}
-          />
-        </span>
-        <LogoutButton onClick={handleSignOut} disabled={isPending} />
-      </div>
-    </div>
+  const avatar = (
+    <Avatar
+      showImage={showImage}
+      avatarUrl={avatarUrl}
+      initial={initial}
+      alt={display}
+      onError={() => setImgFailed(true)}
+    />
   );
-}
-
-function LogoutButton({ onClick, disabled }: { onClick: () => void; disabled: boolean }) {
-  return (
+  const logout = (
     <button
       type="button"
-      onClick={onClick}
-      disabled={disabled}
+      onClick={() => startTransition(() => signOut())}
+      disabled={isPending}
       title="sair"
       aria-label="sair"
       className="text-muted-foreground/70 hover:bg-sidebar-accent hover:text-foreground inline-flex size-7 shrink-0 items-center justify-center rounded-md transition-colors disabled:opacity-50"
     >
       <LogOut aria-hidden className="size-3.5" strokeWidth={1.6} />
     </button>
+  );
+
+  if (collapsed) {
+    return (
+      <div className="flex flex-col items-center gap-2">
+        <span title={display}>{avatar}</span>
+        {logout}
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex min-w-0 flex-1 items-center gap-2.5">
+      {avatar}
+      <span
+        className="text-foreground/85 min-w-0 flex-1 truncate text-[12px] font-medium leading-tight"
+        title={email ?? undefined}
+      >
+        {display}
+      </span>
+      {logout}
+    </div>
   );
 }
 
