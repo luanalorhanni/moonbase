@@ -14,6 +14,17 @@ const nextConfig: NextConfig = {
       static: 300,
     },
   },
+  images: {
+    /**
+     * Whitelisted remote hosts for next/image.
+     *  - Unsplash: home cover picker (server-proxied search results).
+     *  - Google: profile pictures from Supabase Auth's Google provider.
+     */
+    remotePatterns: [
+      { protocol: "https", hostname: "images.unsplash.com" },
+      { protocol: "https", hostname: "lh3.googleusercontent.com" },
+    ],
+  },
 };
 
 export default nextConfig;
