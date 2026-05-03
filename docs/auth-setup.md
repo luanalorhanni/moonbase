@@ -1,6 +1,8 @@
 # Auth setup
 
-> Phase 2 of the architecture roadmap. The app uses **Supabase Auth with email + password** for the single user. Recovery is handled via Supabase's password-reset email flow.
+> Phase 2 of the architecture roadmap. The app uses **Supabase Auth** with two sign-in paths:
+> - **Continue with Google** (preferred — one click, no password to remember).
+> - **Email + password** (fallback). Recovery via Supabase's password-reset email.
 
 ## What lives where
 
@@ -51,18 +53,34 @@ For a single-user system, you should:
 - Disable **"Enable signups"** so nobody else can create an account at your URL.
 - Leave **"Confirm email"** on so unverified emails cannot sign in (relevant if you ever change your address).
 
-### 2. Authentication → URL Configuration
+### 2. Authentication → Providers → Google
+
+Enable Google sign-in:
+
+1. **Reuse the existing Google OAuth client** from the Calendar integration (project `crucial-cabinet-465418-e3` if you're using the same setup) — or create a new one at https://console.cloud.google.com/apis/credentials.
+2. In the Google Cloud Console, edit the OAuth 2.0 Client and add this URL to **Authorized redirect URIs**:
+   ```
+   https://<your-supabase-ref>.supabase.co/auth/v1/callback
+   ```
+   (Supabase shows the exact URL inside its Google provider config page — copy that.)
+3. Back in Supabase: toggle **Google** on, paste the Client ID + Client Secret, save.
+
+Because the Supabase email user (`luanalorhannips@gmail.com`) and the Google account share the same address, Supabase automatically links the Google identity to the existing user row on first sign-in — your existing `user_id` stays the same and all your data remains visible.
+
+### 3. Authentication → URL Configuration
 
 Add the following to **Redirect URLs**:
 
 ```
 http://localhost:3000/api/auth-callback
+http://localhost:3000/**
 https://<your-vercel-domain>/api/auth-callback
+https://<your-vercel-domain>/**
 ```
 
-The `Site URL` should be your production domain once Vercel is connected (`https://<your-vercel-domain>`); for now `http://localhost:3000` is fine.
+The `Site URL` should be your production domain once Vercel is connected (`https://<your-vercel-domain>`); for now `http://localhost:3000` is fine. The wildcard variants act as a safety net — the middleware also funnels stray `?code=` params through the callback regardless of path, but having them whitelisted is cleaner.
 
-### 3. (Optional) Authentication → Email Templates → Recovery
+### 4. (Optional) Authentication → Email Templates → Recovery
 
 The default template works. Customise the Portuguese-Brazilian copy if you like — the link variable is `{{ .ConfirmationURL }}`.
 
@@ -70,9 +88,10 @@ The default template works. Customise the Portuguese-Brazilian copy if you like 
 
 1. `pnpm dev` and open http://localhost:3000.
 2. Middleware sees no session, redirects to `/login`.
-3. Type your email + password, hit **entrar**. Browser-side `supabase.auth.signInWithPassword` sets the session cookie; the page reload picks it up via the middleware.
-4. The dashboard layout calls `requireUser()`, sees the session, renders the page with your email and a logout button in the sidebar footer.
-5. Clicking the logout icon runs the `signOut` Server Action, which clears cookies and redirects to `/login`.
+3. **With Google**: click **continuar com google** → Google consent screen (already approved if you've used Calendar) → redirected back through `/api/auth-callback` → land on `/`.
+4. **With email + password**: type credentials, hit **entrar**. `supabase.auth.signInWithPassword` sets the session cookie.
+5. The dashboard layout calls `requireUser()`, sees the session, renders the page with your email and a logout button in the sidebar footer.
+6. Clicking the logout icon runs the `signOut` Server Action, which clears cookies and redirects to `/login`.
 
 ## Things to watch in production
 
