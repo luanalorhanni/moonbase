@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 
+import { EditorialHero } from "@/components/dashboard/editorial-hero";
 import { PageShell } from "@/components/dashboard/page-shell";
 import {
   AlertDialog,
@@ -309,6 +310,13 @@ export function ReceivablesPage({
         </Button>
       }
     >
+      <EditorialHero
+        caption="owed to you"
+        title="receivables"
+        subtitle="loans and card installments coming back"
+        tone="mauve"
+      />
+
       {/* kpi strip — matches /home dashboard style */}
       <div className="border-border grid shrink-0 grid-cols-1 border-b sm:grid-cols-3">
         <Kpi

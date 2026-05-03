@@ -21,6 +21,7 @@ import {
   type AmountRange,
   type DateRange,
 } from "@/components/dashboard/column-filters";
+import { EditorialHero } from "@/components/dashboard/editorial-hero";
 import { PageShell } from "@/components/dashboard/page-shell";
 import {
   AlertDialog,
@@ -199,6 +200,14 @@ export function CreditExpensesList({ initialExpenses, cards, subcategories }: Pr
         </Button>
       }
     >
+      <EditorialHero
+        caption="billed later"
+        title="credit"
+        accent="expenses"
+        subtitle="installments and one-shot card purchases"
+        tone="mauve"
+      />
+
       {initialExpenses.length === 0 ? (
         <EmptyState onAdd={() => setDialog({ kind: "create" })} />
       ) : (
