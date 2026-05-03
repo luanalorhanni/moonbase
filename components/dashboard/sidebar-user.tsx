@@ -4,6 +4,7 @@ import { LogOut } from "lucide-react";
 import { useState, useTransition } from "react";
 
 import { signOut } from "@/lib/actions/auth";
+import { useSidebarCollapse } from "@/lib/dashboard/sidebar-context";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -12,47 +13,56 @@ type Props = {
   avatarUrl: string | null;
 };
 
-/**
- * Compact user chip in the sidebar footer:
- *   [avatar]  name (or email)        [logout]
- *
- * The avatar falls back to a primary-tinted circle with the user's
- * first initial when no Google picture is available (email + password
- * users).
- */
 export function SidebarUser({ email, name, avatarUrl }: Props) {
   const [isPending, startTransition] = useTransition();
   const [imgFailed, setImgFailed] = useState(false);
+  const { collapsed } = useSidebarCollapse();
 
   const display = name ?? email ?? "—";
   const initial = (name ?? email ?? "?").trim().charAt(0).toUpperCase();
   const showImage = !!avatarUrl && !imgFailed;
 
+  const avatar = (
+    <Avatar
+      showImage={showImage}
+      avatarUrl={avatarUrl}
+      initial={initial}
+      alt={display}
+      onError={() => setImgFailed(true)}
+    />
+  );
+  const logout = (
+    <button
+      type="button"
+      onClick={() => startTransition(() => signOut())}
+      disabled={isPending}
+      title="sair"
+      aria-label="sair"
+      className="text-muted-foreground/70 hover:bg-sidebar-accent hover:text-foreground inline-flex size-7 shrink-0 items-center justify-center rounded-md transition-colors disabled:opacity-50"
+    >
+      <LogOut aria-hidden className="size-3.5" strokeWidth={1.6} />
+    </button>
+  );
+
+  if (collapsed) {
+    return (
+      <div className="flex flex-col items-center gap-2">
+        <span title={display}>{avatar}</span>
+        {logout}
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-w-0 flex-1 items-center gap-2.5">
-      <Avatar
-        showImage={showImage}
-        avatarUrl={avatarUrl}
-        initial={initial}
-        alt={display}
-        onError={() => setImgFailed(true)}
-      />
+      {avatar}
       <span
         className="text-foreground/85 min-w-0 flex-1 truncate text-[12px] font-medium leading-tight"
         title={email ?? undefined}
       >
         {display}
       </span>
-      <button
-        type="button"
-        onClick={() => startTransition(() => signOut())}
-        disabled={isPending}
-        title="sair"
-        aria-label="sair"
-        className="text-muted-foreground/70 hover:bg-sidebar-accent hover:text-foreground inline-flex size-7 shrink-0 items-center justify-center rounded-md transition-colors disabled:opacity-50"
-      >
-        <LogOut aria-hidden className="size-3.5" strokeWidth={1.6} />
-      </button>
+      {logout}
     </div>
   );
 }

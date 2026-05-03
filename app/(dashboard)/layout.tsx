@@ -3,6 +3,8 @@ import { type ReactNode } from "react";
 import { MobileNav } from "@/components/dashboard/mobile-nav";
 import { PageTransition } from "@/components/dashboard/page-transition";
 import { ResizableSidebar } from "@/components/dashboard/resizable-sidebar";
+import { SidebarBrand } from "@/components/dashboard/sidebar-brand";
+import { SidebarFooter } from "@/components/dashboard/sidebar-footer";
 import { SidebarNav } from "@/components/dashboard/sidebar-nav";
 import { SidebarUser } from "@/components/dashboard/sidebar-user";
 import { PixelMoonCrescent } from "@/components/decorative/pixel-icons";
@@ -48,32 +50,24 @@ export default async function DashboardLayout({ children }: { children: ReactNod
 }
 
 /**
- * The shared inner content of both the desktop sidebar and the mobile
+ * Shared inner content of both the desktop sidebar and the mobile
  * drawer — brand mark on top, nav in the middle, user chip on the
- * bottom. Lives in the layout file because the two surfaces want
- * exactly the same bits in the same order.
+ * bottom. SidebarBrand and SidebarFooter are collapse-aware on
+ * desktop (via SidebarCollapseProvider in ResizableSidebar) and fall
+ * back to the expanded layout on mobile, where there's no provider.
  */
 function SidebarChrome({ user }: { user: CurrentUser }) {
   return (
     <>
-      <div className="shrink-0 px-5 py-4">
-        <div className="flex items-center gap-2">
-          <PixelMoonCrescent size={12} className="text-primary" />
-          <span className="text-foreground text-[14px] leading-none font-semibold tracking-tight">
-            moonbase
-          </span>
-          <span className="text-muted-foreground/50 ml-auto font-mono text-[9px] tracking-[0.18em]">
-            v1
-          </span>
-        </div>
-      </div>
+      <SidebarBrand themeToggle={<ThemeToggle />} />
       <div className="min-h-0 flex-1 overflow-y-auto">
         <SidebarNav />
       </div>
-      <div className="border-sidebar-border flex shrink-0 items-center gap-2 border-t px-5 py-3">
-        <SidebarUser email={user.email} name={user.name} avatarUrl={user.avatarUrl} />
-        <ThemeToggle />
-      </div>
+      <SidebarFooter
+        user={
+          <SidebarUser email={user.email} name={user.name} avatarUrl={user.avatarUrl} />
+        }
+      />
     </>
   );
 }
