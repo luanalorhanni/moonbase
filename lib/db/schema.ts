@@ -314,6 +314,27 @@ export const habits = pgTable("habits", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+/**
+ * Per-user preferences (single row per user, PK is user_id). First
+ * use: the home page cover image picked from Unsplash + the optional
+ * quote shown alongside.
+ */
+export const userSettings = pgTable("user_settings", {
+  userId: uuid("user_id").primaryKey(),
+  homeCoverUrl: text("home_cover_url"),
+  homeCoverThumbUrl: text("home_cover_thumb_url"),
+  homeCoverAlt: text("home_cover_alt"),
+  homeCoverPhotographerName: text("home_cover_photographer_name"),
+  homeCoverPhotographerUrl: text("home_cover_photographer_url"),
+  homeCoverUnsplashId: text("home_cover_unsplash_id"),
+  homeQuote: text("home_quote"),
+  homeQuoteAuthor: text("home_quote_author"),
+  /** Canonical Spotify share URL (playlist/album/track). Embed URL is
+   *  derived at render time from this. Null = no embed shown. */
+  homeSpotifyUrl: text("home_spotify_url"),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 export const habitLogs = pgTable(
   "habit_logs",
   {
