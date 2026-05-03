@@ -22,6 +22,7 @@ export const TAGS = {
   cashReceivables: "cash-receivables",
   creditReceivables: "credit-receivables",
   creditReceivableParcelsPaid: "credit-receivable-parcels-paid",
+  userSettings: "user-settings",
   habits: "habits",
   habitCategories: "habit-categories",
   habitLogs: "habit-logs",
