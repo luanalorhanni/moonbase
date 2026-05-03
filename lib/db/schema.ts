@@ -21,6 +21,7 @@ import {
   numeric,
   pgEnum,
   pgTable,
+  smallint,
   text,
   timestamp,
   unique,
@@ -367,3 +368,50 @@ export const habitLogs = pgTable(
   },
   (t) => [unique("habit_logs_habit_date_unique").on(t.habitId, t.date)],
 );
+
+/* ─── journal ───────────────────────────────────────────────────────── */
+
+/**
+ * One reflection per user per day. The end-of-day model: title-less
+ * entries indexed by `entry_date`. Both `mood` (numeric 1–5 climatic
+ * scale, nullable) and `content` (markdown, nullable) are optional —
+ * the user can save just a mood, just text, or both, or even just a
+ * cover image. The cover columns mirror `user_settings.home_cover_*`
+ * — same Unsplash metadata, scoped per entry instead of per user.
+ */
+export const journalEntries = pgTable(
+  "journal_entries",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id").notNull(),
+    entryDate: date("entry_date").notNull(),
+    /** Climatic 1–5 scale: 1 = pesado, 5 = radiante. Null = no mood logged. */
+    mood: smallint("mood"),
+    /** Markdown body. Null when the user only logged a mood/cover. */
+    content: text("content"),
+    coverUrl: text("cover_url"),
+    coverThumbUrl: text("cover_thumb_url"),
+    coverAlt: text("cover_alt"),
+    coverPhotographerName: text("cover_photographer_name"),
+    coverPhotographerUrl: text("cover_photographer_url"),
+    coverUnsplashId: text("cover_unsplash_id"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (t) => [unique("journal_entries_user_date_unique").on(t.userId, t.entryDate)],
+);
+
+/**
+ * Quotes / reflections collected through the day. Independent of
+ * journal_entries — captured ad hoc, attributed to a date. May or may
+ * not have an author or source attached.
+ */
+export const journalQuotes = pgTable("journal_quotes", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id").notNull(),
+  text: text("text").notNull(),
+  author: text("author"),
+  source: text("source"),
+  collectedOn: date("collected_on").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});

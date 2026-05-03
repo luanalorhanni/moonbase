@@ -30,6 +30,8 @@ export const TAGS = {
   liquidSavings: "liquid-savings",
   fixedIncome: "fixed-income",
   snapshots: "snapshots",
+  journalEntries: "journal-entries",
+  journalQuotes: "journal-quotes",
 } as const;
 
 export type Tag = (typeof TAGS)[keyof typeof TAGS];
