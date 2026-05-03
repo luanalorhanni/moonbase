@@ -6,6 +6,7 @@ import {
   Banknote,
   CalendarDays,
   ChevronDown,
+  CircleCheckBig,
   CreditCard,
   HandCoins,
   Home,
@@ -15,6 +16,7 @@ import {
   ReceiptText,
   Repeat,
   Settings2,
+  Sprout,
   Tag,
   Wallet,
 } from "lucide-react";
@@ -57,6 +59,12 @@ const GROUPS: NavGroup[] = [
       { href: "/expenses/fixed", label: "fixed expenses", icon: Repeat },
       { href: "/incomes", label: "incomes", icon: ArrowDownToLine },
     ],
+  },
+  {
+    id: "routines",
+    label: "routines",
+    icon: Sprout,
+    items: [{ href: "/habits", label: "habits", icon: CircleCheckBig }],
   },
   {
     id: "config",
