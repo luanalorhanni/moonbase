@@ -98,6 +98,8 @@ export const cardClosings = pgTable(
       .references(() => cards.id, { onDelete: "cascade" }),
     referenceMonth: date("reference_month").notNull(), // always day 1
     closingDay: integer("closing_day").notNull(),
+    /** Optional override for the bill due day. Falls back to cards.dueDay. */
+    dueDay: integer("due_day"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (t) => [unique("card_closings_card_month_unique").on(t.cardId, t.referenceMonth)],
@@ -139,6 +141,10 @@ export const cashExpenses = pgTable("cash_expenses", {
     .references(() => subcategories.id, { onDelete: "restrict" }),
   date: date("date").notNull(),
   amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
+  /** When set, the expense was drawn from this liquid savings (cofrinho).
+   *  Actions decrement the savings balance on insert and reverse on
+   *  delete/update so the user only edits one place. */
+  liquidSavingsId: uuid("liquid_savings_id"),
   originalSpreadsheetId: text("original_spreadsheet_id"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
@@ -203,6 +209,26 @@ export const creditReceivables = pgTable("credit_receivables", {
   manualOverride: boolean("manual_override").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
+
+/**
+ * Tracks which individual parcels of a credit receivable have been received.
+ * One row = one paid parcel. Absent row = unpaid. Cascades on parent delete.
+ */
+export const creditReceivableParcelsPaid = pgTable(
+  "credit_receivable_parcels_paid",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id").notNull(),
+    receivableId: uuid("receivable_id")
+      .notNull()
+      .references(() => creditReceivables.id, { onDelete: "cascade" }),
+    parcelNumber: integer("parcel_number").notNull(),
+    paidAt: timestamp("paid_at").notNull().defaultNow(),
+  },
+  (t) => ({
+    uniqueParcel: unique().on(t.receivableId, t.parcelNumber),
+  }),
+);
 
 export const liquidSavings = pgTable("liquid_savings", {
   id: uuid("id").defaultRandom().primaryKey(),
