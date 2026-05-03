@@ -44,6 +44,8 @@ export const incomeTypeEnum = pgEnum("income_type", [
 ]);
 export const loanTypeEnum = pgEnum("loan_type", ["pix", "debit", "cash"]);
 export const snapshotStatusEnum = pgEnum("snapshot_status", ["locked", "draft"]);
+export const habitPolarityEnum = pgEnum("habit_polarity", ["do", "avoid"]);
+export const habitScheduleEnum = pgEnum("habit_schedule", ["daily", "weekly_target"]);
 
 /**
  * Color is stored as a free-form text string holding a 6-digit hex code
@@ -273,4 +275,56 @@ export const monthlySnapshots = pgTable(
     generatedAt: timestamp("generated_at").notNull().defaultNow(),
   },
   (t) => [unique("monthly_snapshots_user_month_unique").on(t.userId, t.referenceMonth)],
+);
+
+// ---------------------------------------------------------------------------
+// Habit tracking — unlocks ADR-009 (deferred). Sister domain to finance,
+// reuses auth and design system but lives on its own tables. The first
+// non-financial domain in the app, intentionally kept narrow:
+//   - Boolean only: a log row exists for a (habit, date) iff the user
+//     succeeded that day. For "do" habits success = "did the thing".
+//     For "avoid" habits success = "stayed clean".
+//   - Two schedules: daily, or N times/week with no fixed days.
+// ---------------------------------------------------------------------------
+
+export const habitCategories = pgTable("habit_categories", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id").notNull(),
+  name: text("name").notNull(),
+  color: text("color").notNull().default("#7e82aa"),
+  icon: text("icon"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const habits = pgTable("habits", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id").notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
+  categoryId: uuid("category_id").references(() => habitCategories.id, {
+    onDelete: "set null",
+  }),
+  polarity: habitPolarityEnum("polarity").notNull().default("do"),
+  schedule: habitScheduleEnum("schedule").notNull().default("daily"),
+  /** Only used when schedule = 'weekly_target'. Null otherwise. */
+  targetPerWeek: integer("target_per_week"),
+  color: text("color").notNull().default("#7e82aa"),
+  icon: text("icon"),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const habitLogs = pgTable(
+  "habit_logs",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id").notNull(),
+    habitId: uuid("habit_id")
+      .notNull()
+      .references(() => habits.id, { onDelete: "cascade" }),
+    date: date("date").notNull(),
+    note: text("note"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => [unique("habit_logs_habit_date_unique").on(t.habitId, t.date)],
 );
