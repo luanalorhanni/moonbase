@@ -61,6 +61,7 @@ import {
 } from "@/lib/actions/google-calendar";
 import {
   GOOGLE_EVENT_COLORS,
+  isHumanEmail,
   type Calendar,
   type CalendarEvent,
   type EventReminder,
@@ -143,15 +144,6 @@ function formatTime(d: Date): string {
     hour: "2-digit",
     minute: "2-digit",
   }).format(d);
-}
-
-function isHumanEmail(email: string | null | undefined): email is string {
-  if (!email) return false;
-  const lower = email.toLowerCase();
-  if (lower.endsWith("@group.calendar.google.com")) return false;
-  if (lower.endsWith("@import.calendar.google.com")) return false;
-  if (lower.endsWith(".calendar.google.com")) return false;
-  return true;
 }
 
 /* ── small subcomponents ─────────────────────────────────────────── */
