@@ -1,6 +1,6 @@
 "use server";
 
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import { requireUser } from "@/lib/auth/session";
@@ -183,7 +183,92 @@ export async function deleteCreditReceivable(id: string): Promise<CreditReceivab
   await db
     .delete(schema.creditReceivables)
     .where(and(eq(schema.creditReceivables.id, id), eq(schema.creditReceivables.userId, user.id)));
-  invalidate(TAGS.creditReceivables);
+  invalidate(TAGS.creditReceivables, TAGS.creditReceivableParcelsPaid);
+  revalidatePath("/receivables");
+  return { ok: true };
+}
+
+/**
+ * Toggle a single parcel's paid status for a credit receivable.
+ * If `paid` is true, inserts a row (no-op if already exists).
+ * If false, deletes the row (no-op if absent).
+ */
+export async function toggleCreditParcelPaid(
+  receivableId: string,
+  parcelNumber: number,
+  paid: boolean,
+): Promise<CreditReceivableActionResult> {
+  const user = await requireUser();
+
+  if (paid) {
+    await db
+      .insert(schema.creditReceivableParcelsPaid)
+      .values({ userId: user.id, receivableId, parcelNumber })
+      .onConflictDoNothing();
+  } else {
+    await db
+      .delete(schema.creditReceivableParcelsPaid)
+      .where(
+        and(
+          eq(schema.creditReceivableParcelsPaid.userId, user.id),
+          eq(schema.creditReceivableParcelsPaid.receivableId, receivableId),
+          eq(schema.creditReceivableParcelsPaid.parcelNumber, parcelNumber),
+        ),
+      );
+  }
+
+  invalidate(TAGS.creditReceivableParcelsPaid);
+  revalidatePath("/receivables");
+  return { ok: true };
+}
+
+/**
+ * Mark all parcels in a given reference month as paid (or unpaid). Each item
+ * is `(receivableId, parcelNumber)` — the caller computes which parcels fall
+ * in the month from `firstParcelMonth`/`totalParcels`.
+ */
+export async function setMonthParcelsPaid(
+  parcels: Array<{ receivableId: string; parcelNumber: number }>,
+  paid: boolean,
+): Promise<CreditReceivableActionResult> {
+  const user = await requireUser();
+  if (parcels.length === 0) return { ok: true };
+
+  if (paid) {
+    await db
+      .insert(schema.creditReceivableParcelsPaid)
+      .values(
+        parcels.map((p) => ({
+          userId: user.id,
+          receivableId: p.receivableId,
+          parcelNumber: p.parcelNumber,
+        })),
+      )
+      .onConflictDoNothing();
+  } else {
+    // Drizzle has no compound `IN ((id, n), …)` helper, so delete by
+    // receivable then filter parcel numbers — for typical months this is a
+    // small set so individual statements are fine.
+    const byReceivable = new Map<string, number[]>();
+    for (const p of parcels) {
+      const list = byReceivable.get(p.receivableId);
+      if (list) list.push(p.parcelNumber);
+      else byReceivable.set(p.receivableId, [p.parcelNumber]);
+    }
+    for (const [receivableId, nums] of byReceivable) {
+      await db
+        .delete(schema.creditReceivableParcelsPaid)
+        .where(
+          and(
+            eq(schema.creditReceivableParcelsPaid.userId, user.id),
+            eq(schema.creditReceivableParcelsPaid.receivableId, receivableId),
+            inArray(schema.creditReceivableParcelsPaid.parcelNumber, nums),
+          ),
+        );
+    }
+  }
+
+  invalidate(TAGS.creditReceivableParcelsPaid);
   revalidatePath("/receivables");
   return { ok: true };
 }

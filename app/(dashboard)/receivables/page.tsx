@@ -1,5 +1,9 @@
 import { listCards } from "@/lib/queries/cards";
-import { listCashReceivables, listCreditReceivables } from "@/lib/queries/receivables";
+import {
+  listCashReceivables,
+  listCreditReceivables,
+  listPaidCreditParcels,
+} from "@/lib/queries/receivables";
 
 import { ReceivablesPage } from "./receivables-page";
 
@@ -8,9 +12,10 @@ export const metadata = {
 };
 
 export default async function ReceivablesRoute() {
-  const [cashReceivables, creditReceivables, cards] = await Promise.all([
+  const [cashReceivables, creditReceivables, paidParcels, cards] = await Promise.all([
     listCashReceivables(),
     listCreditReceivables(),
+    listPaidCreditParcels(),
     listCards(),
   ]);
 
@@ -18,6 +23,10 @@ export default async function ReceivablesRoute() {
     <ReceivablesPage
       cashReceivables={cashReceivables}
       creditReceivables={creditReceivables}
+      paidParcels={paidParcels.map((p) => ({
+        receivableId: p.receivableId,
+        parcelNumber: p.parcelNumber,
+      }))}
       cards={cards}
     />
   );
