@@ -10,6 +10,7 @@ import {
 } from "@/components/decorative/pixel-icons";
 import { aggregateMonth, cumulativeBalance } from "@/lib/finance/aggregate";
 import { formatMonthLong, formatMonthShort, shiftMonth, type MonthRef } from "@/lib/finance/month";
+import { listLiquidSavings } from "@/lib/queries/investments";
 import { loadMonth, toAggregateInputs } from "@/lib/queries/month";
 import { cn, formatCurrency } from "@/lib/utils";
 
@@ -29,7 +30,14 @@ const PT_METHOD: Record<string, string> = {
 };
 
 export async function MonthDashboard({ reference }: { reference: MonthRef }) {
-  const summary = await loadMonth(reference);
+  const [summary, liquidSavings] = await Promise.all([
+    loadMonth(reference),
+    listLiquidSavings(),
+  ]);
+  const totalLiquidSavings = liquidSavings
+    .filter((i) => i.isActive)
+    .reduce((acc, i) => acc + Number(i.latestYield), 0)
+    .toFixed(2);
   const inputs = toAggregateInputs({
     cashExpenses: summary.data.cashExpenses,
     creditExpenses: summary.data.creditExpenses,
@@ -220,13 +228,15 @@ export async function MonthDashboard({ reference }: { reference: MonthRef }) {
   const balanceNum = Number(summary.balance);
   const prev = shiftMonth(reference, -1);
   const next = shiftMonth(reference, 1);
-  const year = reference.slice(0, 4);
 
   return (
     <div className="enter flex flex-col">
       {/* ── top bar ─────────────────────────────────────────────────── */}
-      <div className="border-border bg-background/95 supports-backdrop-blur:bg-background/70 flex shrink-0 items-center justify-between gap-4 border-b px-5 py-3 backdrop-blur">
+      <div className="border-border bg-background/95 supports-backdrop-blur:bg-background/70 flex shrink-0 items-center justify-end gap-4 border-b px-5 py-3 backdrop-blur">
         <div className="flex items-center gap-2">
+          <span className="text-muted-foreground/70 mr-2 font-mono text-[11px] tracking-[0.16em]">
+            {formatMonthShort(reference)}
+          </span>
           <Link
             href={`/month/${prev}`}
             aria-label={`previous month (${formatMonthShort(prev)})`}
@@ -243,18 +253,6 @@ export async function MonthDashboard({ reference }: { reference: MonthRef }) {
             className="border-border-strong text-muted-foreground hover:bg-muted hover:text-foreground inline-flex size-7 items-center justify-center rounded-md border transition-colors"
           >
             <ChevronRight className="size-3.5" strokeWidth={1.7} />
-          </Link>
-          <span className="text-muted-foreground/70 ml-2 font-mono text-[11px] tracking-[0.16em]">
-            {formatMonthShort(reference)}
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <Link
-            href={`/year/${year}`}
-            className="border-border-strong text-muted-foreground hover:bg-card hover:text-foreground inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-[13px] transition-colors"
-          >
-            year of {year}
-            <ArrowUpRight className="size-3" strokeWidth={1.6} />
           </Link>
         </div>
       </div>
@@ -301,7 +299,7 @@ export async function MonthDashboard({ reference }: { reference: MonthRef }) {
           deltaTone="positive"
           accent="success"
         />
-        <Kpi label="receivables" value={summary.totalReceivables} accent="muted" />
+        <Kpi label="liquid savings" value={totalLiquidSavings} accent="muted" />
       </div>
 
       {/* ── mid grid: trend | breakdowns | activity ─────────────────── */}
