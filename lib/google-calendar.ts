@@ -196,9 +196,15 @@ export async function saveTokens(
 
 /**
  * Read tokens, refreshing if expired. Returns null when the user has
- * never connected (caller should render the connection prompt).
+ * never connected (caller should render the connection prompt). Pass
+ * `{ force: true }` to refresh regardless of local expiry — used to
+ * recover when Google rejects a token we still considered live (e.g.
+ * the user revoked access externally, or our clock drifted).
  */
-async function getValidAccessToken(userId: string): Promise<{
+async function getValidAccessToken(
+  userId: string,
+  opts: { force?: boolean } = {},
+): Promise<{
   accessToken: string;
   email: string | null;
   scope: string;
@@ -211,8 +217,9 @@ async function getValidAccessToken(userId: string): Promise<{
   const row = rows[0];
   if (!row) return null;
 
-  // Live token still valid? Use as-is.
-  if (row.expiry.getTime() > Date.now()) {
+  // Live token still valid? Use as-is — unless the caller is asking
+  // for a forced refresh after Google rejected the cached token.
+  if (!opts.force && row.expiry.getTime() > Date.now()) {
     return { accessToken: row.accessToken, email: row.email, scope: row.scope };
   }
 
@@ -229,6 +236,28 @@ async function getValidAccessToken(userId: string): Promise<{
     email: row.email,
     scope: refreshed.scope,
   };
+}
+
+/**
+ * Make an authed Google API call, retrying once with a freshly
+ * refreshed access token if Google answers 401. This rescues the case
+ * where the cached token is "still valid" by our clock but has been
+ * revoked or otherwise invalidated server-side.
+ */
+async function googleFetch(
+  userId: string,
+  buildRequest: (accessToken: string) => Promise<Response>,
+): Promise<Response> {
+  const session = await getValidAccessToken(userId);
+  if (!session) {
+    throw new Error("Não conectado ao Google Calendar.");
+  }
+  const res = await buildRequest(session.accessToken);
+  if (res.status !== 401) return res;
+
+  const refreshed = await getValidAccessToken(userId, { force: true });
+  if (!refreshed) return res;
+  return buildRequest(refreshed.accessToken);
 }
 
 /* ─── calendar list ─────────────────────────────────────────────── */
@@ -252,10 +281,12 @@ export async function listCalendars(userId: string): Promise<{
   const session = await getValidAccessToken(userId);
   if (!session) return null;
 
-  const res = await fetch(`${GOOGLE_API_BASE}/users/me/calendarList?maxResults=250`, {
-    headers: { Authorization: `Bearer ${session.accessToken}` },
-    cache: "no-store",
-  });
+  const res = await googleFetch(userId, (token) =>
+    fetch(`${GOOGLE_API_BASE}/users/me/calendarList?maxResults=250`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    }),
+  );
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`Google calendarList failed (${res.status}): ${text}`);
@@ -343,7 +374,7 @@ function shape(raw: RawEvent, calendar: Calendar): CalendarEvent {
  * internally by the multi-calendar fetch.
  */
 async function listEventsForCalendar(
-  accessToken: string,
+  userId: string,
   calendar: Calendar,
   from: Date,
   to: Date,
@@ -356,12 +387,14 @@ async function listEventsForCalendar(
     orderBy: "startTime",
     maxResults: String(maxResults),
   });
-  const res = await fetch(
-    `${GOOGLE_API_BASE}/calendars/${encodeURIComponent(calendar.id)}/events?${params}`,
-    {
-      headers: { Authorization: `Bearer ${accessToken}` },
-      cache: "no-store",
-    },
+  const res = await googleFetch(userId, (token) =>
+    fetch(
+      `${GOOGLE_API_BASE}/calendars/${encodeURIComponent(calendar.id)}/events?${params}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
+      },
+    ),
   );
   if (!res.ok) {
     // Don't throw — one busted calendar shouldn't kill the whole view.
@@ -402,9 +435,7 @@ export async function listEvents(
   if (active.length === 0) active = list.calendars;
 
   const perCalendar = await Promise.all(
-    active.map((cal) =>
-      listEventsForCalendar(session.accessToken, cal, from, to, maxResultsPerCalendar),
-    ),
+    active.map((cal) => listEventsForCalendar(userId, cal, from, to, maxResultsPerCalendar)),
   );
   const events = perCalendar.flat().sort((a, b) => {
     const ta = new Date(a.start).getTime();
@@ -478,16 +509,15 @@ export async function createEvent(
   if (input.description) body.description = input.description;
   if (input.location) body.location = input.location;
 
-  const res = await fetch(
-    `${GOOGLE_API_BASE}/calendars/${encodeURIComponent(input.calendarId)}/events`,
-    {
+  const res = await googleFetch(userId, (token) =>
+    fetch(`${GOOGLE_API_BASE}/calendars/${encodeURIComponent(input.calendarId)}/events`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${session.accessToken}`,
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
-    },
+    }),
   );
   if (!res.ok) {
     const text = await res.text();
@@ -576,16 +606,18 @@ export async function updateEvent(
     };
   }
 
-  const res = await fetch(
-    `${GOOGLE_API_BASE}/calendars/${encodeURIComponent(input.calendarId)}/events/${encodeURIComponent(input.eventId)}`,
-    {
-      method: "PATCH",
-      headers: {
-        Authorization: `Bearer ${session.accessToken}`,
-        "Content-Type": "application/json",
+  const res = await googleFetch(userId, (token) =>
+    fetch(
+      `${GOOGLE_API_BASE}/calendars/${encodeURIComponent(input.calendarId)}/events/${encodeURIComponent(input.eventId)}`,
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
       },
-      body: JSON.stringify(body),
-    },
+    ),
   );
   if (!res.ok) {
     const text = await res.text();
@@ -608,12 +640,14 @@ export async function deleteEvent(
       error: "Sessão sem permissão de escrita — clique em reconectar.",
     };
   }
-  const res = await fetch(
-    `${GOOGLE_API_BASE}/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}`,
-    {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${session.accessToken}` },
-    },
+  const res = await googleFetch(userId, (token) =>
+    fetch(
+      `${GOOGLE_API_BASE}/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}`,
+      {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    ),
   );
   // Google returns 204 No Content on success, or 410 Gone if already deleted.
   if (!res.ok && res.status !== 410) {
@@ -643,12 +677,14 @@ export async function moveEvent(
     };
   }
   const params = new URLSearchParams({ destination: toCalendarId });
-  const res = await fetch(
-    `${GOOGLE_API_BASE}/calendars/${encodeURIComponent(fromCalendarId)}/events/${encodeURIComponent(eventId)}/move?${params}`,
-    {
-      method: "POST",
-      headers: { Authorization: `Bearer ${session.accessToken}` },
-    },
+  const res = await googleFetch(userId, (token) =>
+    fetch(
+      `${GOOGLE_API_BASE}/calendars/${encodeURIComponent(fromCalendarId)}/events/${encodeURIComponent(eventId)}/move?${params}`,
+      {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    ),
   );
   if (!res.ok) {
     const text = await res.text();
