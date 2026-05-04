@@ -2,7 +2,6 @@ import { ArrowDownRight, ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { CategoryBreakdownChart } from "@/components/charts/category-breakdown-chart";
 import { TrendChart } from "@/components/charts/trend-chart";
 import {
   PixelComet,
@@ -78,39 +77,6 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
     summary.year === currentYear
       ? `jan → ${formatMonthShort(today).split("/")[0]}`
       : "full year";
-
-  // Aggregate categories across all 12 months. byCategory.{key,label,total,
-  // icon,color} carries through unchanged from each month bucket — we just
-  // sum totals for the same key.
-  const categoryMap = new Map<
-    string,
-    { key: string; label: string; icon: string | null; color: string | null; total: number }
-  >();
-  for (const m of summary.months) {
-    for (const b of m.byCategory) {
-      const existing = categoryMap.get(b.key);
-      if (existing) {
-        existing.total += Number(b.total);
-      } else {
-        categoryMap.set(b.key, {
-          key: b.key,
-          label: b.label,
-          icon: b.icon ?? null,
-          color: b.color ?? null,
-          total: Number(b.total),
-        });
-      }
-    }
-  }
-  const yearCategoriesData = Array.from(categoryMap.values())
-    .map((c) => ({
-      key: c.key,
-      label: c.label,
-      total: c.total,
-      icon: c.icon,
-      color: c.color,
-    }))
-    .sort((a, b) => b.total - a.total);
 
   // Build month rows with deltas vs the previous month.
   const monthRows = summary.months.map((m, idx) => {
@@ -238,36 +204,29 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
         />
       </div>
 
-      {/* ── charts row: trend (lg col 8) + top categories (lg col 4) ─ */}
-      <div className="border-border grid shrink-0 grid-cols-1 border-b lg:grid-cols-12">
-        <div className="border-border flex min-h-0 flex-col lg:col-span-8 lg:border-r">
-          <PanelHeader
-            title="trend"
-            subtitle="cumulative · incomes · expenses"
-            legend={
-              <div className="text-muted-foreground/80 hidden items-center gap-3 font-mono text-[10.5px] tracking-wider sm:flex">
-                <LegendDot color="oklch(0.65 0.10 200)" label="cumulative" />
-                <LegendDot color="oklch(0.74 0.13 160)" label="incomes" />
-                <LegendDot color="oklch(0.62 0.18 25)" label="expenses" />
-              </div>
-            }
+      {/* ── trend (full width, expanded) ────────────────────────────── */}
+      <div className="border-border flex shrink-0 flex-col border-b">
+        <PanelHeader
+          title="trend"
+          subtitle="cumulative · incomes · expenses · net"
+          legend={
+            <div className="text-muted-foreground/80 hidden items-center gap-4 font-mono text-[10.5px] tracking-wider sm:flex">
+              <LegendDot color="oklch(0.65 0.10 200)" label="cumulative" />
+              <LegendDot color="oklch(0.74 0.13 160)" label="incomes" />
+              <LegendDot color="oklch(0.62 0.18 25)" label="expenses" />
+              <LegendDot color="oklch(0.74 0.13 160)" label="net" dashed />
+            </div>
+          }
+        />
+        <div className="min-h-[420px] flex-1 px-3 pt-3 pb-4 md:px-5">
+          <TrendChart
+            data={trendData}
+            showPointLabels
+            showIncomeExpense
+            showNet
+            showYAxis
+            tall
           />
-          <div className="min-h-[280px] flex-1 px-2 pt-2 pb-3">
-            <TrendChart data={trendData} showPointLabels showIncomeExpense showNet={false} />
-          </div>
-        </div>
-
-        <div className="flex min-h-0 flex-col lg:col-span-4">
-          <PanelHeader title="top categories" subtitle="for the year" />
-          <div className="min-h-[260px] flex-1 px-2 py-3">
-            {yearCategoriesData.length === 0 ? (
-              <div className="text-muted-foreground/70 flex h-full items-center justify-center text-[12px]">
-                no categorized expenses this year.
-              </div>
-            ) : (
-              <CategoryBreakdownChart data={yearCategoriesData} visibleCount={8} />
-            )}
-          </div>
         </div>
       </div>
 
@@ -428,14 +387,32 @@ function PanelHeader({
   );
 }
 
-function LegendDot({ color, label }: { color: string; label: string }) {
+function LegendDot({
+  color,
+  label,
+  dashed,
+}: {
+  color: string;
+  label: string;
+  dashed?: boolean;
+}) {
   return (
     <span className="inline-flex items-center gap-1.5">
-      <span
-        aria-hidden
-        className="size-2 rounded-sm"
-        style={{ backgroundColor: color }}
-      />
+      {dashed ? (
+        <span
+          aria-hidden
+          className="inline-block h-px w-3"
+          style={{
+            backgroundImage: `repeating-linear-gradient(90deg, ${color} 0, ${color} 3px, transparent 3px, transparent 6px)`,
+          }}
+        />
+      ) : (
+        <span
+          aria-hidden
+          className="size-2 rounded-sm"
+          style={{ backgroundColor: color }}
+        />
+      )}
       <span>{label}</span>
     </span>
   );
