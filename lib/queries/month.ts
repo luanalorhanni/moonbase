@@ -169,13 +169,16 @@ async function _loadMonth(reference: MonthRef): Promise<MonthSummary> {
   // Snapshots only "win" when there's nothing else — if the user has
   // detailed records for this month she wants to see them, with the
   // snapshot reduced to a small notice banner.
+  //
+  // Recurring fixed expenses are deliberately ignored here: a subscription
+  // started before active tracking projects forward into every month it
+  // remained active, including months the user never logged in detail.
+  // Only incomes / cash / credit count as evidence the user registered
+  // the month in detail.
   const hasRawData =
     dataset.cashExpenses.some((e) => isInMonth(e.date, reference)) ||
     dataset.creditExpenses.some((e) =>
       parcelSpansMonth(e.firstParcelMonth, e.lastParcelMonth, reference),
-    ) ||
-    dataset.fixedExpenses.some((e) =>
-      fixedExpenseActiveInMonth(e.startDate, e.endDate, e.isActive, reference),
     ) ||
     dataset.incomes.some((i) => isInMonth(i.date, reference));
 
@@ -196,9 +199,6 @@ async function _loadMonth(reference: MonthRef): Promise<MonthSummary> {
     dataset.cashExpenses.some((e) => isInMonth(e.date, prevRef)) ||
     dataset.creditExpenses.some((e) =>
       parcelSpansMonth(e.firstParcelMonth, e.lastParcelMonth, prevRef),
-    ) ||
-    dataset.fixedExpenses.some((e) =>
-      fixedExpenseActiveInMonth(e.startDate, e.endDate, e.isActive, prevRef),
     ) ||
     dataset.incomes.some((i) => isInMonth(i.date, prevRef));
   const previousMonth =
