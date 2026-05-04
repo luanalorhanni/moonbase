@@ -96,7 +96,7 @@ export function TrendChart({
         ...((showIncomeExpense ? (["incomes", "expenses"] as const) : []) as Series[]),
         ...((showNet ? (["net"] as const) : []) as Series[]),
       ]);
-  const height = tall ? 420 : showPointLabels ? 280 : 220;
+  const height = tall ? 320 : showPointLabels ? 280 : 220;
   return (
     <ResponsiveContainer width="100%" height={height}>
       <ComposedChart
