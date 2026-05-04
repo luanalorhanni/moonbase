@@ -17,17 +17,15 @@ export type YearSummary = {
 };
 
 /**
- * Aggregate the year from raw data, then fall back to historical
- * snapshots for months whose raw aggregate is empty (no transactions
- * recorded — typically pre-tracking history seeded from the
- * spreadsheet). Months that have ANY raw data keep their detailed
- * aggregate and ignore the snapshot.
+ * Aggregate the year from raw data, but let snapshots win whenever they
+ * exist for a given month. Snapshots are the user's frozen ground truth
+ * (typically seeded from the spreadsheet for pre-tracking history) and
+ * already roll up every contemporaneous parcel and recurring expense.
  *
- * Recurring fixed expenses do NOT count as "raw data" for this check:
- * a subscription started before the user began tracking will project
- * forward into every active month, but that's a phantom — those months
- * had no actual logging. Only incomes / cash / credit count as evidence
- * the user registered the month in detail.
+ * Mixing raw + snapshot risked double-counting and produced phantom
+ * months where a single long-running installment from a recent purchase
+ * suppressed the snapshot. The detailed view of any month is still one
+ * click away in /month/[reference].
  */
 export const loadYear = cache(_loadYear);
 
@@ -40,16 +38,7 @@ async function _loadYear(year: number): Promise<YearSummary> {
     snapByMonth.set(s.referenceMonth.toString().slice(0, 7), s);
   }
 
-  function hasRawAggregate(m: MonthAggregate): boolean {
-    return (
-      Number(m.totalIncomes) > 0 ||
-      Number(m.totalCashExpenses) > 0 ||
-      Number(m.totalCreditExpenses) > 0
-    );
-  }
-
   const overlaid = months.map((m) => {
-    if (hasRawAggregate(m)) return m;
     const snap = snapByMonth.get(m.reference);
     if (!snap) return m;
     const incomes = snap.totalIncomes;

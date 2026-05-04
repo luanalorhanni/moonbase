@@ -31,42 +31,42 @@ export type TrendDatum = {
   expenses?: number;
 };
 
-function formatCompact(value: number): string {
-  if (Math.abs(value) >= 1_000_000) {
-    return `${(value / 1_000_000).toFixed(1)}M`;
-  }
-  if (Math.abs(value) >= 1_000) {
-    return `${Math.round(value / 1_000)}k`;
-  }
-  return String(Math.round(value));
-}
+/**
+ * Tick / label formatter — shows the full number with the pt-BR thousands
+ * separator (a dot), no currency symbol, no abbreviation. e.g. 5600 → "5.600".
+ */
+const formatTick = (value: number): string =>
+  new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 }).format(value);
 
 const COLORS = {
   cumulative: "oklch(0.65 0.10 200)", // electric aqua
-  net: "oklch(0.74 0.13 160)", // mint
+  net: "oklch(0.65 0.10 270)", // soft lunar violet — distinct from incomes
   incomes: "oklch(0.74 0.13 160)", // success-leaning green
   expenses: "oklch(0.62 0.18 25)", // warm coral (destructive-leaning)
 };
 
 const TOOLTIP_LABELS: Record<string, string> = {
   cumulative: "cumulative",
-  net: "this month",
+  net: "balance",
   incomes: "incomes",
   expenses: "expenses",
 };
+
+type Series = "cumulative" | "incomes" | "expenses" | "net";
 
 /**
  * Multi-series trend chart.
  *   • cumulative — soft area, the running savings line
  *   • net — dashed monthly net (incomes − expenses)
- *   • incomes/expenses (optional) — solid lines so the user can see
- *     ganhos and gastos against each other
+ *   • incomes/expenses — solid lines
  *
- * `showPointLabels` places compact value labels on cumulative + visible
- * series — useful in the year ledger where 12 dots are sparse enough.
+ * Pass `series` to pick exactly which lines to render (e.g. `["expenses"]`
+ * for a clean single-line view). When omitted, the legacy boolean flags
+ * decide.
  */
 export function TrendChart({
   data,
+  series,
   showPointLabels,
   showIncomeExpense,
   showNet = true,
@@ -74,10 +74,11 @@ export function TrendChart({
   tall = false,
 }: {
   data: TrendDatum[];
+  series?: Series[];
   showPointLabels?: boolean;
-  /** When true, draws the per-month incomes and expenses lines. */
+  /** Legacy: when true, draws the per-month incomes and expenses lines. */
   showIncomeExpense?: boolean;
-  /** When false, hides the dashed net line. Default true. */
+  /** Legacy: when false, hides the dashed net line. Default true. */
   showNet?: boolean;
   /** When true, renders a labelled Y axis with compact currency ticks. */
   showYAxis?: boolean;
@@ -85,6 +86,13 @@ export function TrendChart({
    *  is the centerpiece. */
   tall?: boolean;
 }) {
+  const active: Set<Series> = series
+    ? new Set(series)
+    : new Set<Series>([
+        "cumulative",
+        ...((showIncomeExpense ? (["incomes", "expenses"] as const) : []) as Series[]),
+        ...((showNet ? (["net"] as const) : []) as Series[]),
+      ]);
   const height = tall ? 420 : showPointLabels ? 280 : 220;
   return (
     <ResponsiveContainer width="100%" height={height}>
@@ -126,7 +134,7 @@ export function TrendChart({
             tickLine={false}
             axisLine={false}
             width={56}
-            tickFormatter={(v: number) => formatCompact(v)}
+            tickFormatter={(v: number) => formatTick(v)}
             tick={{
               fontSize: 10,
               fontFamily: "var(--font-mono)",
@@ -163,34 +171,36 @@ export function TrendChart({
             return [formatBRL(Number(value)), label];
           }}
         />
-        <Area
-          type="monotone"
-          dataKey="cumulative"
-          stroke={COLORS.cumulative}
-          strokeWidth={1.5}
-          fill="url(#trend-fill)"
-          dot={
-            showPointLabels
-              ? { r: 2.5, fill: COLORS.cumulative, stroke: "var(--background)", strokeWidth: 1 }
-              : false
-          }
-          activeDot={{ r: 4, fill: COLORS.cumulative, stroke: "none" }}
-        >
-          {showPointLabels && (
-            <LabelList
-              dataKey="cumulative"
-              position="top"
-              offset={10}
-              fill={COLORS.cumulative}
-              fontSize={9.5}
-              fontFamily="var(--font-mono)"
-              letterSpacing="0.04em"
-              formatter={(v: unknown) => formatCompact(Number(v))}
-            />
-          )}
-        </Area>
+        {active.has("cumulative") && (
+          <Area
+            type="monotone"
+            dataKey="cumulative"
+            stroke={COLORS.cumulative}
+            strokeWidth={1.5}
+            fill="url(#trend-fill)"
+            dot={
+              showPointLabels
+                ? { r: 2.5, fill: COLORS.cumulative, stroke: "var(--background)", strokeWidth: 1 }
+                : false
+            }
+            activeDot={{ r: 4, fill: COLORS.cumulative, stroke: "none" }}
+          >
+            {showPointLabels && (
+              <LabelList
+                dataKey="cumulative"
+                position="top"
+                offset={10}
+                fill={COLORS.cumulative}
+                fontSize={9.5}
+                fontFamily="var(--font-mono)"
+                letterSpacing="0.04em"
+                formatter={(v: unknown) => formatTick(Number(v))}
+              />
+            )}
+          </Area>
+        )}
 
-        {showIncomeExpense && (
+        {active.has("incomes") && (
           <Line
             type="monotone"
             dataKey="incomes"
@@ -208,46 +218,58 @@ export function TrendChart({
                 fontSize={9}
                 fontFamily="var(--font-mono)"
                 letterSpacing="0.04em"
-                formatter={(v: unknown) => formatCompact(Number(v))}
+                formatter={(v: unknown) => formatTick(Number(v))}
               />
             )}
           </Line>
         )}
 
-        {showIncomeExpense && (
+        {active.has("expenses") && (
           <Line
             type="monotone"
             dataKey="expenses"
             stroke={COLORS.expenses}
-            strokeWidth={1.5}
-            dot={{ r: 2.5, fill: COLORS.expenses, stroke: "var(--background)", strokeWidth: 1 }}
-            activeDot={{ r: 4, fill: COLORS.expenses, stroke: "none" }}
+            strokeWidth={2}
+            dot={{ r: 3, fill: COLORS.expenses, stroke: "var(--background)", strokeWidth: 1 }}
+            activeDot={{ r: 4.5, fill: COLORS.expenses, stroke: "none" }}
           >
             {showPointLabels && (
               <LabelList
                 dataKey="expenses"
-                position="bottom"
-                offset={8}
+                position="top"
+                offset={10}
                 fill={COLORS.expenses}
-                fontSize={9}
+                fontSize={10}
                 fontFamily="var(--font-mono)"
                 letterSpacing="0.04em"
-                formatter={(v: unknown) => formatCompact(Number(v))}
+                formatter={(v: unknown) => formatTick(Number(v))}
               />
             )}
           </Line>
         )}
 
-        {showNet && (
+        {active.has("net") && (
           <Line
             type="monotone"
             dataKey="net"
             stroke={COLORS.net}
-            strokeWidth={1}
-            strokeDasharray="2 3"
-            dot={{ r: 2, fill: COLORS.net, stroke: "none" }}
-            activeDot={{ r: 3.5, fill: COLORS.net, stroke: "none" }}
-          />
+            strokeWidth={1.5}
+            dot={{ r: 2.5, fill: COLORS.net, stroke: "var(--background)", strokeWidth: 1 }}
+            activeDot={{ r: 4, fill: COLORS.net, stroke: "none" }}
+          >
+            {showPointLabels && (
+              <LabelList
+                dataKey="net"
+                position="top"
+                offset={8}
+                fill={COLORS.net}
+                fontSize={9}
+                fontFamily="var(--font-mono)"
+                letterSpacing="0.04em"
+                formatter={(v: unknown) => formatTick(Number(v))}
+              />
+            )}
+          </Line>
         )}
       </ComposedChart>
     </ResponsiveContainer>
