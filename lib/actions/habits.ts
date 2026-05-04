@@ -52,10 +52,7 @@ export async function createHabit(input: HabitFormInput): Promise<HabitActionRes
   return { ok: true };
 }
 
-export async function updateHabit(
-  id: string,
-  input: HabitFormInput,
-): Promise<HabitActionResult> {
+export async function updateHabit(id: string, input: HabitFormInput): Promise<HabitActionResult> {
   const user = await requireUser();
   const parsed = habitFormSchema.safeParse(input);
   if (!parsed.success) {
@@ -127,9 +124,7 @@ export async function updateHabitCategory(
       color: parsed.data.color.toLowerCase(),
       icon: parsed.data.icon.trim() === "" ? null : parsed.data.icon.trim(),
     })
-    .where(
-      and(eq(schema.habitCategories.id, id), eq(schema.habitCategories.userId, user.id)),
-    );
+    .where(and(eq(schema.habitCategories.id, id), eq(schema.habitCategories.userId, user.id)));
   bustHabitsAndPath();
   return { ok: true };
 }
@@ -138,9 +133,7 @@ export async function deleteHabitCategory(id: string): Promise<HabitActionResult
   const user = await requireUser();
   await db
     .delete(schema.habitCategories)
-    .where(
-      and(eq(schema.habitCategories.id, id), eq(schema.habitCategories.userId, user.id)),
-    );
+    .where(and(eq(schema.habitCategories.id, id), eq(schema.habitCategories.userId, user.id)));
   bustHabitsAndPath();
   return { ok: true };
 }

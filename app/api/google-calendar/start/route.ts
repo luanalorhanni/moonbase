@@ -14,8 +14,7 @@ export async function GET() {
   if (!isGoogleCalendarConfigured()) {
     return NextResponse.json(
       {
-        error:
-          "GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET not configured in .env.local",
+        error: "GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET not configured in .env.local",
       },
       { status: 503 },
     );

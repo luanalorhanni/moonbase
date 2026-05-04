@@ -11,13 +11,7 @@ import { cn } from "@/lib/utils";
  * No images or HTML embeds (the entry's cover takes that role); links
  * always open in a new tab so the journal feed isn't lost.
  */
-export function MarkdownContent({
-  source,
-  className,
-}: {
-  source: string;
-  className?: string;
-}) {
+export function MarkdownContent({ source, className }: { source: string; className?: string }) {
   return (
     <div
       className={cn(
@@ -29,8 +23,8 @@ export function MarkdownContent({
         "[&_p]:text-foreground/90 [&_p]:text-[13px] [&_p]:leading-relaxed",
         "[&_li]:text-foreground/90 [&_li]:text-[13px] [&_li]:leading-relaxed",
         "[&_a]:text-primary [&_a]:underline-offset-2 hover:[&_a]:underline",
-        "[&_blockquote]:border-border [&_blockquote]:border-l-2 [&_blockquote]:pl-3 [&_blockquote]:italic [&_blockquote]:text-foreground/75",
-        "[&_code]:bg-muted [&_code]:rounded [&_code]:px-1 [&_code]:py-0.5 [&_code]:text-[12.5px] [&_code]:font-mono",
+        "[&_blockquote]:border-border [&_blockquote]:text-foreground/75 [&_blockquote]:border-l-2 [&_blockquote]:pl-3 [&_blockquote]:italic",
+        "[&_code]:bg-muted [&_code]:rounded [&_code]:px-1 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[12.5px]",
         "[&_strong]:text-foreground [&_strong]:font-semibold",
         "[&_em]:text-foreground/90",
         className,

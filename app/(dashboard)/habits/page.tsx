@@ -37,11 +37,6 @@ export default async function HabitsRoute() {
   ]);
 
   return (
-    <HabitsPage
-      habits={habits}
-      categories={categories}
-      recentLogs={recentLogs}
-      todayIso={today}
-    />
+    <HabitsPage habits={habits} categories={categories} recentLogs={recentLogs} todayIso={today} />
   );
 }

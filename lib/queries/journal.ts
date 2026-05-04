@@ -37,10 +37,7 @@ export async function getJournalEntryByDate(
     .select()
     .from(schema.journalEntries)
     .where(
-      and(
-        eq(schema.journalEntries.userId, userId),
-        eq(schema.journalEntries.entryDate, entryDate),
-      ),
+      and(eq(schema.journalEntries.userId, userId), eq(schema.journalEntries.entryDate, entryDate)),
     )
     .limit(1);
   return rows[0] ?? null;

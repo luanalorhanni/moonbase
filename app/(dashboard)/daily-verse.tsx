@@ -104,7 +104,7 @@ export function DailyVerse() {
 
   if (isLoading) {
     return (
-      <div className="text-white/40 flex items-center gap-2 font-mono text-[11px] tracking-wider">
+      <div className="flex items-center gap-2 font-mono text-[11px] tracking-wider text-white/40">
         <Loader2 className="size-3.5 animate-spin" strokeWidth={1.6} aria-hidden />
         loading verse…
       </div>
@@ -116,17 +116,13 @@ export function DailyVerse() {
   return (
     <blockquote className="animate-in fade-in slide-in-from-bottom-2 max-w-2xl duration-1000">
       <div className="flex items-start gap-3">
-        <Quote
-          aria-hidden
-          className="text-white/40 mt-1 size-4 shrink-0"
-          strokeWidth={1.5}
-        />
-        <p className="text-white/85 font-display text-[16px] leading-relaxed font-light italic md:text-[18px]">
+        <Quote aria-hidden className="mt-1 size-4 shrink-0 text-white/40" strokeWidth={1.5} />
+        <p className="font-display text-[16px] leading-relaxed font-light text-white/85 italic md:text-[18px]">
           {verse.text}
         </p>
       </div>
       <div className="mt-2 ml-7 flex items-center gap-3">
-        <cite className="text-white/55 block font-mono text-[10.5px] tracking-[0.18em] not-italic uppercase">
+        <cite className="block font-mono text-[10.5px] tracking-[0.18em] text-white/55 uppercase not-italic">
           {verse.reference}
         </cite>
         <button
@@ -134,7 +130,7 @@ export function DailyVerse() {
           onClick={handleRefresh}
           disabled={isRefreshing}
           aria-label="new verse"
-          className="text-white/40 hover:text-white/80 inline-flex size-5 items-center justify-center rounded-md transition-colors disabled:opacity-50"
+          className="inline-flex size-5 items-center justify-center rounded-md text-white/40 transition-colors hover:text-white/80 disabled:opacity-50"
         >
           <RefreshCcw
             aria-hidden

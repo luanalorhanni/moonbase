@@ -35,12 +35,7 @@ export function SidebarBrand({ themeToggle }: { themeToggle: ReactNode }) {
             moonbase
           </span>
         )}
-        <div
-          className={cn(
-            "flex items-center gap-1",
-            collapsed ? "flex-col" : "ml-auto",
-          )}
-        >
+        <div className={cn("flex items-center gap-1", collapsed ? "flex-col" : "ml-auto")}>
           {themeToggle}
           <button
             type="button"

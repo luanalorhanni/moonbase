@@ -16,7 +16,7 @@ export default function ForgotPasswordPage() {
             <KeyRound aria-hidden className="size-5" strokeWidth={1.4} />
           </div>
           <div className="flex flex-col items-center gap-1.5 text-center">
-            <h1 className="font-display text-[20px] leading-none font-light italic tracking-tight">
+            <h1 className="font-display text-[20px] leading-none font-light tracking-tight italic">
               recover password
             </h1>
             <p className="text-muted-foreground/85 max-w-[280px] text-[12.5px] leading-relaxed">

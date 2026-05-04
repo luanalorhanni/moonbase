@@ -59,9 +59,7 @@ export function CalendarPage({
   // Hidden calendars (toggled off via the chip strip). Default = all
   // visible. Stored as a Set of calendar ids for O(1) lookup in the
   // event filter.
-  const [hiddenCalendarIds, setHiddenCalendarIds] = useState<Set<string>>(
-    () => new Set(),
-  );
+  const [hiddenCalendarIds, setHiddenCalendarIds] = useState<Set<string>>(() => new Set());
 
   // Surface OAuth callback errors as a toast once on mount.
   useEffect(() => {
@@ -178,13 +176,10 @@ function DisconnectedView() {
         <CalendarIcon className="size-7" strokeWidth={1.4} aria-hidden />
       </div>
       <div className="flex max-w-md flex-col gap-2">
-        <h2 className="text-foreground text-[18px] font-medium">
-          connect your google calendar
-        </h2>
+        <h2 className="text-foreground text-[18px] font-medium">connect your google calendar</h2>
         <p className="text-muted-foreground text-[13px] leading-relaxed">
-          authorize moonbase to read your primary calendar's events. it's
-          read-only — we don't change anything in your schedule. you can
-          disconnect any time.
+          authorize moonbase to read your primary calendar's events. it's read-only — we don't
+          change anything in your schedule. you can disconnect any time.
         </p>
       </div>
       <a
@@ -245,17 +240,17 @@ function ConnectedView({
           event-write, surface a button to re-authorize so the user can
           create events from moonbase. */}
       {upcoming && !upcoming.canWrite && (
-        <div className="border-amber-500/40 bg-amber-500/[0.06] text-amber-600 dark:text-amber-400 flex items-start gap-2 rounded-md border px-3 py-2 text-[12.5px]">
+        <div className="flex items-start gap-2 rounded-md border border-amber-500/40 bg-amber-500/[0.06] px-3 py-2 text-[12.5px] text-amber-600 dark:text-amber-400">
           <AlertCircle className="mt-0.5 size-3.5 shrink-0" strokeWidth={1.8} aria-hidden />
           <div className="flex flex-1 flex-col gap-1">
             <span className="font-medium">write permission not granted</span>
-            <span className="text-amber-600/80 dark:text-amber-400/80 text-[11.5px]">
+            <span className="text-[11.5px] text-amber-600/80 dark:text-amber-400/80">
               your current session is read-only. click reconnect to authorize event creation.
             </span>
           </div>
           <a
             href="/api/google-calendar/start"
-            className="text-amber-600 dark:text-amber-400 inline-flex shrink-0 items-center gap-1 self-center font-medium underline-offset-2 hover:underline"
+            className="inline-flex shrink-0 items-center gap-1 self-center font-medium text-amber-600 underline-offset-2 hover:underline dark:text-amber-400"
           >
             reconnect →
           </a>
@@ -293,13 +288,11 @@ function ConnectedView({
                   )}
                   style={{ backgroundColor: cal.backgroundColor }}
                 />
-                <span className={cn("truncate max-w-[160px]", hidden && "line-through")}>
+                <span className={cn("max-w-[160px] truncate", hidden && "line-through")}>
                   {cal.summary}
                 </span>
                 {cal.primary && (
-                  <span className="text-muted-foreground/60 font-mono text-[9px]">
-                    primary
-                  </span>
+                  <span className="text-muted-foreground/60 font-mono text-[9px]">primary</span>
                 )}
               </button>
             );
@@ -376,7 +369,7 @@ function ConnectedView({
         {email && (
           <>
             <span className="text-muted-foreground/30">·</span>
-            <span className="normal-case tracking-normal">{email}</span>
+            <span className="tracking-normal normal-case">{email}</span>
           </>
         )}
         {upcoming?.canWrite && (
@@ -396,11 +389,7 @@ function ConnectedView({
 function EmptyAgenda({ title, subtitle }: { title: string; subtitle: string }) {
   return (
     <div className="flex h-[240px] flex-col items-center justify-center gap-2 px-6 text-center">
-      <CalendarIcon
-        className="text-muted-foreground/40 size-10"
-        strokeWidth={1}
-        aria-hidden
-      />
+      <CalendarIcon className="text-muted-foreground/40 size-10" strokeWidth={1} aria-hidden />
       <p className="text-foreground text-[14px]">{title}</p>
       <p className="text-muted-foreground/70 text-[12.5px]">{subtitle}</p>
     </div>
@@ -481,7 +470,7 @@ function EventRow({
         )}
       </div>
       <div className="min-w-0 flex-1 pt-0.5">
-        <span className="text-foreground inline-flex items-center gap-1.5 text-[13.5px] font-medium leading-tight">
+        <span className="text-foreground inline-flex items-center gap-1.5 text-[13.5px] leading-tight font-medium">
           {event.summary ?? "(no title)"}
         </span>
         {(event.location || event.hangoutLink) && (
@@ -504,11 +493,7 @@ function EventRow({
                 onClick={(e) => e.stopPropagation()}
                 className="text-primary hover:text-primary/80 inline-flex items-center gap-1 underline-offset-2 hover:underline"
               >
-                <Video
-                  aria-hidden
-                  className="size-3 shrink-0"
-                  strokeWidth={1.6}
-                />
+                <Video aria-hidden className="size-3 shrink-0" strokeWidth={1.6} />
                 meet
               </a>
             )}
@@ -518,22 +503,14 @@ function EventRow({
             opaque hashes that clutter the row without informing. */}
         {isHumanEmail(event.organizerEmail) && (
           <span className="text-muted-foreground/60 mt-1 inline-flex items-center gap-1 font-mono text-[10.5px]">
-            <Link2
-              aria-hidden
-              className="size-2.5 shrink-0"
-              strokeWidth={1.6}
-            />
+            <Link2 aria-hidden className="size-2.5 shrink-0" strokeWidth={1.6} />
             {event.organizerEmail}
           </span>
         )}
       </div>
       {event.status === "tentative" && (
         <span className="text-muted-foreground/70 inline-flex items-center gap-1 self-start font-mono text-[9.5px] tracking-wider uppercase">
-          <CheckCircle2
-            aria-hidden
-            className="size-3 shrink-0"
-            strokeWidth={1.6}
-          />
+          <CheckCircle2 aria-hidden className="size-3 shrink-0" strokeWidth={1.6} />
           tentative
         </span>
       )}

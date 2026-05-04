@@ -26,9 +26,8 @@ export function GratitudeList({
   // Pad to the minimum so the user always sees three blank slots at
   // start. Stored value remains exactly what was typed; padding lives
   // only in the rendered array below.
-  const visible = value.length >= MIN_VISIBLE
-    ? value
-    : [...value, ...Array(MIN_VISIBLE - value.length).fill("")];
+  const visible =
+    value.length >= MIN_VISIBLE ? value : [...value, ...Array(MIN_VISIBLE - value.length).fill("")];
 
   function update(idx: number, next: string) {
     const arr = [...visible];
@@ -65,10 +64,7 @@ export function GratitudeList({
               )}
             >
               <Heart
-                className={cn(
-                  "size-3.5 transition-all",
-                  item.trim().length > 0 && "fill-current",
-                )}
+                className={cn("size-3.5 transition-all", item.trim().length > 0 && "fill-current")}
                 strokeWidth={1.5}
               />
             </span>

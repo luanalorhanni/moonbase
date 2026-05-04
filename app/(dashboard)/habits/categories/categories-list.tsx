@@ -161,13 +161,9 @@ export function HabitCategoriesList({
       >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>
-              {dialog.kind === "edit" ? "edit category" : "new category"}
-            </DialogTitle>
+            <DialogTitle>{dialog.kind === "edit" ? "edit category" : "new category"}</DialogTitle>
             <DialogDescription>
-              {dialog.kind === "edit"
-                ? "update category details."
-                : "group habits under a label."}
+              {dialog.kind === "edit" ? "update category details." : "group habits under a label."}
             </DialogDescription>
           </DialogHeader>
           <HabitCategoryForm

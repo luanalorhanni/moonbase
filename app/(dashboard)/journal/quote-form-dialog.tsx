@@ -107,9 +107,7 @@ export function QuoteFormDialog({ open, onOpenChange, quote }: Props) {
               <Quote aria-hidden className="size-4" strokeWidth={1.6} />
               {isEdit ? "edit quote" : "new quote"}
             </DialogTitle>
-            <DialogDescription>
-              a quote or reflection to keep.
-            </DialogDescription>
+            <DialogDescription>a quote or reflection to keep.</DialogDescription>
           </DialogHeader>
 
           <FieldGroup className="gap-4">
@@ -185,7 +183,11 @@ export function QuoteFormDialog({ open, onOpenChange, quote }: Props) {
             >
               cancel
             </Button>
-            <Button type="button" onClick={handleSave} disabled={isSaving || text.trim().length === 0}>
+            <Button
+              type="button"
+              onClick={handleSave}
+              disabled={isSaving || text.trim().length === 0}
+            >
               <Save aria-hidden className="size-3.5" />
               {isSaving ? "saving…" : "save"}
             </Button>

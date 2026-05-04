@@ -388,13 +388,10 @@ async function listEventsForCalendar(
     maxResults: String(maxResults),
   });
   const res = await googleFetch(userId, (token) =>
-    fetch(
-      `${GOOGLE_API_BASE}/calendars/${encodeURIComponent(calendar.id)}/events?${params}`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-        cache: "no-store",
-      },
-    ),
+    fetch(`${GOOGLE_API_BASE}/calendars/${encodeURIComponent(calendar.id)}/events?${params}`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    }),
   );
   if (!res.ok) {
     // Don't throw — one busted calendar shouldn't kill the whole view.
