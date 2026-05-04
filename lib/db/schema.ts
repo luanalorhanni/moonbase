@@ -379,6 +379,10 @@ export const userSettings = pgTable("user_settings", {
   /** Canonical Spotify share URL (playlist/album/track). Embed URL is
    *  derived at render time from this. Null = no embed shown. */
   homeSpotifyUrl: text("home_spotify_url"),
+  /** Active palette preset id. Maps to a bundle of CSS-variable overrides
+   *  defined in `lib/theme/palettes.ts`. Default 'lunar' is the original
+   *  moonbase palette. */
+  palette: text("palette").notNull().default("lunar"),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 

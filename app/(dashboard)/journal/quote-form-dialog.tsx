@@ -73,7 +73,7 @@ export function QuoteFormDialog({ open, onOpenChange, quote }: Props) {
         collectedOn,
       });
       if (result.ok) {
-        toast.success(isEdit ? "frase atualizada." : "frase guardada.");
+        toast.success(isEdit ? "quote updated." : "quote saved.");
         router.refresh();
         onOpenChange(false);
       } else {
@@ -87,7 +87,7 @@ export function QuoteFormDialog({ open, onOpenChange, quote }: Props) {
     startDeleteTransition(async () => {
       const result = await deleteJournalQuote(quote.id);
       if (result.ok) {
-        toast.success("frase excluída.");
+        toast.success("quote deleted.");
         router.refresh();
         setConfirmDelete(false);
         onOpenChange(false);
@@ -105,16 +105,16 @@ export function QuoteFormDialog({ open, onOpenChange, quote }: Props) {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Quote aria-hidden className="size-4" strokeWidth={1.6} />
-              {isEdit ? "editar frase" : "nova frase"}
+              {isEdit ? "edit quote" : "new quote"}
             </DialogTitle>
             <DialogDescription>
-              uma citação ou reflexão pra guardar.
+              a quote or reflection to keep.
             </DialogDescription>
           </DialogHeader>
 
           <FieldGroup className="gap-4">
             <Field>
-              <FieldLabel htmlFor="quote-text">frase</FieldLabel>
+              <FieldLabel htmlFor="quote-text">quote</FieldLabel>
               <textarea
                 id="quote-text"
                 value={text}
@@ -122,36 +122,36 @@ export function QuoteFormDialog({ open, onOpenChange, quote }: Props) {
                 disabled={isSaving}
                 rows={4}
                 autoFocus
-                placeholder="o que ficou?"
+                placeholder="what stayed?"
                 className="border-input bg-background placeholder:text-muted-foreground/60 focus-visible:ring-ring min-h-[80px] w-full resize-y rounded-md border px-3 py-2 text-[13px] leading-relaxed italic transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50"
               />
             </Field>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <Field>
-                <FieldLabel htmlFor="quote-author">autor</FieldLabel>
+                <FieldLabel htmlFor="quote-author">author</FieldLabel>
                 <Input
                   id="quote-author"
                   value={author}
                   onChange={(e) => setAuthor(e.target.value)}
                   disabled={isSaving}
-                  placeholder="opcional"
+                  placeholder="optional"
                   className="h-9"
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="quote-source">fonte</FieldLabel>
+                <FieldLabel htmlFor="quote-source">source</FieldLabel>
                 <Input
                   id="quote-source"
                   value={source}
                   onChange={(e) => setSource(e.target.value)}
                   disabled={isSaving}
-                  placeholder="livro, conversa…"
+                  placeholder="book, conversation…"
                   className="h-9"
                 />
               </Field>
             </div>
             <Field>
-              <FieldLabel htmlFor="quote-date">guardada em</FieldLabel>
+              <FieldLabel htmlFor="quote-date">saved on</FieldLabel>
               <Input
                 id="quote-date"
                 type="date"
@@ -174,7 +174,7 @@ export function QuoteFormDialog({ open, onOpenChange, quote }: Props) {
                 className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 mr-auto"
               >
                 <Trash2 aria-hidden className="size-3.5" />
-                excluir
+                delete
               </Button>
             )}
             <Button
@@ -183,11 +183,11 @@ export function QuoteFormDialog({ open, onOpenChange, quote }: Props) {
               onClick={() => onOpenChange(false)}
               disabled={isSaving}
             >
-              cancelar
+              cancel
             </Button>
             <Button type="button" onClick={handleSave} disabled={isSaving || text.trim().length === 0}>
               <Save aria-hidden className="size-3.5" />
-              {isSaving ? "salvando…" : "salvar"}
+              {isSaving ? "saving…" : "save"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -196,13 +196,13 @@ export function QuoteFormDialog({ open, onOpenChange, quote }: Props) {
       <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>excluir essa frase?</AlertDialogTitle>
+            <AlertDialogTitle>delete this quote?</AlertDialogTitle>
             <AlertDialogDescription>
-              a citação some da sua coleção. essa ação não pode ser desfeita.
+              the quote disappears from your collection. this can't be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>cancelar</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>cancel</AlertDialogCancel>
             <AlertDialogAction
               disabled={isDeleting}
               onClick={(e) => {
@@ -210,7 +210,7 @@ export function QuoteFormDialog({ open, onOpenChange, quote }: Props) {
                 handleDelete();
               }}
             >
-              {isDeleting ? "excluindo…" : "excluir"}
+              {isDeleting ? "deleting…" : "delete"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -369,7 +369,7 @@ function EventBlock({
     <button
       type="button"
       onClick={() => onClick(event)}
-      title={event.summary ?? "(sem título)"}
+      title={event.summary ?? "(no title)"}
       className={cn(
         "absolute flex flex-col items-start overflow-hidden rounded-md px-1.5 py-1 text-left text-[10.5px] leading-tight shadow-sm transition-all duration-150 hover:z-50 hover:scale-[1.03] hover:shadow-md focus-visible:z-50 focus-visible:scale-[1.03] focus-visible:shadow-md focus-visible:outline-none",
         tooShort && "py-0.5",
@@ -392,7 +392,7 @@ function EventBlock({
         )}
         style={{ color }}
       >
-        {event.summary ?? "(sem título)"}
+        {event.summary ?? "(no title)"}
       </div>
       {!tooShort && (
         <div className="text-foreground/70 w-full truncate font-mono text-[9px] tabular-nums">
@@ -421,9 +421,9 @@ function AllDayChip({
         backgroundColor: `color-mix(in oklab, ${color} 30%, var(--background))`,
         color,
       }}
-      title={event.summary ?? "(sem título)"}
+      title={event.summary ?? "(no title)"}
     >
-      <span className="truncate font-medium">{event.summary ?? "(sem título)"}</span>
+      <span className="truncate font-medium">{event.summary ?? "(no title)"}</span>
     </button>
   );
 }
@@ -518,9 +518,10 @@ function parseEnd(e: CalendarEvent): Date {
 function formatTime(iso: string): string {
   if (!iso.includes("T")) return "";
   const date = new Date(iso);
-  return new Intl.DateTimeFormat("pt-BR", {
+  return new Intl.DateTimeFormat("en-US", {
     hour: "2-digit",
     minute: "2-digit",
+    hour12: false,
   }).format(date);
 }
 

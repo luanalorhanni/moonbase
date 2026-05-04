@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ForgotPasswordForm } from "./forgot-password-form";
 
 export const metadata = {
-  title: "recuperar senha · moonbase",
+  title: "recover password · moonbase",
 };
 
 export default function ForgotPasswordPage() {
@@ -17,10 +17,10 @@ export default function ForgotPasswordPage() {
           </div>
           <div className="flex flex-col items-center gap-1.5 text-center">
             <h1 className="font-display text-[20px] leading-none font-light italic tracking-tight">
-              recuperar senha
+              recover password
             </h1>
             <p className="text-muted-foreground/85 max-w-[280px] text-[12.5px] leading-relaxed">
-              digite seu email — vamos enviar um link pra você definir uma nova senha.
+              enter your email — we'll send you a link to set a new password.
             </p>
           </div>
         </div>
@@ -29,7 +29,7 @@ export default function ForgotPasswordPage() {
           href="/login"
           className="text-muted-foreground/70 hover:text-foreground text-center text-[11.5px] transition-colors"
         >
-          ← voltar pro login
+          ← back to login
         </Link>
       </div>
     </main>

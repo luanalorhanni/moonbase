@@ -37,9 +37,9 @@ export function ForgotPasswordForm() {
       <div className="border-success/30 bg-success/10 text-success flex items-start gap-3 rounded-md border px-4 py-3 text-[12.5px]">
         <Mail aria-hidden className="mt-0.5 size-4 shrink-0" strokeWidth={1.6} />
         <div className="flex flex-col gap-1">
-          <span className="font-medium">link enviado.</span>
+          <span className="font-medium">link sent.</span>
           <span className="text-success/85 leading-relaxed">
-            cheque seu email — pode levar alguns minutos. o link expira em 1 hora.
+            check your email — it can take a few minutes. the link expires in 1 hour.
           </span>
         </div>
       </div>
@@ -67,7 +67,7 @@ export function ForgotPasswordForm() {
       </FieldGroup>
       <Button type="submit" disabled={isPending || !email.trim()} className="h-10">
         <Send aria-hidden className="size-3.5" strokeWidth={1.7} />
-        {isPending ? "enviando…" : "enviar link"}
+        {isPending ? "sending…" : "send link"}
       </Button>
     </form>
   );

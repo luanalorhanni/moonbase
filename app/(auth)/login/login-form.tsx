@@ -66,12 +66,12 @@ export function LoginForm({ next, initialError }: Props) {
         className="border-border hover:bg-muted/40 flex h-10 items-center justify-center gap-2.5 rounded-md border bg-card text-[13px] font-medium transition-colors disabled:opacity-50"
       >
         <GoogleGlyph className="size-4 shrink-0" />
-        {isOAuthPending ? "abrindo google…" : "continuar com google"}
+        {isOAuthPending ? "opening google…" : "continue with google"}
       </button>
 
       <div className="text-muted-foreground/60 flex items-center gap-3 font-mono text-[10px] tracking-[0.18em] uppercase">
         <span className="bg-border h-px flex-1" />
-        ou com email
+        or with email
         <span className="bg-border h-px flex-1" />
       </div>
 
@@ -92,12 +92,12 @@ export function LoginForm({ next, initialError }: Props) {
           </Field>
           <Field>
             <div className="flex items-baseline justify-between gap-3">
-              <FieldLabel htmlFor="login-password">senha</FieldLabel>
+              <FieldLabel htmlFor="login-password">password</FieldLabel>
               <Link
                 href="/forgot-password"
                 className="text-muted-foreground/70 hover:text-foreground text-[11px] transition-colors"
               >
-                esqueceu?
+                forgot?
               </Link>
             </div>
             <Input
@@ -121,12 +121,12 @@ export function LoginForm({ next, initialError }: Props) {
           {isPending ? (
             <>
               <Moon aria-hidden className="size-3.5 animate-pulse" strokeWidth={1.6} />
-              entrando…
+              signing in…
             </>
           ) : (
             <>
               <LogIn aria-hidden className="size-3.5" strokeWidth={1.7} />
-              entrar
+              sign in
             </>
           )}
         </Button>
@@ -138,13 +138,13 @@ export function LoginForm({ next, initialError }: Props) {
 function translateError(msg: string): string {
   const lower = msg.toLowerCase();
   if (lower.includes("invalid login credentials")) {
-    return "email ou senha incorretos.";
+    return "wrong email or password.";
   }
   if (lower.includes("email not confirmed")) {
-    return "email ainda não confirmado. cheque sua caixa de entrada.";
+    return "email not confirmed yet. check your inbox.";
   }
   if (lower.includes("too many")) {
-    return "muitas tentativas. tente novamente em alguns minutos.";
+    return "too many attempts. try again in a few minutes.";
   }
   return msg;
 }

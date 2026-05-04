@@ -14,10 +14,10 @@ const TODAY = (() => {
 function formatDayLabel(iso: string): { weekday: string; date: string; isToday: boolean } {
   const [y, m, d] = iso.split("-").map(Number);
   const date = new Date(y, m - 1, d);
-  const weekday = new Intl.DateTimeFormat("pt-BR", { weekday: "long" })
+  const weekday = new Intl.DateTimeFormat("en-US", { weekday: "long" })
     .format(date)
     .toLowerCase();
-  const dateLabel = new Intl.DateTimeFormat("pt-BR", {
+  const dateLabel = new Intl.DateTimeFormat("en-US", {
     day: "2-digit",
     month: "long",
   })
@@ -90,7 +90,7 @@ export function EntryCard({
             {date}
           </span>
           <span className="text-muted-foreground/70 font-mono text-[10px] tracking-[0.14em] uppercase">
-            {isToday ? "hoje" : weekday}
+            {isToday ? "today" : weekday}
           </span>
         </div>
         {mood && MoodIcon && (

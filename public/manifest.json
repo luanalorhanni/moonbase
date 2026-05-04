@@ -1,7 +1,7 @@
 {
   "name": "moonbase",
   "short_name": "moonbase",
-  "description": "Personal command center — finanças, hábitos, calendário.",
+  "description": "Personal command center — finance, habits, calendar.",
   "start_url": "/",
   "id": "/",
   "scope": "/",
@@ -11,7 +11,7 @@
   "theme_color": "#1a1d2e",
   "background_color": "#fafaf6",
   "categories": ["finance", "productivity", "lifestyle"],
-  "lang": "pt-BR",
+  "lang": "en",
   "dir": "ltr",
   "icons": [
     {
@@ -31,40 +31,34 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
-    },
-    {
-      "src": "/icons/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
     }
   ],
   "shortcuts": [
     {
-      "name": "este mês",
-      "short_name": "mês",
-      "description": "visão consolidada do mês corrente",
+      "name": "this month",
+      "short_name": "month",
+      "description": "consolidated view of the current month",
       "url": "/month",
       "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
     },
     {
-      "name": "hábitos",
-      "short_name": "hábitos",
-      "description": "registro diário de hábitos",
+      "name": "habits",
+      "short_name": "habits",
+      "description": "daily habit tracking",
       "url": "/habits",
       "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
     },
     {
-      "name": "calendário",
-      "short_name": "agenda",
-      "description": "google calendar integrado",
+      "name": "calendar",
+      "short_name": "calendar",
+      "description": "integrated google calendar",
       "url": "/calendar",
       "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
     },
     {
-      "name": "nova despesa de cartão",
-      "short_name": "+ crédito",
-      "description": "registrar despesa no cartão de crédito",
+      "name": "new credit expense",
+      "short_name": "+ credit",
+      "description": "log a credit-card expense",
       "url": "/expenses/credit",
       "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
     }

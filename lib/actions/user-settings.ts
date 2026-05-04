@@ -7,6 +7,7 @@ import { requireUser } from "@/lib/auth/session";
 import { TAGS, invalidate } from "@/lib/cache/tags";
 import { db, schema } from "@/lib/db";
 import { parseSpotifyUrl } from "@/lib/spotify";
+import { PALETTES } from "@/lib/theme/palettes";
 
 export type UserSettingsActionResult = { ok: true } | { ok: false; error: string };
 
@@ -26,7 +27,7 @@ export type CoverInput = {
 export async function setHomeCover(input: CoverInput): Promise<UserSettingsActionResult> {
   const user = await requireUser();
   if (!input.url || !input.unsplashId) {
-    return { ok: false, error: "Imagem inválida." };
+    return { ok: false, error: "invalid image." };
   }
 
   const data = {
@@ -76,7 +77,7 @@ export async function setHomeSpotifyUrl(
     if (!ref) {
       return {
         ok: false,
-        error: "URL inválida — cole um link de playlist, álbum ou faixa do Spotify.",
+        error: "invalid URL — paste a Spotify playlist, album, or track link.",
       };
     }
     // Re-canonicalize: drop tracking params, normalize to https://open.spotify.com/...
@@ -127,6 +128,30 @@ export async function setHomeQuote(
 }
 
 /**
+ * Switch the active color palette. Validates against the curated list
+ * in `lib/theme/palettes.ts` so we can't end up with an unknown id
+ * persisted in the database.
+ */
+export async function setPalette(paletteId: string): Promise<UserSettingsActionResult> {
+  const user = await requireUser();
+  const known = PALETTES.some((p) => p.id === paletteId);
+  if (!known) return { ok: false, error: "unknown palette." };
+
+  await db
+    .insert(schema.userSettings)
+    .values({ userId: user.id, palette: paletteId })
+    .onConflictDoUpdate({
+      target: schema.userSettings.userId,
+      set: { palette: paletteId, updatedAt: new Date() },
+    });
+
+  invalidate(TAGS.userSettings);
+  // Palette cascades through every page, so revalidate the layout root.
+  revalidatePath("/", "layout");
+  return { ok: true };
+}
+
+/**
  * Hits Unsplash's `download_location` endpoint per their API
  * guidelines whenever a user picks a photo. Required by their TOS to
  * count "downloads" — without this we'd be in violation.
@@ -136,7 +161,7 @@ export async function trackUnsplashDownload(
 ): Promise<UserSettingsActionResult> {
   await requireUser();
   const accessKey = process.env.UNSPLASH_ACCESS_KEY;
-  if (!accessKey) return { ok: false, error: "UNSPLASH_ACCESS_KEY não configurada." };
+  if (!accessKey) return { ok: false, error: "UNSPLASH_ACCESS_KEY not configured." };
   try {
     await fetch(downloadLocation, {
       headers: { Authorization: `Client-ID ${accessKey}` },

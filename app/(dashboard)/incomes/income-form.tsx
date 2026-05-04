@@ -57,7 +57,7 @@ export function IncomeForm({ income, onSuccess }: Props) {
       const result = income ? await updateIncome(income.id, values) : await createIncome(values);
 
       if (result.ok) {
-        toast.success(income ? "Receita atualizada." : "Receita registrada.");
+        toast.success(income ? "income updated." : "income logged.");
         onSuccess();
         return;
       }
@@ -78,10 +78,10 @@ export function IncomeForm({ income, onSuccess }: Props) {
     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
       <FieldGroup>
         <Field>
-          <FieldLabel htmlFor="inc-description">Descrição</FieldLabel>
+          <FieldLabel htmlFor="inc-description">description</FieldLabel>
           <Input
             id="inc-description"
-            placeholder="Ex: Salário maio"
+            placeholder="e.g. may salary"
             disabled={isPending}
             {...form.register("description")}
           />
@@ -91,7 +91,7 @@ export function IncomeForm({ income, onSuccess }: Props) {
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="inc-type">Tipo</FieldLabel>
+          <FieldLabel htmlFor="inc-type">type</FieldLabel>
           <Controller
             control={form.control}
             name="type"
@@ -118,22 +118,22 @@ export function IncomeForm({ income, onSuccess }: Props) {
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="inc-amount">Valor</FieldLabel>
+          <FieldLabel htmlFor="inc-amount">amount</FieldLabel>
           <Input
             id="inc-amount"
             inputMode="decimal"
-            placeholder="Ex: 3500.00"
+            placeholder="e.g. 3500.00"
             disabled={isPending}
             {...form.register("amount")}
           />
-          <FieldDescription>Use ponto como separador decimal (ex: 3500.00).</FieldDescription>
+          <FieldDescription>use a period as the decimal separator (e.g. 3500.00).</FieldDescription>
           {form.formState.errors.amount ? (
             <FieldError>{form.formState.errors.amount.message}</FieldError>
           ) : null}
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="inc-date">Data</FieldLabel>
+          <FieldLabel htmlFor="inc-date">date</FieldLabel>
           <Input id="inc-date" type="date" disabled={isPending} {...form.register("date")} />
           {form.formState.errors.date ? (
             <FieldError>{form.formState.errors.date.message}</FieldError>
@@ -143,10 +143,10 @@ export function IncomeForm({ income, onSuccess }: Props) {
 
       <div className="flex justify-end gap-2">
         <Button type="button" variant="ghost" onClick={onSuccess} disabled={isPending}>
-          Cancelar
+          cancel
         </Button>
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Salvando..." : income ? "Salvar" : "Registrar"}
+          {isPending ? "saving..." : income ? "save" : "log"}
         </Button>
       </div>
     </form>
