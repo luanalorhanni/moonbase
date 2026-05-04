@@ -206,18 +206,18 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
 
       {/* ── trend (full width, expanded) ────────────────────────────── */}
       <div className="border-border flex shrink-0 flex-col border-b">
-        <PanelHeader
-          title="trend"
-          subtitle="incomes · expenses · balance"
-          legend={
-            <div className="text-muted-foreground/80 hidden items-center gap-4 font-mono text-[10.5px] tracking-wider sm:flex">
-              <LegendDot color="oklch(0.74 0.13 160)" label="incomes" />
-              <LegendDot color="oklch(0.62 0.18 25)" label="expenses" />
-              <LegendDot color="oklch(0.65 0.10 270)" label="balance" />
-            </div>
-          }
-        />
-        <div className="min-h-[420px] flex-1 px-3 pt-3 pb-4 md:px-5">
+        <PanelHeader title="trend" subtitle="payment month · incomes · expenses · balance" />
+        {/* Soft legend strip — sits between the panel header and the
+            chart canvas, separated from both with a hairline of muted
+            border so the plot area reads as its own focused field. */}
+        <div className="border-border/50 bg-muted/20 flex items-center justify-end border-b px-5 py-2">
+          <div className="text-muted-foreground/80 flex items-center gap-4 font-mono text-[10.5px] tracking-wider">
+            <LegendDot color="oklch(0.74 0.13 160)" label="incomes" filled />
+            <LegendDot color="oklch(0.62 0.18 25)" label="expenses" filled />
+            <LegendDot color="oklch(0.65 0.10 270)" label="balance" filled />
+          </div>
+        </div>
+        <div className="min-h-[420px] flex-1 px-3 pt-4 pb-4 md:px-5">
           <TrendChart
             data={trendData}
             series={["incomes", "expenses", "net"]}
@@ -389,10 +389,14 @@ function LegendDot({
   color,
   label,
   dashed,
+  filled,
 }: {
   color: string;
   label: string;
   dashed?: boolean;
+  /** Renders a small area swatch (filled gradient + stroke) instead of
+   *  a solid square — matches the area-style series in the chart. */
+  filled?: boolean;
 }) {
   return (
     <span className="inline-flex items-center gap-1.5">
@@ -402,6 +406,15 @@ function LegendDot({
           className="inline-block h-px w-3"
           style={{
             backgroundImage: `repeating-linear-gradient(90deg, ${color} 0, ${color} 3px, transparent 3px, transparent 6px)`,
+          }}
+        />
+      ) : filled ? (
+        <span
+          aria-hidden
+          className="inline-block h-2.5 w-3.5 rounded-[2px]"
+          style={{
+            background: `linear-gradient(to bottom, color-mix(in oklab, ${color} 65%, transparent), color-mix(in oklab, ${color} 5%, transparent))`,
+            borderTop: `1px solid ${color}`,
           }}
         />
       ) : (
