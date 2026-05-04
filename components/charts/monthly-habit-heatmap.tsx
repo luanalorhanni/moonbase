@@ -340,12 +340,13 @@ function HeatmapCell({
 
 /**
  * Map a 0..1 completion ratio to a color from a calm aqua ramp.
- * 0 = empty (very subtle border-tinted), 1 = full primary.
+ * Pulls from theme-aware CSS vars in globals.css so dark mode
+ * actually contrasts with its background instead of fading into it.
  */
 function intensityColor(ratio: number): string {
-  if (ratio <= 0) return "color-mix(in oklab, var(--muted) 70%, transparent)";
-  if (ratio < 0.3) return "oklch(0.82 0.05 200 / 0.55)";
-  if (ratio < 0.6) return "oklch(0.74 0.09 200 / 0.8)";
-  if (ratio < 0.85) return "oklch(0.66 0.12 200)";
-  return "oklch(0.56 0.14 200)";
+  if (ratio <= 0) return "var(--heatmap-0)";
+  if (ratio < 0.3) return "var(--heatmap-1)";
+  if (ratio < 0.6) return "var(--heatmap-2)";
+  if (ratio < 0.85) return "var(--heatmap-3)";
+  return "var(--heatmap-4)";
 }

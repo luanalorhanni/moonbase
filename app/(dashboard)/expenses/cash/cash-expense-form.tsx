@@ -6,6 +6,7 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { CategoryIcon } from "@/components/ui/category-icon";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
@@ -156,8 +157,8 @@ export function CashExpenseForm({
                 <SelectContent>
                   {[...grouped.entries()].map(([categoryName, { icon, items }]) => (
                     <SelectGroup key={categoryName}>
-                      <SelectLabel>
-                        {icon ? `${icon} ` : ""}
+                      <SelectLabel className="flex items-center gap-1.5">
+                        {icon && <CategoryIcon icon={icon} size={12} />}
                         {categoryName}
                       </SelectLabel>
                       {items.map((sub) => (
