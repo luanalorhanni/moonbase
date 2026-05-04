@@ -44,6 +44,21 @@ const client =
     idle_timeout: 20,
     connect_timeout: 10,
     prepare: false,
+    // Keep `date` columns as raw `yyyy-mm-dd` strings instead of letting
+    // the driver hydrate them into JS `Date`s. Critical: `Date(yyyy-mm-01
+    // UTC)` formatted via `toString()` in BRT (UTC-3) reads as the
+    // previous day, which silently broke snapshot/month-key lookups
+    // around the year boundary.
+    types: {
+      // OID 1082 = postgres `date` type. Leaving `timestamp`/`timestamptz`
+      // (1114/1184) untouched so `createdAt` columns still parse to Date.
+      date: {
+        to: 1082,
+        from: [1082],
+        serialize: (x: string) => x,
+        parse: (x: string) => x,
+      },
+    },
   });
 
 if (process.env.NODE_ENV !== "production") {
