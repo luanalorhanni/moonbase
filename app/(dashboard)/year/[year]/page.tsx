@@ -10,6 +10,7 @@ import {
 } from "@/components/decorative/pixel-icons";
 import { cumulativeBalance, type HistoricalSnapshot } from "@/lib/finance/aggregate";
 import { currentMonthRef, formatMonthShort, type MonthRef } from "@/lib/finance/month";
+import { listFixedIncome } from "@/lib/queries/investments";
 import { loadFullDataset, toAggregateInputs } from "@/lib/queries/month";
 import { listSnapshots } from "@/lib/queries/snapshots";
 import { loadYear } from "@/lib/queries/year";
@@ -24,10 +25,11 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
     redirect(`/year/${new Date().getFullYear()}`);
   }
 
-  const [summary, dataset, snapshotRows] = await Promise.all([
+  const [summary, dataset, snapshotRows, fixedIncome] = await Promise.all([
     loadYear(parsed),
     loadFullDataset(),
     listSnapshots(),
+    listFixedIncome(),
   ]);
   const inputs = toAggregateInputs(dataset);
   const snapshots: HistoricalSnapshot[] = snapshotRows.map((s) => ({
@@ -77,6 +79,39 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
     summary.year === currentYear
       ? `jan → ${formatMonthShort(today).split("/")[0]}`
       : "full year";
+
+  // ── Yearly savings KPIs ───────────────────────────────────────────────
+  // 1. Cumulative year save: sum of every monthly balance within the year.
+  //    For elapsed months in the current year, mathematically identical to
+  //    ytdBalance — kept as its own line so the user can read it in
+  //    savings terms ("how much did I keep this year") rather than ledger
+  //    terms ("incomes minus expenses").
+  // 2. Average monthly save: cumulative save divided by months counted.
+  //    "Months counted" = elapsed months for current year, 12 otherwise,
+  //    excluding months that have neither incomes nor expenses (so a
+  //    snapshot-less, raw-less month doesn't drag the average to zero).
+  let monthsWithData = 0;
+  let cumulativeYearSave = 0;
+  for (const m of summary.months) {
+    const monthNum = Number(m.reference.split("-")[1]);
+    if (monthNum > monthCutoff) continue;
+    const inc = Number(m.totalIncomes);
+    const exp = Number(m.totalExpenses);
+    if (inc === 0 && exp === 0) continue;
+    cumulativeYearSave += inc - exp;
+    monthsWithData += 1;
+  }
+  const averageMonthlySave = monthsWithData > 0 ? cumulativeYearSave / monthsWithData : 0;
+
+  // 3. Year invested: applied amounts from `fixed_income` (LCI/LCA/CDB,
+  //    treasury, etc.) whose application_date falls inside the year.
+  //    Liquid savings ("cofrinhos") are deliberately excluded — those are
+  //    pure savings reservoirs and the user wants to read them separately.
+  let yearInvested = 0;
+  for (const fi of fixedIncome) {
+    const yr = Number(String(fi.applicationDate).slice(0, 4));
+    if (yr === summary.year) yearInvested += Number(fi.appliedAmount);
+  }
 
   // Build month rows with deltas vs the previous month.
   const monthRows = summary.months.map((m, idx) => {
@@ -192,7 +227,11 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
       </div>
 
       {/* ── kpi strip ───────────────────────────────────────────────── */}
-      <div className="border-border grid shrink-0 grid-cols-3 border-b">
+      {/* Two semantic groups, separated by a slightly stronger vertical
+          rule on lg+ : (1) the year ledger — incomes / expenses / balance
+          — and (2) the savings story — what was kept, what was kept on
+          average, and what was invested. */}
+      <div className="border-border grid shrink-0 grid-cols-3 border-b lg:grid-cols-6">
         <YearKpi label="incomes" value={summary.totalIncomes} accent="success" />
         <YearKpi label="expenses" value={summary.totalExpenses} accent="muted" />
         <YearKpi
@@ -201,6 +240,25 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
           hint={ytdLabel}
           accent={Number(ytdBalance) < 0 ? "destructive" : "primary"}
           highlight
+        />
+        <YearKpi
+          label="year save"
+          value={cumulativeYearSave.toFixed(2)}
+          hint="sum of monthly leftovers"
+          accent={cumulativeYearSave < 0 ? "destructive" : "success"}
+          groupStart
+        />
+        <YearKpi
+          label="avg / month"
+          value={averageMonthlySave.toFixed(2)}
+          hint={monthsWithData > 0 ? `over ${monthsWithData} mo` : "no data yet"}
+          accent={averageMonthlySave < 0 ? "destructive" : "primary"}
+        />
+        <YearKpi
+          label="invested"
+          value={yearInvested.toFixed(2)}
+          hint="fixed income, by date"
+          accent="muted"
         />
       </div>
 
@@ -435,18 +493,27 @@ function YearKpi({
   hint,
   accent,
   highlight,
+  groupStart,
 }: {
   label: string;
   value: string;
   hint?: string;
   accent: "success" | "muted" | "primary" | "destructive";
   highlight?: boolean;
+  /** Marks the start of the second semantic group on lg+ — adds a
+   *  slightly stronger left rule and drops the top border on mobile so
+   *  the second row reads as its own band when wrapping. */
+  groupStart?: boolean;
 }) {
   return (
     <div
       className={cn(
         "border-border flex flex-col gap-1 border-r px-6 py-4 last:border-r-0",
         highlight && "bg-primary/[0.04]",
+        // groupStart marks the savings group on lg+ — adds a slightly
+        // stronger left rule. On mobile (3-col wrap) the second group
+        // automatically lands on its own row so no extra rule is needed.
+        groupStart && "lg:border-l-border-strong lg:border-l",
       )}
     >
       <span className="text-muted-foreground font-mono text-[11px] tracking-[0.18em]">{label}</span>
