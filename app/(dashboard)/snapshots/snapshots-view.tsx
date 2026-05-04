@@ -118,23 +118,17 @@ export function SnapshotsView({ snapshots }: { snapshots: SnapshotRow[] }) {
               key={snap.id}
               className="hover:bg-muted/40 flex items-center gap-4 px-5 py-3 transition-colors"
             >
-              <div className="flex min-w-0 flex-1 flex-col">
+              <div className="flex min-w-0 flex-1 flex-col justify-center">
                 <span className="text-foreground truncate text-[13px] font-medium capitalize">
                   {snap.monthLabel}
-                </span>
-                <span className="text-muted-foreground truncate text-[12px]">
-                  cumulative · {formatCurrency(snap.totalSave)}
                 </span>
               </div>
               <div className="hidden items-baseline gap-5 md:flex">
                 <Stat label="incomes" value={snap.totalIncomes} />
                 <Stat label="expenses" value={snap.totalExpenses} muted />
                 <Stat
-                  label="invest."
-                  value={(Number(snap.totalLiquidSavings) + Number(snap.totalFixedIncome)).toFixed(
-                    2,
-                  )}
-                  muted
+                  label="balance"
+                  value={(Number(snap.totalIncomes) - Number(snap.totalExpenses)).toFixed(2)}
                 />
               </div>
               <DropdownMenu>
