@@ -387,6 +387,9 @@ export const journalEntries = pgTable(
     entryDate: date("entry_date").notNull(),
     /** Climatic 1–5 scale: 1 = pesado, 5 = radiante. Null = no mood logged. */
     mood: smallint("mood"),
+    /** List of gratitude items captured for the day. Null/empty array
+     *  when the user skipped the gratitude prompt. */
+    gratitude: text("gratitude").array(),
     /** Markdown body. Null when the user only logged a mood/cover. */
     content: text("content"),
     coverUrl: text("cover_url"),

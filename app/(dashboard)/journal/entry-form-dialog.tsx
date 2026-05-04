@@ -2,11 +2,13 @@
 
 import { Eye, Pencil, Save, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { CoverPicker, type EntryCover } from "@/components/journal/cover-picker";
+import { GratitudeList } from "@/components/journal/gratitude-list";
 import { MarkdownContent } from "@/components/journal/markdown-content";
+import { MarkdownEditor } from "@/components/journal/markdown-editor";
 import { MoodPicker } from "@/components/journal/mood-picker";
 import {
   AlertDialog,
@@ -28,6 +30,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import { deleteJournalEntry, saveJournalEntry } from "@/lib/actions/journal";
 import { moodFor, type MoodLevel } from "@/lib/journal/mood";
 import type { JournalEntryRow } from "@/lib/queries/journal";
@@ -36,11 +39,12 @@ import { cn } from "@/lib/utils";
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** When provided we're editing this entry; otherwise a brand-new
-   *  entry for `defaultDate` (or today). */
-  entry?: JournalEntryRow | null;
-  /** Pre-fill date (ISO yyyy-mm-dd). Ignored when `entry` is set. */
-  defaultDate?: string;
+  /** All existing entries — used to load the entry for whichever date
+   *  the user selects (so changing the date in the picker swaps the
+   *  form into edit mode for that day). */
+  entries: JournalEntryRow[];
+  /** Date to open the dialog on (ISO yyyy-mm-dd). Defaults to today. */
+  initialDate: string;
 };
 
 function todayIso(): string {
@@ -73,32 +77,52 @@ function rowToCover(entry: JournalEntryRow | null | undefined): EntryCover | nul
   };
 }
 
-export function EntryFormDialog({ open, onOpenChange, entry, defaultDate }: Props) {
+export function EntryFormDialog({ open, onOpenChange, entries, initialDate }: Props) {
   const router = useRouter();
-  const isEdit = !!entry;
-  const initialDate = entry?.entryDate ?? defaultDate ?? todayIso();
 
-  const [date] = useState<string>(initialDate);
-  const [mood, setMood] = useState<MoodLevel | null>(
-    (entry?.mood as MoodLevel | null | undefined) ?? null,
+  const today = todayIso();
+  const entriesByDate = useMemo(
+    () => new Map(entries.map((e) => [e.entryDate, e])),
+    [entries],
   );
-  const [content, setContent] = useState<string>(entry?.content ?? "");
-  const [cover, setCover] = useState<EntryCover | null>(rowToCover(entry));
+
+  // The "current date being edited" — driven by the date input. When
+  // the user picks a new date, we look up its entry (if any) and load
+  // its values into the form below.
+  const [date, setDate] = useState<string>(initialDate);
+  const currentEntry = entriesByDate.get(date) ?? null;
+  const isEditing = !!currentEntry;
+
+  const [mood, setMood] = useState<MoodLevel | null>(null);
+  const [gratitude, setGratitude] = useState<string[]>([]);
+  const [content, setContent] = useState<string>("");
+  const [cover, setCover] = useState<EntryCover | null>(null);
   const [tab, setTab] = useState<"edit" | "preview">("edit");
   const [error, setError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isSaving, startSaveTransition] = useTransition();
   const [isDeleting, startDeleteTransition] = useTransition();
 
-  // Reset state every time the dialog opens with a different entry.
+  // Reset the date when the dialog opens with a new initialDate.
   useEffect(() => {
     if (!open) return;
-    setMood((entry?.mood as MoodLevel | null | undefined) ?? null);
-    setContent(entry?.content ?? "");
-    setCover(rowToCover(entry));
+    setDate(initialDate);
+  }, [open, initialDate]);
+
+  // Sync the form fields whenever the active date changes (loading the
+  // existing entry, or clearing the form for a blank day).
+  useEffect(() => {
+    if (!open) return;
+    setMood((currentEntry?.mood as MoodLevel | null | undefined) ?? null);
+    setGratitude(currentEntry?.gratitude ?? []);
+    setContent(currentEntry?.content ?? "");
+    setCover(rowToCover(currentEntry));
     setTab("edit");
     setError(null);
-  }, [open, entry]);
+    // Intentionally only depend on `date` + `entriesByDate` — including
+    // `currentEntry` directly would create churn when its identity
+    // changes after a save round-trip.
+  }, [open, date, entriesByDate]);
 
   function handleSave() {
     setError(null);
@@ -106,6 +130,7 @@ export function EntryFormDialog({ open, onOpenChange, entry, defaultDate }: Prop
       const result = await saveJournalEntry({
         entryDate: date,
         mood,
+        gratitude,
         content,
         coverUrl: cover?.url ?? null,
         coverThumbUrl: cover?.thumbUrl ?? null,
@@ -115,7 +140,7 @@ export function EntryFormDialog({ open, onOpenChange, entry, defaultDate }: Prop
         coverUnsplashId: cover?.unsplashId ?? null,
       });
       if (result.ok) {
-        toast.success(isEdit ? "entrada atualizada." : "entrada registrada.");
+        toast.success(isEditing ? "entrada atualizada." : "entrada registrada.");
         router.refresh();
         onOpenChange(false);
       } else {
@@ -140,6 +165,7 @@ export function EntryFormDialog({ open, onOpenChange, entry, defaultDate }: Prop
   }
 
   const moodDescriptor = moodFor(mood);
+  const isFutureDate = date > today;
 
   return (
     <>
@@ -147,25 +173,75 @@ export function EntryFormDialog({ open, onOpenChange, entry, defaultDate }: Prop
         <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle className="font-display text-[20px] leading-tight font-light italic tracking-tight">
-              {isEdit ? "editar entrada" : "registrar hoje"}
+              {isEditing ? "editar entrada" : "registrar dia"}
             </DialogTitle>
             <DialogDescription className="font-mono text-[10.5px] tracking-[0.14em] uppercase">
               {formatDateLong(date)}
+              {date === today && " · hoje"}
+              {isEditing && date !== today && " · já registrado"}
             </DialogDescription>
           </DialogHeader>
 
           <div className="flex flex-col gap-5">
+            <Field>
+              <FieldLabel htmlFor="entry-date">data</FieldLabel>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="entry-date"
+                  type="date"
+                  value={date}
+                  max={today}
+                  onChange={(e) => setDate(e.target.value || today)}
+                  disabled={isSaving}
+                  className="h-9 w-[200px]"
+                />
+                <button
+                  type="button"
+                  onClick={() => setDate(today)}
+                  disabled={isSaving || date === today}
+                  className="text-muted-foreground hover:text-foreground text-[11.5px] underline-offset-2 hover:underline disabled:opacity-40"
+                >
+                  hoje
+                </button>
+              </div>
+              {isFutureDate ? (
+                <span className="text-destructive text-[11.5px]">
+                  o futuro a gente não registra ainda — escolha hoje ou um dia anterior.
+                </span>
+              ) : isEditing ? (
+                <span className="text-muted-foreground/70 text-[11.5px]">
+                  esse dia já tem registro — você está editando ele.
+                </span>
+              ) : (
+                <span className="text-muted-foreground/70 text-[11.5px]">
+                  pode registrar qualquer dia passado também.
+                </span>
+              )}
+            </Field>
+
             <CoverPicker value={cover} onChange={setCover} disabled={isSaving} />
 
             <Field>
-              <FieldLabel>como foi hoje?</FieldLabel>
+              <FieldLabel>como foi esse dia?</FieldLabel>
               <MoodPicker value={mood} onChange={setMood} disabled={isSaving} />
               {moodDescriptor && (
                 <span className="text-muted-foreground/70 text-[11.5px]">
-                  você marcou esse dia como{" "}
+                  esse dia ficou marcado como{" "}
                   <span className="text-foreground font-medium">{moodDescriptor.label}</span>.
                 </span>
               )}
+            </Field>
+
+            <Field>
+              <FieldLabel>três motivos pra ser grata</FieldLabel>
+              <GratitudeList
+                value={gratitude}
+                onChange={setGratitude}
+                disabled={isSaving}
+              />
+              <span className="text-muted-foreground/70 text-[11.5px]">
+                pequeno, médio, grande — o que importa é parar e olhar.
+              </span>
             </Field>
 
             <Field>
@@ -201,13 +277,12 @@ export function EntryFormDialog({ open, onOpenChange, entry, defaultDate }: Prop
                 </div>
               </div>
               {tab === "edit" ? (
-                <textarea
+                <MarkdownEditor
                   value={content}
-                  onChange={(e) => setContent(e.target.value)}
+                  onChange={setContent}
                   disabled={isSaving}
                   rows={10}
-                  placeholder="**negrito**, *itálico*, listas com - ou 1., links com [texto](url)…"
-                  className="border-input bg-background placeholder:text-muted-foreground/60 focus-visible:ring-ring min-h-[200px] w-full resize-y rounded-md border px-3 py-2 font-sans text-[13px] leading-relaxed transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50"
+                  placeholder="o que ficou desse dia? selecione um trecho e use os botões — ou Ctrl+B / Ctrl+I."
                 />
               ) : (
                 <div className="border-input bg-muted/10 min-h-[200px] w-full rounded-md border px-4 py-3">
@@ -229,7 +304,7 @@ export function EntryFormDialog({ open, onOpenChange, entry, defaultDate }: Prop
           </div>
 
           <DialogFooter className="flex items-center gap-2">
-            {isEdit && (
+            {isEditing && (
               <Button
                 type="button"
                 variant="ghost"
@@ -249,9 +324,13 @@ export function EntryFormDialog({ open, onOpenChange, entry, defaultDate }: Prop
             >
               cancelar
             </Button>
-            <Button type="button" onClick={handleSave} disabled={isSaving}>
+            <Button
+              type="button"
+              onClick={handleSave}
+              disabled={isSaving || isFutureDate}
+            >
               <Save aria-hidden className="size-3.5" />
-              {isSaving ? "salvando…" : isEdit ? "salvar" : "registrar"}
+              {isSaving ? "salvando…" : isEditing ? "salvar" : "registrar"}
             </Button>
           </DialogFooter>
         </DialogContent>
