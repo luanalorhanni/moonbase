@@ -34,7 +34,7 @@ export function SubcategoryForm({ subcategory, categoryId, onSuccess }: Props) {
         : await createSubcategory(values);
 
       if (result.ok) {
-        toast.success(subcategory ? "Subcategoria atualizada." : "Subcategoria criada.");
+        toast.success(subcategory ? "subcategory updated." : "subcategory created.");
         onSuccess();
         return;
       }
@@ -55,10 +55,10 @@ export function SubcategoryForm({ subcategory, categoryId, onSuccess }: Props) {
     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
       <FieldGroup>
         <Field>
-          <FieldLabel htmlFor="sub-name">Nome</FieldLabel>
+          <FieldLabel htmlFor="sub-name">name</FieldLabel>
           <Input
             id="sub-name"
-            placeholder="Ex: Farmácia"
+            placeholder="e.g. pharmacy"
             disabled={isPending}
             {...form.register("name")}
           />
@@ -71,10 +71,10 @@ export function SubcategoryForm({ subcategory, categoryId, onSuccess }: Props) {
 
       <div className="flex justify-end gap-2">
         <Button type="button" variant="ghost" onClick={onSuccess} disabled={isPending}>
-          Cancelar
+          cancel
         </Button>
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Salvando..." : subcategory ? "Salvar" : "Criar"}
+          {isPending ? "saving..." : subcategory ? "save" : "create"}
         </Button>
       </div>
     </form>

@@ -40,7 +40,7 @@ export async function recordInvestmentUpdate(input: InvestmentUpdateInput): Prom
   if (!parsed.success) {
     return {
       ok: false,
-      error: "verifique os campos.",
+      error: "please check the form fields.",
       fieldErrors: flattenIssues(parsed.error),
     };
   }
@@ -55,7 +55,7 @@ export async function recordInvestmentUpdate(input: InvestmentUpdateInput): Prom
     .where(and(eq(parentTable.id, data.investmentId), eq(parentTable.userId, user.id)))
     .limit(1);
   if (parent.length === 0) {
-    return { ok: false, error: "investimento não encontrado." };
+    return { ok: false, error: "investment not found." };
   }
 
   await db
@@ -117,7 +117,7 @@ export async function recordInvestmentUpdate(input: InvestmentUpdateInput): Prom
 
 export async function deleteInvestmentUpdate(updateId: string): Promise<ActionResult> {
   const user = await requireUser();
-  if (!updateId) return { ok: false, error: "id obrigatório." };
+  if (!updateId) return { ok: false, error: "id is required." };
 
   // Read the row first so we know which parent to re-sync afterwards.
   const target = await db
@@ -131,7 +131,7 @@ export async function deleteInvestmentUpdate(updateId: string): Promise<ActionRe
     )
     .limit(1);
   const row = target[0];
-  if (!row) return { ok: false, error: "atualização não encontrada." };
+  if (!row) return { ok: false, error: "update not found." };
 
   await db
     .delete(schema.investmentUpdates)

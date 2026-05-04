@@ -2,7 +2,7 @@ import { z } from "zod";
 
 const isoDate = z
   .string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/, "data inválida (esperado yyyy-mm-dd)");
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "invalid date (expected yyyy-mm-dd)");
 
 const trimmedNullable = z
   .union([z.string(), z.null(), z.undefined()])
@@ -43,14 +43,14 @@ export const journalEntrySchema = z
       e.gratitude !== null ||
       e.content !== null ||
       e.coverUrl !== null,
-    { message: "registre pelo menos um humor, motivo, texto ou capa." },
+    { message: "add at least a mood, gratitude, text, or cover." },
   );
 
 export type JournalEntryInput = z.input<typeof journalEntrySchema>;
 export type JournalEntryParsed = z.output<typeof journalEntrySchema>;
 
 export const journalQuoteSchema = z.object({
-  text: z.string().trim().min(1, "a frase não pode ficar vazia."),
+  text: z.string().trim().min(1, "the quote can't be empty."),
   author: trimmedNullable,
   source: trimmedNullable,
   collectedOn: isoDate,

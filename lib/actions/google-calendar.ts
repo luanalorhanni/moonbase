@@ -31,7 +31,7 @@ export async function disconnectGoogleCalendar(): Promise<GoogleCalendarActionRe
   try {
     await clearTokens(user.id);
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "erro ao desconectar" };
+    return { ok: false, error: e instanceof Error ? e.message : "failed to disconnect" };
   }
   invalidate(TAGS.googleCalendarTokens);
   revalidatePath("/calendar");
@@ -48,9 +48,9 @@ export async function createGoogleCalendarEvent(
 ): Promise<CreateEventActionResult> {
   const user = await requireUser();
 
-  if (!input.calendarId) return { ok: false, error: "Selecione um calendário." };
+  if (!input.calendarId) return { ok: false, error: "select a calendar." };
   if (!input.summary || input.summary.trim() === "") {
-    return { ok: false, error: "Adicione um título." };
+    return { ok: false, error: "add a title." };
   }
 
   const result = await createEvent(user.id, {
@@ -77,10 +77,10 @@ export async function updateGoogleCalendarEvent(
 ): Promise<CreateEventActionResult> {
   const user = await requireUser();
   if (!input.calendarId || !input.eventId) {
-    return { ok: false, error: "Evento inválido." };
+    return { ok: false, error: "invalid event." };
   }
   if (!input.summary || input.summary.trim() === "") {
-    return { ok: false, error: "Adicione um título." };
+    return { ok: false, error: "add a title." };
   }
 
   const result = await updateEvent(user.id, {
@@ -109,7 +109,7 @@ export async function moveGoogleCalendarEvent(
 ): Promise<GoogleCalendarActionResult> {
   const user = await requireUser();
   if (!fromCalendarId || !eventId || !toCalendarId) {
-    return { ok: false, error: "Movimentação inválida." };
+    return { ok: false, error: "invalid move." };
   }
   if (fromCalendarId === toCalendarId) return { ok: true };
   const result = await moveEvent(user.id, fromCalendarId, eventId, toCalendarId);
@@ -125,7 +125,7 @@ export async function deleteGoogleCalendarEvent(
 ): Promise<GoogleCalendarActionResult> {
   const user = await requireUser();
   if (!calendarId || !eventId) {
-    return { ok: false, error: "Evento inválido." };
+    return { ok: false, error: "invalid event." };
   }
   const result = await deleteEvent(user.id, calendarId, eventId);
   if (!result.ok) return result;

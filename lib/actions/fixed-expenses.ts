@@ -34,7 +34,7 @@ export async function createFixedExpense(
   if (!parsed.success) {
     return {
       ok: false,
-      error: "Verifique os campos do formulário.",
+      error: "please check the form fields.",
       fieldErrors: flattenIssues(parsed.error),
     };
   }
@@ -67,7 +67,7 @@ export async function updateFixedExpense(
   if (!parsed.success) {
     return {
       ok: false,
-      error: "Verifique os campos do formulário.",
+      error: "please check the form fields.",
       fieldErrors: flattenIssues(parsed.error),
     };
   }

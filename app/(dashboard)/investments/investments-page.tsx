@@ -523,7 +523,7 @@ export function InvestmentsPage({ liquidSavings, fixedIncome, updates }: Props) 
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => openUpdates(row)}>
                         <LineChart aria-hidden className="size-3.5" />
-                        registrar atualização
+                        log update
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => openEdit(row)}>edit</DropdownMenuItem>
                       <DropdownMenuItem

@@ -6,7 +6,7 @@ import {
 import { CalendarPage } from "./calendar-page";
 
 export const metadata = {
-  title: "Calendário — moonbase",
+  title: "Calendar — moonbase",
 };
 
 export default async function CalendarRoute({
@@ -23,7 +23,7 @@ export default async function CalendarRoute({
     try {
       upcoming = await listEventsWindow();
     } catch (e) {
-      fetchError = e instanceof Error ? e.message : "erro ao buscar eventos";
+      fetchError = e instanceof Error ? e.message : "error fetching events";
     }
   }
 
