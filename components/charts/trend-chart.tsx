@@ -124,6 +124,10 @@ export function TrendChart({
           dataKey="label"
           tickLine={false}
           axisLine={false}
+          /* Force every label to render — Recharts otherwise auto-skips
+             the first tick when labels don't fit, which makes a 12-month
+             chart read as if it starts at feb. */
+          interval={0}
           tick={{
             fontSize: 10,
             fontFamily: "var(--font-mono)",
