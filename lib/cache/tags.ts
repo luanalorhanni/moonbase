@@ -29,6 +29,7 @@ export const TAGS = {
   habitLogs: "habit-logs",
   liquidSavings: "liquid-savings",
   fixedIncome: "fixed-income",
+  investmentUpdates: "investment-updates",
   snapshots: "snapshots",
   journalEntries: "journal-entries",
   journalQuotes: "journal-quotes",

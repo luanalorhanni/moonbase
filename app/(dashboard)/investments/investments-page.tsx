@@ -5,6 +5,7 @@ import {
   ArrowUpRight,
   Banknote,
   Landmark,
+  LineChart,
   MoreHorizontal,
   PiggyBank,
   Plus,
@@ -50,10 +51,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { deleteFixedIncome, deleteLiquidSavings } from "@/lib/actions/investments";
+import type { InvestmentUpdateRow } from "@/lib/queries/investment-updates";
 import type { FixedIncomeRow, LiquidSavingsRow } from "@/lib/queries/investments";
 import { cn } from "@/lib/utils";
 
 import { FixedIncomeForm } from "./fixed-income-form";
+import { InvestmentUpdatesDialog } from "./investment-updates-dialog";
 import { LiquidSavingsForm } from "./liquid-savings-form";
 
 /* ────────────────────────────────────────────────────────────────────── */
@@ -74,7 +77,22 @@ type Filter = "all" | "active" | Kind;
 type Props = {
   liquidSavings: LiquidSavingsRow[];
   fixedIncome: FixedIncomeRow[];
+  updates: InvestmentUpdateRow[];
 };
+
+type UpdatesDialogState =
+  | { open: false }
+  | {
+      open: true;
+      investment: {
+        kind: "liquid_savings" | "fixed_income";
+        id: string;
+        title: string;
+        bank: string;
+        appliedAmount: number;
+        applicationDate: string;
+      };
+    };
 
 type UnifiedRow = {
   id: string;
@@ -152,10 +170,11 @@ function unifiedFromRows(
 /*  Page                                                                   */
 /* ────────────────────────────────────────────────────────────────────── */
 
-export function InvestmentsPage({ liquidSavings, fixedIncome }: Props) {
+export function InvestmentsPage({ liquidSavings, fixedIncome, updates }: Props) {
   const router = useRouter();
   const [liquidDialog, setLiquidDialog] = useState<LiquidDialog>({ kind: "closed" });
   const [fixedDialog, setFixedDialog] = useState<FixedDialog>({ kind: "closed" });
+  const [updatesDialog, setUpdatesDialog] = useState<UpdatesDialogState>({ open: false });
   const [pendingDeleteLiquid, setPendingDeleteLiquid] = useState<LiquidSavingsRow | null>(null);
   const [pendingDeleteFixed, setPendingDeleteFixed] = useState<FixedIncomeRow | null>(null);
   const [isDeleting, startDeleteTransition] = useTransition();
@@ -279,6 +298,20 @@ export function InvestmentsPage({ liquidSavings, fixedIncome }: Props) {
       const item = fixedIncome.find((i) => `f-${i.id}` === row.id);
       if (item) setPendingDeleteFixed(item);
     }
+  }
+
+  function openUpdates(row: UnifiedRow) {
+    setUpdatesDialog({
+      open: true,
+      investment: {
+        kind: row.kind === "liquid" ? "liquid_savings" : "fixed_income",
+        id: row.id.slice(2), // strip the 'l-'/'f-' prefix
+        title: row.title,
+        bank: row.bank,
+        appliedAmount: row.appliedAmount,
+        applicationDate: row.applicationDate,
+      },
+    });
   }
 
   return (
@@ -488,6 +521,10 @@ export function InvestmentsPage({ liquidSavings, fixedIncome }: Props) {
                       <MoreHorizontal aria-hidden className="size-3.5" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => openUpdates(row)}>
+                        <LineChart aria-hidden className="size-3.5" />
+                        registrar atualização
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => openEdit(row)}>edit</DropdownMenuItem>
                       <DropdownMenuItem
                         variant="destructive"
@@ -588,6 +625,15 @@ export function InvestmentsPage({ liquidSavings, fixedIncome }: Props) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <InvestmentUpdatesDialog
+        open={updatesDialog.open}
+        onOpenChange={(o) => {
+          if (!o) setUpdatesDialog({ open: false });
+        }}
+        investment={updatesDialog.open ? updatesDialog.investment : null}
+        updates={updates}
+      />
 
       <AlertDialog
         open={pendingDeleteFixed !== null}
