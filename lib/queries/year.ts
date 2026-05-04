@@ -22,6 +22,12 @@ export type YearSummary = {
  * recorded — typically pre-tracking history seeded from the
  * spreadsheet). Months that have ANY raw data keep their detailed
  * aggregate and ignore the snapshot.
+ *
+ * Recurring fixed expenses do NOT count as "raw data" for this check:
+ * a subscription started before the user began tracking will project
+ * forward into every active month, but that's a phantom — those months
+ * had no actual logging. Only incomes / cash / credit count as evidence
+ * the user registered the month in detail.
  */
 export const loadYear = cache(_loadYear);
 
@@ -38,8 +44,7 @@ async function _loadYear(year: number): Promise<YearSummary> {
     return (
       Number(m.totalIncomes) > 0 ||
       Number(m.totalCashExpenses) > 0 ||
-      Number(m.totalCreditExpenses) > 0 ||
-      Number(m.totalFixedExpenses) > 0
+      Number(m.totalCreditExpenses) > 0
     );
   }
 
