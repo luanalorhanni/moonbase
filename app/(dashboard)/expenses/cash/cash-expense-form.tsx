@@ -106,7 +106,7 @@ export function CashExpenseForm({
         : await createCashExpense(values);
 
       if (result.ok) {
-        toast.success(expense ? "Despesa atualizada." : "Despesa registrada.");
+        toast.success(expense ? "expense updated." : "expense logged.");
         onSuccess();
         return;
       }
@@ -127,10 +127,10 @@ export function CashExpenseForm({
     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
       <FieldGroup>
         <Field>
-          <FieldLabel htmlFor="ce-description">Descrição</FieldLabel>
+          <FieldLabel htmlFor="ce-description">description</FieldLabel>
           <Input
             id="ce-description"
-            placeholder="Ex: Almoço"
+            placeholder="e.g. lunch"
             disabled={isPending}
             {...form.register("description")}
           />
@@ -140,7 +140,7 @@ export function CashExpenseForm({
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="ce-subcategory">Subcategoria</FieldLabel>
+          <FieldLabel htmlFor="ce-subcategory">subcategory</FieldLabel>
           <Controller
             control={form.control}
             name="subcategoryId"
@@ -152,7 +152,7 @@ export function CashExpenseForm({
                 items={subcategoryLabels}
               >
                 <SelectTrigger id="ce-subcategory" className="w-full">
-                  <SelectValue placeholder="Selecione…" />
+                  <SelectValue placeholder="select…" />
                 </SelectTrigger>
                 <SelectContent>
                   {[...grouped.entries()].map(([categoryName, { icon, items }]) => (
@@ -178,7 +178,7 @@ export function CashExpenseForm({
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="ce-card">Conta / Cartão</FieldLabel>
+          <FieldLabel htmlFor="ce-card">account / card</FieldLabel>
           <Controller
             control={form.control}
             name="cardId"
@@ -190,7 +190,7 @@ export function CashExpenseForm({
                 items={cardLabels}
               >
                 <SelectTrigger id="ce-card" className="w-full">
-                  <SelectValue placeholder="Selecione…" />
+                  <SelectValue placeholder="select…" />
                 </SelectTrigger>
                 <SelectContent>
                   {cards.map((card) => (
@@ -209,7 +209,7 @@ export function CashExpenseForm({
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="ce-method">Método</FieldLabel>
+          <FieldLabel htmlFor="ce-method">method</FieldLabel>
           <Controller
             control={form.control}
             name="method"
@@ -236,7 +236,7 @@ export function CashExpenseForm({
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="ce-date">Data</FieldLabel>
+          <FieldLabel htmlFor="ce-date">date</FieldLabel>
           <Input id="ce-date" type="date" disabled={isPending} {...form.register("date")} />
           {form.formState.errors.date ? (
             <FieldError>{form.formState.errors.date.message}</FieldError>
@@ -244,15 +244,15 @@ export function CashExpenseForm({
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="ce-amount">Valor</FieldLabel>
+          <FieldLabel htmlFor="ce-amount">amount</FieldLabel>
           <Input
             id="ce-amount"
             inputMode="decimal"
-            placeholder="Ex: 45.90"
+            placeholder="e.g. 45.90"
             disabled={isPending}
             {...form.register("amount")}
           />
-          <FieldDescription>Use ponto como separador decimal (ex: 45.90).</FieldDescription>
+          <FieldDescription>use a period as the decimal separator (e.g. 45.90).</FieldDescription>
           {form.formState.errors.amount ? (
             <FieldError>{form.formState.errors.amount.message}</FieldError>
           ) : null}
@@ -281,7 +281,7 @@ export function CashExpenseForm({
                   Tirei do cofrinho?
                 </span>
                 <span className="text-muted-foreground text-[11.5px]">
-                  Ao marcar, o valor é descontado automaticamente do saldo da aplicação.
+                  when checked, the amount is deducted automatically from the savings balance.
                 </span>
               </span>
             </label>
@@ -297,7 +297,7 @@ export function CashExpenseForm({
                     items={savingsLabels}
                   >
                     <SelectTrigger id="ce-liquid-savings" className="mt-2 w-full">
-                      <SelectValue placeholder="Escolha o cofrinho..." />
+                      <SelectValue placeholder="choose liquid savings..." />
                     </SelectTrigger>
                     <SelectContent>
                       {activeSavings.map((s) => (
@@ -319,10 +319,10 @@ export function CashExpenseForm({
 
       <div className="flex justify-end gap-2">
         <Button type="button" variant="ghost" onClick={onSuccess} disabled={isPending}>
-          Cancelar
+          cancel
         </Button>
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Salvando..." : expense ? "Salvar" : "Registrar"}
+          {isPending ? "saving..." : expense ? "save" : "log"}
         </Button>
       </div>
     </form>

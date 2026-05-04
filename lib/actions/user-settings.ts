@@ -27,7 +27,7 @@ export type CoverInput = {
 export async function setHomeCover(input: CoverInput): Promise<UserSettingsActionResult> {
   const user = await requireUser();
   if (!input.url || !input.unsplashId) {
-    return { ok: false, error: "Imagem inválida." };
+    return { ok: false, error: "invalid image." };
   }
 
   const data = {
@@ -77,7 +77,7 @@ export async function setHomeSpotifyUrl(
     if (!ref) {
       return {
         ok: false,
-        error: "URL inválida — cole um link de playlist, álbum ou faixa do Spotify.",
+        error: "invalid URL — paste a Spotify playlist, album, or track link.",
       };
     }
     // Re-canonicalize: drop tracking params, normalize to https://open.spotify.com/...
@@ -135,7 +135,7 @@ export async function setHomeQuote(
 export async function setPalette(paletteId: string): Promise<UserSettingsActionResult> {
   const user = await requireUser();
   const known = PALETTES.some((p) => p.id === paletteId);
-  if (!known) return { ok: false, error: "Paleta desconhecida." };
+  if (!known) return { ok: false, error: "unknown palette." };
 
   await db
     .insert(schema.userSettings)
@@ -161,7 +161,7 @@ export async function trackUnsplashDownload(
 ): Promise<UserSettingsActionResult> {
   await requireUser();
   const accessKey = process.env.UNSPLASH_ACCESS_KEY;
-  if (!accessKey) return { ok: false, error: "UNSPLASH_ACCESS_KEY não configurada." };
+  if (!accessKey) return { ok: false, error: "UNSPLASH_ACCESS_KEY not configured." };
   try {
     await fetch(downloadLocation, {
       headers: { Authorization: `Client-ID ${accessKey}` },

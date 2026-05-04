@@ -27,7 +27,7 @@ export function PalettePicker({ palettes, activeId }: Props) {
     startTransition(async () => {
       const result = await setPalette(id);
       if (result.ok) {
-        toast.success("paleta atualizada.");
+        toast.success("palette updated.");
         router.refresh();
       } else {
         setOptimisticId(previous);
@@ -38,8 +38,8 @@ export function PalettePicker({ palettes, activeId }: Props) {
 
   return (
     <PageShell
-      title="paleta"
-      subtitle="escolha como o sistema veste cada estação do mês"
+      title="palette"
+      subtitle="choose how the system dresses each season of the month"
     >
       <div className="mx-auto max-w-4xl px-2 py-4">
         <header className="mb-6 flex items-start gap-3">
@@ -50,13 +50,13 @@ export function PalettePicker({ palettes, activeId }: Props) {
           />
           <div className="flex flex-col gap-1">
             <p className="text-foreground text-[14px]">
-              Cada paleta troca o primário, o accent e a régua de calor — o
-              resto do sistema (papel, neutros, sinais semânticos) fica
-              estável pra leitura continuar tranquila.
+              each palette swaps the primary, accent, and warmth scale — the
+              rest of the system (paper, neutrals, semantic signals) stays
+              stable so reading stays calm.
             </p>
             <p className="text-muted-foreground text-[12.5px]">
-              A escolha vale para ambos modos (claro e escuro). Pode trocar
-              quantas vezes quiser.
+              the choice applies to both modes (light and dark). switch as
+              many times as you'd like.
             </p>
           </div>
         </header>

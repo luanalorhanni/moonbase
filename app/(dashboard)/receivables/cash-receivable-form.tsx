@@ -73,7 +73,7 @@ export function CashReceivableForm({ receivable, onSuccess }: Props) {
         : await createCashReceivable(values);
 
       if (result.ok) {
-        toast.success(receivable ? "Recebível atualizado." : "Recebível registrado.");
+        toast.success(receivable ? "receivable updated." : "receivable logged.");
         onSuccess();
         return;
       }
@@ -94,10 +94,10 @@ export function CashReceivableForm({ receivable, onSuccess }: Props) {
     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
       <FieldGroup>
         <Field>
-          <FieldLabel htmlFor="cr-description">Descrição</FieldLabel>
+          <FieldLabel htmlFor="cr-description">description</FieldLabel>
           <Input
             id="cr-description"
-            placeholder="Ex: Empréstimo para João"
+            placeholder="e.g. loan to John"
             disabled={isPending}
             {...form.register("description")}
           />
@@ -108,7 +108,7 @@ export function CashReceivableForm({ receivable, onSuccess }: Props) {
 
         <div className="grid grid-cols-2 gap-4">
           <Field>
-            <FieldLabel htmlFor="cr-loan-type">Método</FieldLabel>
+            <FieldLabel htmlFor="cr-loan-type">method</FieldLabel>
             <Controller
               control={form.control}
               name="loanType"
@@ -135,11 +135,11 @@ export function CashReceivableForm({ receivable, onSuccess }: Props) {
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="cr-amount">Valor</FieldLabel>
+            <FieldLabel htmlFor="cr-amount">amount</FieldLabel>
             <Input
               id="cr-amount"
               inputMode="decimal"
-              placeholder="Ex: 250.00"
+              placeholder="e.g. 250.00"
               disabled={isPending}
               {...form.register("amount")}
             />
@@ -151,7 +151,7 @@ export function CashReceivableForm({ receivable, onSuccess }: Props) {
 
         <div className="grid grid-cols-2 gap-4">
           <Field>
-            <FieldLabel htmlFor="cr-loan-date">Data do empréstimo</FieldLabel>
+            <FieldLabel htmlFor="cr-loan-date">loan date</FieldLabel>
             <Input
               id="cr-loan-date"
               type="date"
@@ -164,7 +164,7 @@ export function CashReceivableForm({ receivable, onSuccess }: Props) {
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="cr-expected-month">Mês previsto</FieldLabel>
+            <FieldLabel htmlFor="cr-expected-month">expected month</FieldLabel>
             <Input
               id="cr-expected-month"
               type="month"
@@ -190,20 +190,20 @@ export function CashReceivableForm({ receivable, onSuccess }: Props) {
               Recebido
             </label>
             <p className="text-muted-foreground text-sm">
-              Marque quando o valor for pago de volta.
+              check this when the amount has been paid back.
             </p>
           </div>
         </div>
 
         <Field>
-          <FieldLabel htmlFor="cr-actual-date">Data do recebimento</FieldLabel>
+          <FieldLabel htmlFor="cr-actual-date">payment date</FieldLabel>
           <Input
             id="cr-actual-date"
             type="date"
             disabled={isPending}
             {...form.register("actualPaymentDate")}
           />
-          <FieldDescription>Preencha somente quando o valor for recebido.</FieldDescription>
+          <FieldDescription>fill in only when the amount is received.</FieldDescription>
           {form.formState.errors.actualPaymentDate ? (
             <FieldError>{form.formState.errors.actualPaymentDate.message}</FieldError>
           ) : null}
@@ -212,10 +212,10 @@ export function CashReceivableForm({ receivable, onSuccess }: Props) {
 
       <div className="flex justify-end gap-2">
         <Button type="button" variant="ghost" onClick={onSuccess} disabled={isPending}>
-          Cancelar
+          cancel
         </Button>
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Salvando..." : receivable ? "Salvar" : "Registrar"}
+          {isPending ? "saving..." : receivable ? "save" : "log"}
         </Button>
       </div>
     </form>

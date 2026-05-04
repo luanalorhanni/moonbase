@@ -76,7 +76,7 @@ export function CalendarPage({
   }, [callbackError, justConnected]);
 
   function handleDisconnect() {
-    if (!window.confirm("desconectar o google calendar?")) return;
+    if (!window.confirm("disconnect google calendar?")) return;
     startDisconnectTransition(async () => {
       const result = await disconnectGoogleCalendar();
       if (result.ok) {
@@ -127,7 +127,7 @@ export function CalendarPage({
         caption="schedule"
         title="calendar"
         accent="upcoming"
-        subtitle="seus eventos do google calendar"
+        subtitle="your google calendar events"
         tone="aqua"
       />
 
@@ -179,12 +179,12 @@ function DisconnectedView() {
       </div>
       <div className="flex max-w-md flex-col gap-2">
         <h2 className="text-foreground text-[18px] font-medium">
-          conecte seu google calendar
+          connect your google calendar
         </h2>
         <p className="text-muted-foreground text-[13px] leading-relaxed">
-          autorize o moonbase a ler seus eventos do calendário principal. a leitura é
-          read-only — não alteramos nada na sua agenda. você pode desconectar a
-          qualquer momento.
+          authorize moonbase to read your primary calendar's events. it's
+          read-only — we don't change anything in your schedule. you can
+          disconnect any time.
         </p>
       </div>
       <a
@@ -248,16 +248,16 @@ function ConnectedView({
         <div className="border-amber-500/40 bg-amber-500/[0.06] text-amber-600 dark:text-amber-400 flex items-start gap-2 rounded-md border px-3 py-2 text-[12.5px]">
           <AlertCircle className="mt-0.5 size-3.5 shrink-0" strokeWidth={1.8} aria-hidden />
           <div className="flex flex-1 flex-col gap-1">
-            <span className="font-medium">permissão de escrita não concedida</span>
+            <span className="font-medium">write permission not granted</span>
             <span className="text-amber-600/80 dark:text-amber-400/80 text-[11.5px]">
-              sua sessão atual só permite leitura. clique em reconectar pra autorizar a criação de eventos.
+              your current session is read-only. click reconnect to authorize event creation.
             </span>
           </div>
           <a
             href="/api/google-calendar/start"
             className="text-amber-600 dark:text-amber-400 inline-flex shrink-0 items-center gap-1 self-center font-medium underline-offset-2 hover:underline"
           >
-            reconectar →
+            reconnect →
           </a>
         </div>
       )}
@@ -328,14 +328,14 @@ function ConnectedView({
         <div className="border-destructive/30 bg-destructive/5 text-destructive flex items-start gap-2 rounded-md border px-3 py-2 text-[12.5px]">
           <AlertCircle className="mt-0.5 size-3.5 shrink-0" strokeWidth={1.8} aria-hidden />
           <div className="flex flex-col gap-1">
-            <span className="font-medium">erro ao buscar eventos</span>
+            <span className="font-medium">error fetching events</span>
             <span className="text-destructive/80 font-mono text-[11px]">{fetchError}</span>
             {fetchError.toLowerCase().includes("expired") && (
               <a
                 href="/api/google-calendar/start"
                 className="text-destructive font-medium underline-offset-2 hover:underline"
               >
-                reconectar →
+                reconnect →
               </a>
             )}
           </div>
@@ -344,13 +344,13 @@ function ConnectedView({
 
       {fetchError ? null : view === "week" && events.length === 0 ? (
         <EmptyAgenda
-          title="agenda livre por enquanto"
-          subtitle="quando você adicionar eventos no google calendar, eles aparecem aqui."
+          title="agenda free for now"
+          subtitle="when you add events to google calendar, they show up here."
         />
       ) : view === "agenda" && todaysEvents.length === 0 ? (
         <EmptyAgenda
-          title="nada agendado pra hoje"
-          subtitle="o que tá pra frente fica na visão semanal."
+          title="nothing scheduled for today"
+          subtitle="what's coming up lives in the week view."
         />
       ) : view === "week" ? (
         <WeekView events={events} onEventClick={onEventClick} />
@@ -482,7 +482,7 @@ function EventRow({
       </div>
       <div className="min-w-0 flex-1 pt-0.5">
         <span className="text-foreground inline-flex items-center gap-1.5 text-[13.5px] font-medium leading-tight">
-          {event.summary ?? "(sem título)"}
+          {event.summary ?? "(no title)"}
         </span>
         {(event.location || event.hangoutLink) && (
           <div className="text-muted-foreground mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px]">
@@ -550,11 +550,11 @@ function EventRow({
 function decodeError(code: string): string {
   switch (code) {
     case "missing_code":
-      return "google não retornou um código de autorização";
+      return "google didn't return an authorization code";
     case "invalid_state":
-      return "estado de oauth inválido — tente novamente";
+      return "invalid oauth state — try again";
     case "access_denied":
-      return "você cancelou a autorização";
+      return "you canceled the authorization";
     default:
       return code;
   }
@@ -653,8 +653,9 @@ function formatTime(iso: string): string {
   // All-day events come as yyyy-mm-dd without a time component.
   if (!iso.includes("T")) return "—";
   const date = new Date(iso);
-  return new Intl.DateTimeFormat("pt-BR", {
+  return new Intl.DateTimeFormat("en-US", {
     hour: "2-digit",
     minute: "2-digit",
+    hour12: false,
   }).format(date);
 }
