@@ -1,5 +1,7 @@
 import "server-only";
 
+import { cache } from "react";
+
 import {
   aggregateMonth,
   cashByMethod,
@@ -91,7 +93,9 @@ export type FullDataset = {
   creditReceivables: CreditReceivableWithCard[];
 };
 
-export async function loadFullDataset(): Promise<FullDataset> {
+export const loadFullDataset = cache(_loadFullDataset);
+
+async function _loadFullDataset(): Promise<FullDataset> {
   const [cashExpenses, creditExpenses, fixedExpenses, incomes, cashReceivables, creditReceivables] =
     await Promise.all([
       listCashExpenses(),
@@ -149,7 +153,9 @@ function toAggregateInputs(dataset: FullDataset): AggregateInputs {
   };
 }
 
-export async function loadMonth(reference: MonthRef): Promise<MonthSummary> {
+export const loadMonth = cache(_loadMonth);
+
+async function _loadMonth(reference: MonthRef): Promise<MonthSummary> {
   const [dataset, cards, snapshots] = await Promise.all([
     loadFullDataset(),
     listCards(),
