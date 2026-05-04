@@ -4,12 +4,15 @@ import {
   ArrowDownToLine,
   ArrowUpRight,
   Banknote,
+  BookOpen,
+  Calendar,
   CalendarDays,
   CalendarRange,
   CircleCheckBig,
   CreditCard,
   HandCoins,
   Image as ImageIcon,
+  Palette,
   PiggyBank,
   Quote,
   ReceiptText,
@@ -47,6 +50,20 @@ const ROUTINE_CARDS: Card[] = [
     description: "daily and weekly routines",
     icon: CircleCheckBig,
     tone: "mint",
+  },
+  {
+    href: "/calendar",
+    label: "calendar",
+    description: "agenda and upcoming events",
+    icon: Calendar,
+    tone: "aqua",
+  },
+  {
+    href: "/journal",
+    label: "journal",
+    description: "end-of-day reflection",
+    icon: BookOpen,
+    tone: "mauve",
   },
 ];
 
@@ -115,6 +132,7 @@ const REGISTER_CARDS: Card[] = [
 const CONFIG_CARDS: Card[] = [
   { href: "/cards", label: "cards", description: "credit + accounts", icon: CreditCard, tone: "aqua" },
   { href: "/categories", label: "categories", description: "classify expenses", icon: Tag, tone: "mauve" },
+  { href: "/palette", label: "palette", description: "system color story", icon: Palette, tone: "sand" },
 ];
 
 const TONE_CLASSES: Record<Card["tone"], string> = {
