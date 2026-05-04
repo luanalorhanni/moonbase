@@ -1,5 +1,7 @@
 import "server-only";
 
+import { cache } from "react";
+
 import { aggregateYear, type MonthAggregate } from "@/lib/finance/aggregate";
 import { sumNumeric } from "@/lib/finance/month";
 
@@ -21,7 +23,9 @@ export type YearSummary = {
  * spreadsheet). Months that have ANY raw data keep their detailed
  * aggregate and ignore the snapshot.
  */
-export async function loadYear(year: number): Promise<YearSummary> {
+export const loadYear = cache(_loadYear);
+
+async function _loadYear(year: number): Promise<YearSummary> {
   const [dataset, snapshots] = await Promise.all([loadFullDataset(), listSnapshots()]);
   const months = aggregateYear(toAggregateInputs(dataset), year);
 
