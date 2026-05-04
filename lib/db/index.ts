@@ -9,8 +9,17 @@ import * as schema from "./schema";
  * comes from .env.local, on Vercel from project environment variables.
  *
  * Uses `postgres-js` (porsager/postgres) per Drizzle's recommendation for
- * Supabase. `max: 1` keeps a single connection per serverless invocation,
- * which is what the Supabase transaction pooler expects.
+ * Supabase.
+ *
+ * Why `max: 10` instead of 1: with the Supabase transaction pooler each
+ * connection is checked out from pgbouncer per query, so we can safely
+ * have several in flight. The previous `max: 1` serialised everything
+ * inside `Promise.all([...])` — a page with 6 parallel reads paid 6
+ * sequential round-trips. `prepare: false` is still required because
+ * pgbouncer can't track prepared statements across connections.
+ *
+ * In dev, the module is re-evaluated on HMR; the `globalThis` cache
+ * keeps a single client across reloads so we don't leak sockets.
  *
  * Migrations are run separately via `pnpm db:migrate` (drizzle-kit), which
  * picks up its own connection from drizzle.config.ts.
@@ -23,7 +32,38 @@ if (!connectionString) {
   );
 }
 
-const client = postgres(connectionString, { max: 1, prepare: false });
+type DbGlobal = typeof globalThis & {
+  __moonbasePgClient?: ReturnType<typeof postgres>;
+};
+const g = globalThis as DbGlobal;
+
+const client =
+  g.__moonbasePgClient ??
+  postgres(connectionString, {
+    max: 10,
+    idle_timeout: 20,
+    connect_timeout: 10,
+    prepare: false,
+    // Keep `date` columns as raw `yyyy-mm-dd` strings instead of letting
+    // the driver hydrate them into JS `Date`s. Critical: `Date(yyyy-mm-01
+    // UTC)` formatted via `toString()` in BRT (UTC-3) reads as the
+    // previous day, which silently broke snapshot/month-key lookups
+    // around the year boundary.
+    types: {
+      // OID 1082 = postgres `date` type. Leaving `timestamp`/`timestamptz`
+      // (1114/1184) untouched so `createdAt` columns still parse to Date.
+      date: {
+        to: 1082,
+        from: [1082],
+        serialize: (x: string) => x,
+        parse: (x: string) => x,
+      },
+    },
+  });
+
+if (process.env.NODE_ENV !== "production") {
+  g.__moonbasePgClient = client;
+}
 
 export const db = drizzle(client, { schema });
 export { schema };

@@ -1,5 +1,7 @@
 import "server-only";
 
+import { cache } from "react";
+
 import { aggregateYear, type MonthAggregate } from "@/lib/finance/aggregate";
 import { sumNumeric } from "@/lib/finance/month";
 
@@ -15,13 +17,21 @@ export type YearSummary = {
 };
 
 /**
- * Aggregate the year from raw data, then fall back to historical
- * snapshots for months whose raw aggregate is empty (no transactions
- * recorded — typically pre-tracking history seeded from the
- * spreadsheet). Months that have ANY raw data keep their detailed
- * aggregate and ignore the snapshot.
+ * Aggregate the year. For every month that has a snapshot, the snapshot
+ * wins — it's the user's frozen ground truth and already rolls up every
+ * contemporaneous parcel and recurring expense. Months without a
+ * snapshot fall back to the live payment-month aggregate.
+ *
+ * (We tried "raw wins when non-empty" earlier so this could mirror the
+ * monthly view; the result was that a single long-running installment
+ * — e.g. a R$133 parcel from a March purchase — would silently suppress
+ * the snapshot for every month that parcel landed on, leaving most of
+ * the year reading as ~R$133 of "raw" expenses. The detailed view of
+ * any month is one click away in /month/[reference].)
  */
-export async function loadYear(year: number): Promise<YearSummary> {
+export const loadYear = cache(_loadYear);
+
+async function _loadYear(year: number): Promise<YearSummary> {
   const [dataset, snapshots] = await Promise.all([loadFullDataset(), listSnapshots()]);
   const months = aggregateYear(toAggregateInputs(dataset), year);
 
@@ -30,17 +40,7 @@ export async function loadYear(year: number): Promise<YearSummary> {
     snapByMonth.set(s.referenceMonth.toString().slice(0, 7), s);
   }
 
-  function hasRawAggregate(m: MonthAggregate): boolean {
-    return (
-      Number(m.totalIncomes) > 0 ||
-      Number(m.totalCashExpenses) > 0 ||
-      Number(m.totalCreditExpenses) > 0 ||
-      Number(m.totalFixedExpenses) > 0
-    );
-  }
-
   const overlaid = months.map((m) => {
-    if (hasRawAggregate(m)) return m;
     const snap = snapByMonth.get(m.reference);
     if (!snap) return m;
     const incomes = snap.totalIncomes;

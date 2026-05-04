@@ -47,6 +47,10 @@ export const loanTypeEnum = pgEnum("loan_type", ["pix", "debit", "cash"]);
 export const snapshotStatusEnum = pgEnum("snapshot_status", ["locked", "draft"]);
 export const habitPolarityEnum = pgEnum("habit_polarity", ["do", "avoid"]);
 export const habitScheduleEnum = pgEnum("habit_schedule", ["daily", "weekly_target"]);
+export const investmentKindEnum = pgEnum("investment_kind", [
+  "liquid_savings",
+  "fixed_income",
+]);
 
 /**
  * Color is stored as a free-form text string holding a 6-digit hex code
@@ -259,6 +263,30 @@ export const fixedIncome = pgTable("fixed_income", {
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
+
+/**
+ * Per-day balance snapshots for either a liquid_savings or fixed_income
+ * row. The `current_value` is what the user observed in their bank app
+ * on `recorded_on`; combined with `applied_amount` from the parent we
+ * can reconstruct the real gain over time. Polymorphic on
+ * (investment_kind, investment_id).
+ */
+export const investmentUpdates = pgTable(
+  "investment_updates",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id").notNull(),
+    investmentKind: investmentKindEnum("investment_kind").notNull(),
+    investmentId: uuid("investment_id").notNull(),
+    recordedOn: date("recorded_on").notNull(),
+    currentValue: numeric("current_value", { precision: 12, scale: 2 }).notNull(),
+    notes: text("notes"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => [
+    unique("investment_updates_one_per_day").on(t.investmentKind, t.investmentId, t.recordedOn),
+  ],
+);
 
 export const monthlySnapshots = pgTable(
   "monthly_snapshots",

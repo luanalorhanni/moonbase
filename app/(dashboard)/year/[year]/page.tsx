@@ -2,7 +2,6 @@ import { ArrowDownRight, ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { CategoryBreakdownChart } from "@/components/charts/category-breakdown-chart";
 import { TrendChart } from "@/components/charts/trend-chart";
 import {
   PixelComet,
@@ -11,6 +10,7 @@ import {
 } from "@/components/decorative/pixel-icons";
 import { cumulativeBalance, type HistoricalSnapshot } from "@/lib/finance/aggregate";
 import { currentMonthRef, formatMonthShort, type MonthRef } from "@/lib/finance/month";
+import { listFixedIncome } from "@/lib/queries/investments";
 import { loadFullDataset, toAggregateInputs } from "@/lib/queries/month";
 import { listSnapshots } from "@/lib/queries/snapshots";
 import { loadYear } from "@/lib/queries/year";
@@ -25,10 +25,11 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
     redirect(`/year/${new Date().getFullYear()}`);
   }
 
-  const [summary, dataset, snapshotRows] = await Promise.all([
+  const [summary, dataset, snapshotRows, fixedIncome] = await Promise.all([
     loadYear(parsed),
     loadFullDataset(),
     listSnapshots(),
+    listFixedIncome(),
   ]);
   const inputs = toAggregateInputs(dataset);
   const snapshots: HistoricalSnapshot[] = snapshotRows.map((s) => ({
@@ -79,38 +80,37 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
       ? `jan → ${formatMonthShort(today).split("/")[0]}`
       : "full year";
 
-  // Aggregate categories across all 12 months. byCategory.{key,label,total,
-  // icon,color} carries through unchanged from each month bucket — we just
-  // sum totals for the same key.
-  const categoryMap = new Map<
-    string,
-    { key: string; label: string; icon: string | null; color: string | null; total: number }
-  >();
+  // ── Yearly savings KPIs ───────────────────────────────────────────────
+  // Counted months = elapsed months in the current year (1..currentMonth)
+  // or 12 for past years, minus any month that's completely empty (no
+  // incomes and no expenses). This keeps a snapshot-less, raw-less month
+  // from dragging averages to zero.
+  let monthsWithData = 0;
+  let totalExpensesYear = 0;
+  let totalSaveYear = 0;
   for (const m of summary.months) {
-    for (const b of m.byCategory) {
-      const existing = categoryMap.get(b.key);
-      if (existing) {
-        existing.total += Number(b.total);
-      } else {
-        categoryMap.set(b.key, {
-          key: b.key,
-          label: b.label,
-          icon: b.icon ?? null,
-          color: b.color ?? null,
-          total: Number(b.total),
-        });
-      }
-    }
+    const monthNum = Number(m.reference.split("-")[1]);
+    if (monthNum > monthCutoff) continue;
+    const inc = Number(m.totalIncomes);
+    const exp = Number(m.totalExpenses);
+    if (inc === 0 && exp === 0) continue;
+    totalExpensesYear += exp;
+    totalSaveYear += inc - exp;
+    monthsWithData += 1;
   }
-  const yearCategoriesData = Array.from(categoryMap.values())
-    .map((c) => ({
-      key: c.key,
-      label: c.label,
-      total: c.total,
-      icon: c.icon,
-      color: c.color,
-    }))
-    .sort((a, b) => b.total - a.total);
+  const averageMonthlyExpenses =
+    monthsWithData > 0 ? totalExpensesYear / monthsWithData : 0;
+  const averageMonthlySave = monthsWithData > 0 ? totalSaveYear / monthsWithData : 0;
+
+  // 3. Year invested: applied amounts from `fixed_income` (LCI/LCA/CDB,
+  //    treasury, etc.) whose application_date falls inside the year.
+  //    Liquid savings ("cofrinhos") are deliberately excluded — those are
+  //    pure savings reservoirs and the user wants to read them separately.
+  let yearInvested = 0;
+  for (const fi of fixedIncome) {
+    const yr = Number(String(fi.applicationDate).slice(0, 4));
+    if (yr === summary.year) yearInvested += Number(fi.appliedAmount);
+  }
 
   // Build month rows with deltas vs the previous month.
   const monthRows = summary.months.map((m, idx) => {
@@ -226,6 +226,10 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
       </div>
 
       {/* ── kpi strip ───────────────────────────────────────────────── */}
+      {/* Two rows of three. Top: the year ledger (incomes / expenses /
+          balance). Bottom: the savings story (year save / avg / invested),
+          marked with `groupStart` so the second row sits under a hairline
+          rule that visually separates the two. */}
       <div className="border-border grid shrink-0 grid-cols-3 border-b">
         <YearKpi label="incomes" value={summary.totalIncomes} accent="success" />
         <YearKpi label="expenses" value={summary.totalExpenses} accent="muted" />
@@ -236,38 +240,50 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
           accent={Number(ytdBalance) < 0 ? "destructive" : "primary"}
           highlight
         />
+        <YearKpi
+          label="avg expenses"
+          value={averageMonthlyExpenses.toFixed(2)}
+          hint={monthsWithData > 0 ? `over ${monthsWithData} mo` : "no data yet"}
+          accent="muted"
+          groupStart
+        />
+        <YearKpi
+          label="avg save"
+          value={averageMonthlySave.toFixed(2)}
+          hint={monthsWithData > 0 ? `over ${monthsWithData} mo` : "no data yet"}
+          accent={averageMonthlySave < 0 ? "destructive" : "primary"}
+          groupStart
+        />
+        <YearKpi
+          label="invested"
+          value={yearInvested.toFixed(2)}
+          hint="fixed income, by date"
+          accent="muted"
+          groupStart
+        />
       </div>
 
-      {/* ── charts row: trend (lg col 8) + top categories (lg col 4) ─ */}
-      <div className="border-border grid shrink-0 grid-cols-1 border-b lg:grid-cols-12">
-        <div className="border-border flex min-h-0 flex-col lg:col-span-8 lg:border-r">
-          <PanelHeader
-            title="trend"
-            subtitle="cumulative · incomes · expenses"
-            legend={
-              <div className="text-muted-foreground/80 hidden items-center gap-3 font-mono text-[10.5px] tracking-wider sm:flex">
-                <LegendDot color="oklch(0.65 0.10 200)" label="cumulative" />
-                <LegendDot color="oklch(0.74 0.13 160)" label="incomes" />
-                <LegendDot color="oklch(0.62 0.18 25)" label="expenses" />
-              </div>
-            }
-          />
-          <div className="min-h-[280px] flex-1 px-2 pt-2 pb-3">
-            <TrendChart data={trendData} showPointLabels showIncomeExpense showNet={false} />
+      {/* ── trend (full width, expanded) ────────────────────────────── */}
+      <div className="border-border flex shrink-0 flex-col border-b">
+        <PanelHeader title="trend" subtitle="payment month · incomes · expenses · balance" />
+        {/* Legend strip — its own band of breathing room above the plot,
+            separated from the chart canvas by a hairline of muted border
+            so the grid never feels glued to the swatches. */}
+        <div className="border-border/50 bg-muted/20 flex items-center justify-end border-b px-5 py-3">
+          <div className="text-muted-foreground/80 flex items-center gap-5 font-mono text-[10.5px] tracking-wider">
+            <LegendDot color="oklch(0.74 0.13 160)" label="incomes" filled />
+            <LegendDot color="oklch(0.62 0.18 25)" label="expenses" filled />
+            <LegendDot color="oklch(0.65 0.10 270)" label="balance" filled />
           </div>
         </div>
-
-        <div className="flex min-h-0 flex-col lg:col-span-4">
-          <PanelHeader title="top categories" subtitle="for the year" />
-          <div className="min-h-[260px] flex-1 px-2 py-3">
-            {yearCategoriesData.length === 0 ? (
-              <div className="text-muted-foreground/70 flex h-full items-center justify-center text-[12px]">
-                no categorized expenses this year.
-              </div>
-            ) : (
-              <CategoryBreakdownChart data={yearCategoriesData} visibleCount={8} />
-            )}
-          </div>
+        <div className="min-h-[340px] flex-1 px-3 pt-7 pb-5 md:px-5">
+          <TrendChart
+            data={trendData}
+            series={["incomes", "expenses", "net"]}
+            showPointLabels
+            showYAxis
+            tall
+          />
         </div>
       </div>
 
@@ -428,14 +444,45 @@ function PanelHeader({
   );
 }
 
-function LegendDot({ color, label }: { color: string; label: string }) {
+function LegendDot({
+  color,
+  label,
+  dashed,
+  filled,
+}: {
+  color: string;
+  label: string;
+  dashed?: boolean;
+  /** Renders a small area swatch (filled gradient + stroke) instead of
+   *  a solid square — matches the area-style series in the chart. */
+  filled?: boolean;
+}) {
   return (
     <span className="inline-flex items-center gap-1.5">
-      <span
-        aria-hidden
-        className="size-2 rounded-sm"
-        style={{ backgroundColor: color }}
-      />
+      {dashed ? (
+        <span
+          aria-hidden
+          className="inline-block h-px w-3"
+          style={{
+            backgroundImage: `repeating-linear-gradient(90deg, ${color} 0, ${color} 3px, transparent 3px, transparent 6px)`,
+          }}
+        />
+      ) : filled ? (
+        <span
+          aria-hidden
+          className="inline-block h-2.5 w-3.5 rounded-[2px]"
+          style={{
+            background: `linear-gradient(to bottom, color-mix(in oklab, ${color} 65%, transparent), color-mix(in oklab, ${color} 5%, transparent))`,
+            borderTop: `1px solid ${color}`,
+          }}
+        />
+      ) : (
+        <span
+          aria-hidden
+          className="size-2 rounded-sm"
+          style={{ backgroundColor: color }}
+        />
+      )}
       <span>{label}</span>
     </span>
   );
@@ -447,18 +494,24 @@ function YearKpi({
   hint,
   accent,
   highlight,
+  groupStart,
 }: {
   label: string;
   value: string;
   hint?: string;
   accent: "success" | "muted" | "primary" | "destructive";
   highlight?: boolean;
+  /** Marks a cell that opens the second row (savings group). Adds a
+   *  hairline top border so the two semantic rows read as separate
+   *  bands stacked under each other. */
+  groupStart?: boolean;
 }) {
   return (
     <div
       className={cn(
         "border-border flex flex-col gap-1 border-r px-6 py-4 last:border-r-0",
         highlight && "bg-primary/[0.04]",
+        groupStart && "border-t",
       )}
     >
       <span className="text-muted-foreground font-mono text-[11px] tracking-[0.18em]">{label}</span>

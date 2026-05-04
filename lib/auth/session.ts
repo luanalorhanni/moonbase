@@ -1,6 +1,7 @@
 import "server-only";
 
 import { redirect } from "next/navigation";
+import { cache } from "react";
 
 import { createClient } from "@/lib/auth/server";
 
@@ -21,7 +22,14 @@ export type CurrentUser = {
   avatarUrl: string | null;
 };
 
-export async function getCurrentUser(): Promise<CurrentUser | null> {
+/**
+ * Wrapped in React `cache()` so a single render dedupes all calls to
+ * `supabase.auth.getUser()` (a network round trip). Without this, each
+ * cached query — and there can be a dozen on a heavy page — re-validates
+ * the JWT against Supabase Auth, adding hundreds of ms of latency for
+ * nothing.
+ */
+export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getUser();
   if (error || !data.user) return null;
@@ -40,7 +48,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     name,
     avatarUrl,
   };
-}
+});
 
 /**
  * Use in server actions / RSCs that strictly require an authenticated
@@ -48,8 +56,8 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
  * cleared between the middleware and the action, we still bounce out
  * cleanly instead of crashing on a null user.
  */
-export async function requireUser(): Promise<CurrentUser> {
+export const requireUser = cache(async (): Promise<CurrentUser> => {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
   return user;
-}
+});
