@@ -462,12 +462,12 @@ function HistoricalLock({ reference }: { reference: MonthRef }) {
         <PixelMoonFull size={14} className="text-primary/60" />
       </span>
       <h3 className="font-display text-foreground text-[18px] font-light italic tracking-tight">
-        registros históricos
+        historical records
       </h3>
       <p className="text-muted-foreground/85 max-w-md text-[13px] leading-relaxed">
-        sem detalhamento por transação para {formatMonthLong(reference)} — esse mês foi
-        seedado da planilha antes do controle ativo. os totais acima já contam pro
-        acumulado, mas você não pode editar registros aqui.
+        no per-transaction detail for {formatMonthLong(reference)} — this month was
+        seeded from the spreadsheet before active tracking began. the totals above
+        already count toward the cumulative balance, but you can't edit records here.
       </p>
       <span className="text-muted-foreground/60 mt-1 font-mono text-[10px] tracking-[0.18em] uppercase">
         snapshot · locked
@@ -569,9 +569,9 @@ function Tile({
         {billTotal !== undefined && (
           <span
             className="text-muted-foreground/75 numeric truncate font-mono text-[10.5px] tabular-nums"
-            title={`total na fatura — inclui receivables: ${formatCurrency(String(billTotal))}`}
+            title={`bill total — includes receivables: ${formatCurrency(String(billTotal))}`}
           >
-            fatura {formatCurrency(String(billTotal))}
+            bill {formatCurrency(String(billTotal))}
           </span>
         )}
       </span>

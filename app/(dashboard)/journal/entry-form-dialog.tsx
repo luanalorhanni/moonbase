@@ -55,7 +55,7 @@ function todayIso(): string {
 function formatDateLong(iso: string): string {
   const [y, m, d] = iso.split("-").map(Number);
   const date = new Date(y, m - 1, d);
-  return new Intl.DateTimeFormat("pt-BR", {
+  return new Intl.DateTimeFormat("en-US", {
     weekday: "long",
     day: "2-digit",
     month: "long",
@@ -140,7 +140,7 @@ export function EntryFormDialog({ open, onOpenChange, entries, initialDate }: Pr
         coverUnsplashId: cover?.unsplashId ?? null,
       });
       if (result.ok) {
-        toast.success(isEditing ? "entrada atualizada." : "entrada registrada.");
+        toast.success(isEditing ? "entry updated." : "entry logged.");
         router.refresh();
         onOpenChange(false);
       } else {
@@ -153,7 +153,7 @@ export function EntryFormDialog({ open, onOpenChange, entries, initialDate }: Pr
     startDeleteTransition(async () => {
       const result = await deleteJournalEntry(date);
       if (result.ok) {
-        toast.success("entrada excluída.");
+        toast.success("entry deleted.");
         router.refresh();
         setConfirmDelete(false);
         onOpenChange(false);
@@ -173,18 +173,18 @@ export function EntryFormDialog({ open, onOpenChange, entries, initialDate }: Pr
         <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle className="font-display text-[20px] leading-tight font-light italic tracking-tight">
-              {isEditing ? "editar entrada" : "registrar dia"}
+              {isEditing ? "edit entry" : "log day"}
             </DialogTitle>
             <DialogDescription className="font-mono text-[10.5px] tracking-[0.14em] uppercase">
               {formatDateLong(date)}
-              {date === today && " · hoje"}
-              {isEditing && date !== today && " · já registrado"}
+              {date === today && " · today"}
+              {isEditing && date !== today && " · already logged"}
             </DialogDescription>
           </DialogHeader>
 
           <div className="flex flex-col gap-5">
             <Field>
-              <FieldLabel htmlFor="entry-date">data</FieldLabel>
+              <FieldLabel htmlFor="entry-date">date</FieldLabel>
               <div className="flex items-center gap-2">
                 <Input
                   id="entry-date"
@@ -201,20 +201,20 @@ export function EntryFormDialog({ open, onOpenChange, entries, initialDate }: Pr
                   disabled={isSaving || date === today}
                   className="text-muted-foreground hover:text-foreground text-[11.5px] underline-offset-2 hover:underline disabled:opacity-40"
                 >
-                  hoje
+                  today
                 </button>
               </div>
               {isFutureDate ? (
                 <span className="text-destructive text-[11.5px]">
-                  o futuro a gente não registra ainda — escolha hoje ou um dia anterior.
+                  can't log the future — pick today or an earlier day.
                 </span>
               ) : isEditing ? (
                 <span className="text-muted-foreground/70 text-[11.5px]">
-                  esse dia já tem registro — você está editando ele.
+                  this day already has an entry — you're editing it.
                 </span>
               ) : (
                 <span className="text-muted-foreground/70 text-[11.5px]">
-                  pode registrar qualquer dia passado também.
+                  you can log any past day too.
                 </span>
               )}
             </Field>
@@ -222,31 +222,31 @@ export function EntryFormDialog({ open, onOpenChange, entries, initialDate }: Pr
             <CoverPicker value={cover} onChange={setCover} disabled={isSaving} />
 
             <Field>
-              <FieldLabel>como foi esse dia?</FieldLabel>
+              <FieldLabel>how was the day?</FieldLabel>
               <MoodPicker value={mood} onChange={setMood} disabled={isSaving} />
               {moodDescriptor && (
                 <span className="text-muted-foreground/70 text-[11.5px]">
-                  esse dia ficou marcado como{" "}
+                  this day was marked as{" "}
                   <span className="text-foreground font-medium">{moodDescriptor.label}</span>.
                 </span>
               )}
             </Field>
 
             <Field>
-              <FieldLabel>três motivos pra ser grata</FieldLabel>
+              <FieldLabel>three things to be grateful for</FieldLabel>
               <GratitudeList
                 value={gratitude}
                 onChange={setGratitude}
                 disabled={isSaving}
               />
               <span className="text-muted-foreground/70 text-[11.5px]">
-                pequeno, médio, grande — o que importa é parar e olhar.
+                small, medium, big — what matters is to stop and look.
               </span>
             </Field>
 
             <Field>
               <div className="flex items-baseline justify-between gap-3">
-                <FieldLabel>reflexão</FieldLabel>
+                <FieldLabel>reflection</FieldLabel>
                 <div className="border-border-strong text-muted-foreground inline-flex h-7 items-center gap-0 overflow-hidden rounded-md border text-[11px]">
                   <button
                     type="button"
@@ -282,13 +282,13 @@ export function EntryFormDialog({ open, onOpenChange, entries, initialDate }: Pr
                   onChange={setContent}
                   disabled={isSaving}
                   rows={10}
-                  placeholder="o que ficou desse dia? selecione um trecho e use os botões — ou Ctrl+B / Ctrl+I."
+                  placeholder="what stayed from this day? select a passage and use the buttons — or Ctrl+B / Ctrl+I."
                 />
               ) : (
                 <div className="border-input bg-muted/10 min-h-[200px] w-full rounded-md border px-4 py-3">
                   {content.trim().length === 0 ? (
                     <span className="text-muted-foreground/60 text-[13px] italic">
-                      nada pra mostrar ainda — escreva algo na aba edit.
+                      nothing to show yet — write something in the edit tab.
                     </span>
                   ) : (
                     <MarkdownContent source={content} />
@@ -296,7 +296,7 @@ export function EntryFormDialog({ open, onOpenChange, entries, initialDate }: Pr
                 </div>
               )}
               <span className="text-muted-foreground/60 text-[11px]">
-                markdown suportado: **negrito**, *itálico*, listas, links, &gt; citação, # cabeçalhos.
+                markdown supported: **bold**, *italic*, lists, links, &gt; quote, # headings.
               </span>
             </Field>
 
@@ -313,7 +313,7 @@ export function EntryFormDialog({ open, onOpenChange, entries, initialDate }: Pr
                 className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 mr-auto"
               >
                 <Trash2 aria-hidden className="size-3.5" />
-                excluir
+                delete
               </Button>
             )}
             <Button
@@ -322,7 +322,7 @@ export function EntryFormDialog({ open, onOpenChange, entries, initialDate }: Pr
               onClick={() => onOpenChange(false)}
               disabled={isSaving}
             >
-              cancelar
+              cancel
             </Button>
             <Button
               type="button"
@@ -330,7 +330,7 @@ export function EntryFormDialog({ open, onOpenChange, entries, initialDate }: Pr
               disabled={isSaving || isFutureDate}
             >
               <Save aria-hidden className="size-3.5" />
-              {isSaving ? "salvando…" : isEditing ? "salvar" : "registrar"}
+              {isSaving ? "saving…" : isEditing ? "save" : "log"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -339,13 +339,13 @@ export function EntryFormDialog({ open, onOpenChange, entries, initialDate }: Pr
       <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>excluir esta entrada?</AlertDialogTitle>
+            <AlertDialogTitle>delete this entry?</AlertDialogTitle>
             <AlertDialogDescription>
-              o registro de {formatDateLong(date)} vai sumir pra sempre. tem certeza?
+              the entry from {formatDateLong(date)} will be gone forever. are you sure?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>cancelar</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>cancel</AlertDialogCancel>
             <AlertDialogAction
               disabled={isDeleting}
               onClick={(e) => {
@@ -353,7 +353,7 @@ export function EntryFormDialog({ open, onOpenChange, entries, initialDate }: Pr
                 handleDelete();
               }}
             >
-              {isDeleting ? "excluindo…" : "excluir"}
+              {isDeleting ? "deleting…" : "delete"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

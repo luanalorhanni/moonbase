@@ -25,7 +25,7 @@ export async function saveJournalEntry(input: JournalEntryInput): Promise<Action
   const user = await requireUser();
   const parsed = journalEntrySchema.safeParse(input);
   if (!parsed.success) {
-    return { ok: false, error: parsed.error.issues[0]?.message ?? "entrada inválida." };
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "invalid entry." };
   }
   const e = parsed.data;
   try {
@@ -62,7 +62,7 @@ export async function saveJournalEntry(input: JournalEntryInput): Promise<Action
   } catch (err) {
     return {
       ok: false,
-      error: err instanceof Error ? err.message : "erro ao salvar a entrada.",
+      error: err instanceof Error ? err.message : "failed to save the entry.",
     };
   }
   invalidate(TAGS.journalEntries);
@@ -73,7 +73,7 @@ export async function saveJournalEntry(input: JournalEntryInput): Promise<Action
 export async function deleteJournalEntry(entryDate: string): Promise<ActionResult> {
   const user = await requireUser();
   if (!/^\d{4}-\d{2}-\d{2}$/.test(entryDate)) {
-    return { ok: false, error: "data inválida." };
+    return { ok: false, error: "invalid date." };
   }
   try {
     await db
@@ -87,7 +87,7 @@ export async function deleteJournalEntry(entryDate: string): Promise<ActionResul
   } catch (err) {
     return {
       ok: false,
-      error: err instanceof Error ? err.message : "erro ao excluir.",
+      error: err instanceof Error ? err.message : "failed to delete.",
     };
   }
   invalidate(TAGS.journalEntries);
@@ -101,7 +101,7 @@ export async function saveJournalQuote(
   const user = await requireUser();
   const parsed = journalQuoteSchema.safeParse(input);
   if (!parsed.success) {
-    return { ok: false, error: parsed.error.issues[0]?.message ?? "frase inválida." };
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "invalid quote." };
   }
   const q = parsed.data;
   try {
@@ -132,7 +132,7 @@ export async function saveJournalQuote(
   } catch (err) {
     return {
       ok: false,
-      error: err instanceof Error ? err.message : "erro ao salvar a frase.",
+      error: err instanceof Error ? err.message : "failed to save the quote.",
     };
   }
   invalidate(TAGS.journalQuotes);
@@ -154,7 +154,7 @@ export async function deleteJournalQuote(id: string): Promise<ActionResult> {
   } catch (err) {
     return {
       ok: false,
-      error: err instanceof Error ? err.message : "erro ao excluir.",
+      error: err instanceof Error ? err.message : "failed to delete.",
     };
   }
   invalidate(TAGS.journalQuotes);

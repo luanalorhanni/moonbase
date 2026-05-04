@@ -96,14 +96,14 @@ export function MarkdownEditor({
   function insertLink() {
     const ta = ref.current;
     if (!ta) return;
-    const url = window.prompt("URL do link:");
+    const url = window.prompt("link URL:");
     if (!url) return;
     const start = ta.selectionStart;
     const end = ta.selectionEnd;
     const before = value.slice(0, start);
     const selected = value.slice(start, end);
     const after = value.slice(end);
-    const label = selected.length > 0 ? selected : "texto";
+    const label = selected.length > 0 ? selected : "text";
     const next = `${before}[${label}](${url})${after}`;
     onChange(next);
     requestAnimationFrame(() => {
@@ -141,51 +141,51 @@ export function MarkdownEditor({
         <ToolButton
           onClick={() => wrap("**")}
           icon={Bold}
-          title="negrito (Ctrl+B)"
+          title="bold (Ctrl+B)"
           disabled={disabled}
         />
         <ToolButton
           onClick={() => wrap("*")}
           icon={Italic}
-          title="itálico (Ctrl+I)"
+          title="italic (Ctrl+I)"
           disabled={disabled}
         />
         <ToolButton
           onClick={() => wrap("~~")}
           icon={Strikethrough}
-          title="riscado"
+          title="strikethrough"
           disabled={disabled}
         />
         <Divider />
         <ToolButton
           onClick={() => linePrefix("## ")}
           icon={Heading2}
-          title="cabeçalho"
+          title="heading"
           disabled={disabled}
         />
         <ToolButton
           onClick={() => linePrefix("> ")}
           icon={Quote}
-          title="citação"
+          title="quote"
           disabled={disabled}
         />
         <ToolButton
           onClick={() => linePrefix("- ")}
           icon={List}
-          title="lista"
+          title="list"
           disabled={disabled}
         />
         <ToolButton
           onClick={() => linePrefix("1. ")}
           icon={ListOrdered}
-          title="lista numerada"
+          title="numbered list"
           disabled={disabled}
         />
         <Divider />
         <ToolButton
           onClick={() => wrap("`")}
           icon={Code}
-          title="código"
+          title="code"
           disabled={disabled}
         />
         <ToolButton

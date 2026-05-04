@@ -41,7 +41,7 @@ export function SpotifyEmbed({ url }: Props) {
             vibe
           </h2>
           <span className="text-muted-foreground/70 font-mono text-[10.5px] tracking-[0.2em] uppercase">
-            soundtrack do momento
+            soundtrack of the moment
           </span>
         </div>
         <button
@@ -79,7 +79,7 @@ export function SpotifyEmbed({ url }: Props) {
         >
           <Music className="text-muted-foreground/60 size-4" strokeWidth={1.6} aria-hidden />
           <span className="text-muted-foreground/80 text-[13px]">
-            cole uma música, álbum ou playlist do spotify pra setar a vibe
+            paste a spotify track, album, or playlist to set the vibe
           </span>
           <Plus className="text-muted-foreground/60 size-3.5" strokeWidth={1.8} aria-hidden />
         </button>
@@ -116,7 +116,7 @@ function SpotifyDialog({
     startSaveTransition(async () => {
       const result = await setHomeSpotifyUrl(value);
       if (result.ok) {
-        toast.success(value.trim() === "" ? "embed removido." : "embed atualizado.");
+        toast.success(value.trim() === "" ? "embed removed." : "embed updated.");
         router.refresh();
         onOpenChange(false);
       } else {
@@ -129,7 +129,7 @@ function SpotifyDialog({
     startSaveTransition(async () => {
       const result = await setHomeSpotifyUrl(null);
       if (result.ok) {
-        toast.success("embed removido.");
+        toast.success("embed removed.");
         setValue("");
         router.refresh();
         onOpenChange(false);
@@ -145,11 +145,11 @@ function SpotifyDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Music aria-hidden className="size-4" strokeWidth={1.6} />
-            embed do spotify
+            spotify embed
           </DialogTitle>
           <DialogDescription>
-            cole uma URL do spotify (playlist, álbum, faixa, podcast, episódio ou artista). o
-            embed é público — não pede login.
+            paste a spotify URL (playlist, album, track, podcast, episode, or artist).
+            the embed is public — no login required.
           </DialogDescription>
         </DialogHeader>
 
@@ -161,13 +161,13 @@ function SpotifyDialog({
               setValue(e.target.value);
               setError(null);
             }}
-            placeholder="https://open.spotify.com/track/... ou /playlist/..."
+            placeholder="https://open.spotify.com/track/... or /playlist/..."
             className="border-input bg-background placeholder:text-muted-foreground/60 focus-visible:border-ring focus-visible:ring-ring/40 h-10 w-full rounded-md border px-3 text-[13.5px] transition-colors focus-visible:ring-2 focus-visible:outline-none"
             autoFocus
           />
           {value && !ref && (
             <p className="text-destructive text-[11.5px]">
-              não consegui identificar — confira se o link é do spotify.
+              couldn't parse this — check the link is from spotify.
             </p>
           )}
           {error && (
@@ -203,7 +203,7 @@ function SpotifyDialog({
               className="text-destructive hover:bg-destructive/10 hover:text-destructive"
             >
               <Trash2 aria-hidden className="size-3.5" />
-              remover
+              remove
             </Button>
           )}
           <div className="ml-auto flex gap-2">
@@ -213,10 +213,10 @@ function SpotifyDialog({
               onClick={() => onOpenChange(false)}
               disabled={isSaving}
             >
-              cancelar
+              cancel
             </Button>
             <Button type="button" onClick={handleSave} disabled={isSaving || !ref}>
-              {isSaving ? "salvando..." : "salvar"}
+              {isSaving ? "saving..." : "save"}
             </Button>
           </div>
         </DialogFooter>

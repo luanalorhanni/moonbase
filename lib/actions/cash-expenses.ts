@@ -58,7 +58,7 @@ async function adjustLiquidSavings(
     )
     .limit(1);
   const row = rows[0];
-  if (!row) return { ok: false, error: "Cofrinho não encontrado." };
+  if (!row) return { ok: false, error: "liquid savings not found." };
   const next = (Number(row.latestYield) + delta).toFixed(2);
   await tx
     .update(schema.liquidSavings)
@@ -75,7 +75,7 @@ export async function createCashExpense(
   if (!parsed.success) {
     return {
       ok: false,
-      error: "Verifique os campos do formulário.",
+      error: "please check the form fields.",
       fieldErrors: flattenIssues(parsed.error),
     };
   }
@@ -95,7 +95,7 @@ export async function createCashExpense(
       }
     });
   } catch (e) {
-    const message = e instanceof Error ? e.message : "Erro ao salvar.";
+    const message = e instanceof Error ? e.message : "failed to save.";
     return { ok: false, error: message };
   }
 
@@ -115,7 +115,7 @@ export async function updateCashExpense(
   if (!parsed.success) {
     return {
       ok: false,
-      error: "Verifique os campos do formulário.",
+      error: "please check the form fields.",
       fieldErrors: flattenIssues(parsed.error),
     };
   }
@@ -136,7 +136,7 @@ export async function updateCashExpense(
         )
         .limit(1);
       const prior = priorRows[0];
-      if (!prior) throw new Error("Despesa não encontrada.");
+      if (!prior) throw new Error("expense not found.");
 
       // Revert previous deduction.
       if (prior.liquidSavingsId) {
@@ -167,7 +167,7 @@ export async function updateCashExpense(
       }
     });
   } catch (e) {
-    const message = e instanceof Error ? e.message : "Erro ao salvar.";
+    const message = e instanceof Error ? e.message : "failed to save.";
     return { ok: false, error: message };
   }
 
@@ -210,7 +210,7 @@ export async function deleteCashExpense(id: string): Promise<CashExpenseActionRe
       }
     });
   } catch (e) {
-    const message = e instanceof Error ? e.message : "Erro ao excluir.";
+    const message = e instanceof Error ? e.message : "failed to delete.";
     return { ok: false, error: message };
   }
 

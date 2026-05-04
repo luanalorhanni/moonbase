@@ -67,7 +67,7 @@ export function CoverPickerDialog({ open, onOpenChange }: Props) {
       }
       setResults(data.results ?? []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "erro ao buscar imagens");
+      setError(err instanceof Error ? err.message : "failed to search images");
       setResults([]);
     } finally {
       setIsSearching(false);

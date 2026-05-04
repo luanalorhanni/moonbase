@@ -34,7 +34,7 @@ export async function createCategory(input: CategoryFormInput): Promise<Category
   if (!parsed.success) {
     return {
       ok: false,
-      error: "Verifique os campos do formulário.",
+      error: "please check the form fields.",
       fieldErrors: flattenIssues(parsed.error),
     };
   }
@@ -54,7 +54,7 @@ export async function updateCategory(
   if (!parsed.success) {
     return {
       ok: false,
-      error: "Verifique os campos do formulário.",
+      error: "please check the form fields.",
       fieldErrors: flattenIssues(parsed.error),
     };
   }
@@ -83,7 +83,7 @@ export async function deleteCategory(id: string): Promise<CategoryActionResult> 
     ) {
       return {
         ok: false,
-        error: "Esta categoria tem despesas associadas e não pode ser excluída.",
+        error: "this category has expenses linked to it and can't be deleted.",
       };
     }
     throw error;
@@ -101,7 +101,7 @@ export async function createSubcategory(
   if (!parsed.success) {
     return {
       ok: false,
-      error: "Verifique os campos do formulário.",
+      error: "please check the form fields.",
       fieldErrors: flattenIssues(parsed.error),
     };
   }
@@ -124,7 +124,7 @@ export async function updateSubcategory(
   if (!parsed.success) {
     return {
       ok: false,
-      error: "Verifique os campos do formulário.",
+      error: "please check the form fields.",
       fieldErrors: flattenIssues(parsed.error),
     };
   }
@@ -152,7 +152,7 @@ export async function deleteSubcategory(id: string): Promise<CategoryActionResul
     ) {
       return {
         ok: false,
-        error: "Esta subcategoria tem despesas associadas e não pode ser excluída.",
+        error: "this subcategory has expenses linked to it and can't be deleted.",
       };
     }
     throw error;

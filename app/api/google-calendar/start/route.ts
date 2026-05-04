@@ -15,7 +15,7 @@ export async function GET() {
     return NextResponse.json(
       {
         error:
-          "GOOGLE_CLIENT_ID e GOOGLE_CLIENT_SECRET não configurados no .env.local",
+          "GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET not configured in .env.local",
       },
       { status: 503 },
     );

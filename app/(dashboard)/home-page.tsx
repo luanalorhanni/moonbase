@@ -4,12 +4,15 @@ import {
   ArrowDownToLine,
   ArrowUpRight,
   Banknote,
+  BookOpen,
+  Calendar,
   CalendarDays,
   CalendarRange,
   CircleCheckBig,
   CreditCard,
   HandCoins,
   Image as ImageIcon,
+  Palette,
   PiggyBank,
   Quote,
   ReceiptText,
@@ -47,6 +50,20 @@ const ROUTINE_CARDS: Card[] = [
     description: "daily and weekly routines",
     icon: CircleCheckBig,
     tone: "mint",
+  },
+  {
+    href: "/calendar",
+    label: "calendar",
+    description: "agenda and upcoming events",
+    icon: Calendar,
+    tone: "aqua",
+  },
+  {
+    href: "/journal",
+    label: "journal",
+    description: "end-of-day reflection",
+    icon: BookOpen,
+    tone: "mauve",
   },
 ];
 
@@ -115,6 +132,7 @@ const REGISTER_CARDS: Card[] = [
 const CONFIG_CARDS: Card[] = [
   { href: "/cards", label: "cards", description: "credit + accounts", icon: CreditCard, tone: "aqua" },
   { href: "/categories", label: "categories", description: "classify expenses", icon: Tag, tone: "mauve" },
+  { href: "/palette", label: "palette", description: "system color story", icon: Palette, tone: "sand" },
 ];
 
 const TONE_CLASSES: Record<Card["tone"], string> = {
@@ -292,13 +310,13 @@ export function HomePage({ settings }: { settings: UserSettingsRow | null }) {
           <SpotifyEmbed url={settings?.homeSpotifyUrl ?? null} />
         </div>
         <SectionDivider />
-        <SectionGrid title="routines" caption="rotinas e rituais" cards={ROUTINE_CARDS} delay={150} />
+        <SectionGrid title="routines" caption="routines and rituals" cards={ROUTINE_CARDS} delay={150} />
         <SectionDivider />
-        <SectionGrid title="finance control" caption="visão geral" cards={FINANCE_CARDS} delay={250} />
+        <SectionGrid title="finance control" caption="overview" cards={FINANCE_CARDS} delay={250} />
         <SectionDivider />
-        <SectionGrid title="finance register" caption="entradas e saídas" cards={REGISTER_CARDS} delay={350} />
+        <SectionGrid title="finance register" caption="ins and outs" cards={REGISTER_CARDS} delay={350} />
         <SectionDivider />
-        <SectionGrid title="config" caption="ajustes do sistema" cards={CONFIG_CARDS} delay={450} compact />
+        <SectionGrid title="config" caption="system settings" cards={CONFIG_CARDS} delay={450} compact />
       </div>
 
       <CoverPickerDialog open={coverPickerOpen} onOpenChange={setCoverPickerOpen} />

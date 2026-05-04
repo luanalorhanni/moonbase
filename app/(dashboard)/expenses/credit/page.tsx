@@ -5,7 +5,7 @@ import { listCreditExpenses } from "@/lib/queries/credit-expenses";
 import { CreditExpensesList } from "./credit-expenses-list";
 
 export const metadata = {
-  title: "Despesas de crédito — moonbase",
+  title: "Credit expenses — moonbase",
 };
 
 export default async function CreditExpensesPage() {

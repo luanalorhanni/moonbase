@@ -9,7 +9,7 @@ const MIN_VISIBLE = 3;
 
 /**
  * Editable list of gratitude items. The user can add as many as they
- * want (button "adicionar motivo"); empty rows are filtered out at
+ * want (button "add reason"); empty rows are filtered out at
  * save time by the validation layer. Three rows are always visible
  * by default to nudge the "três motivos" prompt — extras render
  * lazily when the user starts typing in the bottom slot.
@@ -78,12 +78,12 @@ export function GratitudeList({
               disabled={disabled}
               placeholder={
                 idx === 0
-                  ? "ex: o sol bateu cedo na janela"
+                  ? "e.g. the sun hit the window early"
                   : idx === 1
-                    ? "ex: meu café tava no ponto"
+                    ? "e.g. my coffee was just right"
                     : idx === 2
-                      ? "ex: alguém disse algo gentil"
-                      : "outro motivo…"
+                      ? "e.g. someone said something kind"
+                      : "another reason…"
               }
               className="h-9 flex-1"
             />
@@ -92,8 +92,8 @@ export function GratitudeList({
                 type="button"
                 onClick={() => remove(idx)}
                 disabled={disabled}
-                aria-label="remover motivo"
-                title="remover"
+                aria-label="remove reason"
+                title="remove"
                 className="text-muted-foreground/60 hover:text-destructive inline-flex size-7 shrink-0 items-center justify-center rounded-md transition-colors"
               >
                 <X aria-hidden className="size-3.5" strokeWidth={1.7} />
@@ -109,7 +109,7 @@ export function GratitudeList({
         className="border-border-strong text-muted-foreground hover:bg-muted hover:text-foreground inline-flex h-8 w-fit items-center gap-1.5 rounded-md border border-dashed px-3 text-[12px] transition-colors disabled:opacity-50"
       >
         <Plus aria-hidden className="size-3" strokeWidth={1.8} />
-        adicionar motivo
+        add reason
       </button>
     </div>
   );

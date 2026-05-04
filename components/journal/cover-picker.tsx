@@ -72,13 +72,13 @@ export function CoverPicker({
       );
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? `erro ${res.status}`);
+        setError(data.error ?? `error ${res.status}`);
         setResults([]);
         return;
       }
       setResults(data.results ?? []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "erro ao buscar.");
+      setError(err instanceof Error ? err.message : "error fetching.");
       setResults([]);
     } finally {
       setIsSearching(false);
@@ -140,7 +140,7 @@ export function CoverPicker({
               onClick={() => setOpen(true)}
               disabled={disabled}
             >
-              trocar
+              change
             </Button>
             <Button
               type="button"
@@ -151,7 +151,7 @@ export function CoverPicker({
               className="text-muted-foreground hover:text-destructive"
             >
               <X aria-hidden className="size-3.5" />
-              remover
+              remove
             </Button>
           </div>
         </div>
@@ -168,7 +168,7 @@ export function CoverPicker({
           strokeWidth={1.6}
         />
         <span className="text-muted-foreground/85 font-mono text-[10.5px] tracking-[0.16em] uppercase">
-          capa do dia (opcional)
+          day cover (optional)
         </span>
         {value && (
           <button
@@ -176,7 +176,7 @@ export function CoverPicker({
             onClick={() => setOpen(false)}
             className="text-muted-foreground/70 hover:text-foreground ml-auto text-[11px]"
           >
-            cancelar
+            cancel
           </button>
         )}
       </div>
@@ -197,7 +197,7 @@ export function CoverPicker({
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="ex: moonlight, calm sea, morning fog"
+            placeholder="e.g. moonlight, calm sea, morning fog"
             className="h-9 pl-8"
             disabled={disabled}
           />
@@ -207,7 +207,7 @@ export function CoverPicker({
           size="sm"
           disabled={disabled || isSearching || query.trim().length === 0}
         >
-          {isSearching ? <Loader2 aria-hidden className="size-3.5 animate-spin" /> : "buscar"}
+          {isSearching ? <Loader2 aria-hidden className="size-3.5 animate-spin" /> : "search"}
         </Button>
       </form>
 

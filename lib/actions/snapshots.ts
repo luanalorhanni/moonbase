@@ -25,7 +25,7 @@ export type SnapshotActionResult = { ok: true } | { ok: false; error: string };
  */
 export async function upsertMonthlySnapshot(reference: MonthRef): Promise<SnapshotActionResult> {
   if (!isMonthRef(reference)) {
-    return { ok: false, error: "Mês inválido." };
+    return { ok: false, error: "invalid month." };
   }
 
   const user = await requireUser();

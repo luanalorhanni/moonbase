@@ -54,7 +54,7 @@ export function LiquidSavingsForm({ item, onSuccess }: Props) {
         : await createLiquidSavings(values);
 
       if (result.ok) {
-        toast.success(item ? "Investimento atualizado." : "Investimento registrado.");
+        toast.success(item ? "investment updated." : "investment logged.");
         onSuccess();
         return;
       }
@@ -76,10 +76,10 @@ export function LiquidSavingsForm({ item, onSuccess }: Props) {
       <FieldGroup>
         <div className="grid grid-cols-2 gap-4">
           <Field>
-            <FieldLabel htmlFor="ls-title">Nome</FieldLabel>
+            <FieldLabel htmlFor="ls-title">name</FieldLabel>
             <Input
               id="ls-title"
-              placeholder="Ex: Cofrinho"
+              placeholder="e.g. piggy bank"
               disabled={isPending}
               {...form.register("title")}
             />
@@ -89,10 +89,10 @@ export function LiquidSavingsForm({ item, onSuccess }: Props) {
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="ls-bank">Banco</FieldLabel>
+            <FieldLabel htmlFor="ls-bank">bank</FieldLabel>
             <Input
               id="ls-bank"
-              placeholder="Ex: Inter"
+              placeholder="e.g. Inter"
               disabled={isPending}
               {...form.register("bank")}
             />
@@ -104,11 +104,11 @@ export function LiquidSavingsForm({ item, onSuccess }: Props) {
 
         <div className="grid grid-cols-2 gap-4">
           <Field>
-            <FieldLabel htmlFor="ls-applied">Valor aplicado</FieldLabel>
+            <FieldLabel htmlFor="ls-applied">applied amount</FieldLabel>
             <Input
               id="ls-applied"
               inputMode="decimal"
-              placeholder="Ex: 5000.00"
+              placeholder="e.g. 5000.00"
               disabled={isPending}
               {...form.register("appliedAmount")}
             />
@@ -118,11 +118,11 @@ export function LiquidSavingsForm({ item, onSuccess }: Props) {
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="ls-yield">Rendimento atual</FieldLabel>
+            <FieldLabel htmlFor="ls-yield">current yield</FieldLabel>
             <Input
               id="ls-yield"
               inputMode="decimal"
-              placeholder="Ex: 5120.35"
+              placeholder="e.g. 5120.35"
               disabled={isPending}
               {...form.register("latestYield")}
             />
@@ -132,12 +132,12 @@ export function LiquidSavingsForm({ item, onSuccess }: Props) {
           </Field>
         </div>
         <FieldDescription className="-mt-3">
-          Valor total atual do investimento incluindo rendimento.
+          total current value of the investment including yield.
         </FieldDescription>
 
         <div className="grid grid-cols-2 gap-4">
           <Field>
-            <FieldLabel htmlFor="ls-app-date">Data de aplicação</FieldLabel>
+            <FieldLabel htmlFor="ls-app-date">application date</FieldLabel>
             <Input
               id="ls-app-date"
               type="date"
@@ -150,7 +150,7 @@ export function LiquidSavingsForm({ item, onSuccess }: Props) {
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="ls-update-date">Última atualização</FieldLabel>
+            <FieldLabel htmlFor="ls-update-date">last update</FieldLabel>
             <Input
               id="ls-update-date"
               type="date"
@@ -179,7 +179,7 @@ export function LiquidSavingsForm({ item, onSuccess }: Props) {
               Ativo
             </label>
             <p className="text-muted-foreground text-sm">
-              Investimentos inativos não são somados ao patrimônio.
+              inactive investments are not added to the total balance.
             </p>
           </div>
         </div>
@@ -187,10 +187,10 @@ export function LiquidSavingsForm({ item, onSuccess }: Props) {
 
       <div className="flex justify-end gap-2">
         <Button type="button" variant="ghost" onClick={onSuccess} disabled={isPending}>
-          Cancelar
+          cancel
         </Button>
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Salvando..." : item ? "Salvar" : "Registrar"}
+          {isPending ? "saving..." : item ? "save" : "log"}
         </Button>
       </div>
     </form>

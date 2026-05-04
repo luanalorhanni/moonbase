@@ -36,8 +36,8 @@ export function SidebarUser({ email, name, avatarUrl }: Props) {
       type="button"
       onClick={() => startTransition(() => signOut())}
       disabled={isPending}
-      title="sair"
-      aria-label="sair"
+      title="sign out"
+      aria-label="sign out"
       className="text-muted-foreground/70 hover:bg-sidebar-accent hover:text-foreground inline-flex size-7 shrink-0 items-center justify-center rounded-md transition-colors disabled:opacity-50"
     >
       <LogOut aria-hidden className="size-3.5" strokeWidth={1.6} />

@@ -14,6 +14,7 @@ import {
   HandCoins,
   LayoutDashboard,
   type LucideIcon,
+  Palette,
   PiggyBank,
   ReceiptText,
   Repeat,
@@ -82,6 +83,7 @@ const GROUPS: NavGroup[] = [
       { href: "/cards", label: "cards", icon: CreditCard },
       { href: "/categories", label: "categories", icon: Tag },
       { href: "/snapshots", label: "snapshots", icon: Archive },
+      { href: "/palette", label: "palette", icon: Palette },
     ],
   },
 ];

@@ -170,7 +170,7 @@ export function CardsList({
                   <TableCell className="py-3.5">
                     <DropdownMenu>
                       <DropdownMenuTrigger
-                        aria-label="Ações"
+                        aria-label="Actions"
                         className="hover:bg-muted aria-expanded:bg-muted focus-visible:ring-ring/50 inline-flex size-7 items-center justify-center rounded-md transition-colors focus-visible:ring-3 focus-visible:outline-none"
                       >
                         <MoreHorizontal aria-hidden className="size-3.5" />

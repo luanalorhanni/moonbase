@@ -2,15 +2,15 @@ import { z } from "zod";
 
 const isoDate = z
   .string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/, "data inválida (esperado yyyy-mm-dd)");
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "invalid date (expected yyyy-mm-dd)");
 
 const moneyString = z
   .string()
   .trim()
-  .min(1, "valor obrigatório.")
-  .refine((v) => /^-?\d+([.,]\d{1,2})?$/.test(v), "valor inválido.")
+  .min(1, "amount is required.")
+  .refine((v) => /^-?\d+([.,]\d{1,2})?$/.test(v), "invalid amount.")
   .transform((v) => v.replace(",", "."))
-  .refine((v) => Number(v) >= 0, "valor não pode ser negativo.");
+  .refine((v) => Number(v) >= 0, "amount cannot be negative.");
 
 const trimmedNullable = z
   .union([z.string(), z.null(), z.undefined()])
@@ -22,7 +22,7 @@ const trimmedNullable = z
 
 export const investmentUpdateSchema = z.object({
   investmentKind: z.enum(["liquid_savings", "fixed_income"]),
-  investmentId: z.string().uuid("id inválido."),
+  investmentId: z.string().uuid("invalid id."),
   recordedOn: isoDate,
   currentValue: moneyString,
   notes: trimmedNullable,

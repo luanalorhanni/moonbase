@@ -3,7 +3,7 @@ import { listCardClosings, listCards } from "@/lib/queries/cards";
 import { CardsList } from "./cards-list";
 
 export const metadata = {
-  title: "Cartões — moonbase",
+  title: "Cards — moonbase",
 };
 
 export default async function CardsPage() {

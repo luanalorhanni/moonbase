@@ -140,9 +140,10 @@ function formatDate(d: Date): string {
 }
 
 function formatTime(d: Date): string {
-  return new Intl.DateTimeFormat("pt-BR", {
+  return new Intl.DateTimeFormat("en-US", {
     hour: "2-digit",
     minute: "2-digit",
+    hour12: false,
   }).format(d);
 }
 
@@ -228,8 +229,8 @@ function ColorPicker({
         type="button"
         onClick={() => onChange(null)}
         disabled={disabled}
-        title="usar a cor do calendário"
-        aria-label="usar cor do calendário"
+        title="use calendar color"
+        aria-label="use calendar color"
         className={cn(
           "relative inline-flex size-7 items-center justify-center rounded-full border-2 transition-all",
           value === null
@@ -297,7 +298,7 @@ function RemindersEditor({
         />
         <span className="text-foreground inline-flex items-center gap-1.5 text-[13px] font-medium">
           <Bell aria-hidden className="size-3.5" strokeWidth={1.6} />
-          usar lembretes padrão do calendário
+          use calendar's default reminders
         </span>
       </label>
 
@@ -306,7 +307,7 @@ function RemindersEditor({
           {reminders.length === 0 && (
             <span className="text-muted-foreground/70 inline-flex items-center gap-1.5 text-[12px]">
               <BellOff aria-hidden className="size-3.5" strokeWidth={1.6} />
-              sem lembretes
+              no reminders
             </span>
           )}
           {reminders.map((r, i) => (
@@ -338,12 +339,12 @@ function RemindersEditor({
                 disabled={disabled}
                 className="h-9 w-[90px]"
               />
-              <span className="text-muted-foreground text-[12px]">min antes</span>
+              <span className="text-muted-foreground text-[12px]">min before</span>
               <button
                 type="button"
                 onClick={() => remove(i)}
                 disabled={disabled}
-                aria-label="remover lembrete"
+                aria-label="remove reminder"
                 className="text-muted-foreground hover:text-destructive ml-auto inline-flex size-7 items-center justify-center rounded-md transition-colors"
               >
                 <X aria-hidden className="size-3.5" strokeWidth={1.8} />
@@ -357,7 +358,7 @@ function RemindersEditor({
             className="border-border-strong text-muted-foreground hover:bg-muted hover:text-foreground inline-flex h-8 w-fit items-center gap-1.5 rounded-md border border-dashed px-3 text-[12px] transition-colors disabled:opacity-50"
           >
             <Plus aria-hidden className="size-3" strokeWidth={1.8} />
-            adicionar lembrete
+            add reminder
           </button>
         </div>
       )}
@@ -488,7 +489,7 @@ export function EventDetailDialog({ event, calendars, onClose }: Props) {
 
       const result = await updateGoogleCalendarEvent(payload);
       if (result.ok) {
-        toast.success(movedToOther ? "evento movido e atualizado." : "evento atualizado.");
+        toast.success(movedToOther ? "event moved and updated." : "event updated.");
         router.refresh();
         onClose();
       } else {
@@ -505,7 +506,7 @@ export function EventDetailDialog({ event, calendars, onClose }: Props) {
         event.googleEventId,
       );
       if (result.ok) {
-        toast.success("evento excluído.");
+        toast.success("event deleted.");
         router.refresh();
         setConfirmDelete(false);
         onClose();
@@ -529,7 +530,7 @@ export function EventDetailDialog({ event, calendars, onClose }: Props) {
                   style={{ backgroundColor: color }}
                 />
                 <span className="font-display flex-1 text-[18px] leading-tight font-light italic tracking-tight">
-                  {editing ? "edit event" : event.summary ?? "(sem título)"}
+                  {editing ? "edit event" : event.summary ?? "(no title)"}
                 </span>
               </DialogTitle>
               <DialogDescription className="ml-[22px] flex items-center gap-2 font-mono text-[10.5px] tracking-[0.14em] uppercase">
@@ -572,7 +573,7 @@ export function EventDetailDialog({ event, calendars, onClose }: Props) {
           {editing ? (
             <FieldGroup className="gap-5">
               <Field>
-                <FieldLabel htmlFor="ev-summary">título</FieldLabel>
+                <FieldLabel htmlFor="ev-summary">title</FieldLabel>
                 <Input
                   id="ev-summary"
                   value={summary}
@@ -585,7 +586,7 @@ export function EventDetailDialog({ event, calendars, onClose }: Props) {
 
               {writableCalendars.length > 0 && (
                 <Field>
-                  <FieldLabel htmlFor="ev-calendar">calendário</FieldLabel>
+                  <FieldLabel htmlFor="ev-calendar">calendar</FieldLabel>
                   <Select
                     value={calendarId}
                     onValueChange={(v) => v && setCalendarId(v)}
@@ -619,14 +620,14 @@ export function EventDetailDialog({ event, calendars, onClose }: Props) {
                   </Select>
                   {movedToOther && (
                     <FieldDescription>
-                      o evento será movido para este calendário ao salvar.
+                      the event will be moved to this calendar on save.
                     </FieldDescription>
                   )}
                 </Field>
               )}
 
               <Field>
-                <FieldLabel>cor do evento</FieldLabel>
+                <FieldLabel>event color</FieldLabel>
                 <ColorPicker
                   value={colorId}
                   onChange={setColorId}
@@ -645,14 +646,14 @@ export function EventDetailDialog({ event, calendars, onClose }: Props) {
                     className="border-input size-4 rounded border accent-current"
                   />
                   <span className="text-foreground text-[13px] font-medium">
-                    o dia inteiro
+                    all day
                   </span>
                 </label>
               </Field>
 
               <div className="border-border bg-muted/10 flex flex-col gap-3 rounded-md border p-3">
                 <DateTimeRow
-                  label="início"
+                  label="start"
                   idDate="ev-start-date"
                   idTime="ev-start-time"
                   date={startDate}
@@ -664,7 +665,7 @@ export function EventDetailDialog({ event, calendars, onClose }: Props) {
                 />
                 <div className="border-border/60 border-t" aria-hidden />
                 <DateTimeRow
-                  label="fim"
+                  label="end"
                   idDate="ev-end-date"
                   idTime="ev-end-time"
                   date={endDate}
@@ -678,32 +679,32 @@ export function EventDetailDialog({ event, calendars, onClose }: Props) {
               </div>
 
               <Field>
-                <FieldLabel htmlFor="ev-location">local</FieldLabel>
+                <FieldLabel htmlFor="ev-location">location</FieldLabel>
                 <Input
                   id="ev-location"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   disabled={isSaving}
                   className="h-10"
-                  placeholder="opcional"
+                  placeholder="optional"
                 />
               </Field>
 
               <Field>
-                <FieldLabel htmlFor="ev-description">descrição</FieldLabel>
+                <FieldLabel htmlFor="ev-description">description</FieldLabel>
                 <textarea
                   id="ev-description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   disabled={isSaving}
                   rows={4}
-                  placeholder="opcional"
+                  placeholder="optional"
                   className="border-input bg-background placeholder:text-muted-foreground/60 focus-visible:ring-ring min-h-[80px] w-full resize-y rounded-md border px-3 py-2 text-[13px] leading-relaxed transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50"
                 />
               </Field>
 
               <Field>
-                <FieldLabel>lembretes</FieldLabel>
+                <FieldLabel>reminders</FieldLabel>
                 <RemindersEditor
                   useDefault={remindersUseDefault}
                   reminders={reminders}
@@ -722,7 +723,7 @@ export function EventDetailDialog({ event, calendars, onClose }: Props) {
                       ) : (
                         <Eye aria-hidden className="size-3.5" strokeWidth={1.6} />
                       )}
-                      visibilidade
+                      visibility
                     </span>
                   </FieldLabel>
                   <Select
@@ -730,43 +731,43 @@ export function EventDetailDialog({ event, calendars, onClose }: Props) {
                     onValueChange={(v) => v && setVisibility(v as EventVisibility)}
                     disabled={isSaving}
                     items={{
-                      default: "padrão",
-                      public: "pública",
-                      private: "privada",
-                      confidential: "confidencial",
+                      default: "default",
+                      public: "public",
+                      private: "private",
+                      confidential: "confidential",
                     }}
                   >
                     <SelectTrigger id="ev-visibility" className="h-10 w-full">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="default">padrão</SelectItem>
-                      <SelectItem value="public">pública</SelectItem>
-                      <SelectItem value="private">privada</SelectItem>
-                      <SelectItem value="confidential">confidencial</SelectItem>
+                      <SelectItem value="default">default</SelectItem>
+                      <SelectItem value="public">public</SelectItem>
+                      <SelectItem value="private">private</SelectItem>
+                      <SelectItem value="confidential">confidential</SelectItem>
                     </SelectContent>
                   </Select>
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="ev-transparency">disponibilidade</FieldLabel>
+                  <FieldLabel htmlFor="ev-transparency">availability</FieldLabel>
                   <Select
                     value={transparency}
                     onValueChange={(v) => v && setTransparency(v as EventTransparency)}
                     disabled={isSaving}
-                    items={{ opaque: "ocupado", transparent: "livre" }}
+                    items={{ opaque: "busy", transparent: "free" }}
                   >
                     <SelectTrigger id="ev-transparency" className="h-10 w-full">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="opaque">ocupado</SelectItem>
-                      <SelectItem value="transparent">livre</SelectItem>
+                      <SelectItem value="opaque">busy</SelectItem>
+                      <SelectItem value="transparent">free</SelectItem>
                     </SelectContent>
                   </Select>
                 </Field>
               </div>
 
-              <FieldDescription>fuso horário: {browserTimezone()}</FieldDescription>
+              <FieldDescription>timezone: {browserTimezone()}</FieldDescription>
               {error && <FieldError>{error}</FieldError>}
             </FieldGroup>
           ) : (
@@ -837,14 +838,14 @@ export function EventDetailDialog({ event, calendars, onClose }: Props) {
                   )}
                   {event.transparency === "transparent" && (
                     <span className="text-muted-foreground inline-flex items-center gap-1.5">
-                      mostrar como livre
+                      show as free
                     </span>
                   )}
                   {!event.remindersUseDefault && (
                     <span className="text-muted-foreground inline-flex items-center gap-1.5">
                       <Bell aria-hidden className="size-3" strokeWidth={1.7} />
                       {event.reminders.length === 0
-                        ? "sem lembretes"
+                        ? "no reminders"
                         : event.reminders
                             .map((r) => `${r.minutes}m ${r.method}`)
                             .join(" · ")}
@@ -875,7 +876,7 @@ export function EventDetailDialog({ event, calendars, onClose }: Props) {
                 </Button>
                 <Button type="button" onClick={handleSave} disabled={isSaving || !summary.trim()}>
                   <Save aria-hidden className="size-3.5" />
-                  {isSaving ? "salvando..." : "salvar"}
+                  {isSaving ? "saving..." : "save"}
                 </Button>
               </>
             ) : (
@@ -896,13 +897,13 @@ export function EventDetailDialog({ event, calendars, onClose }: Props) {
       <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>excluir evento?</AlertDialogTitle>
+            <AlertDialogTitle>delete event?</AlertDialogTitle>
             <AlertDialogDescription>
-              {`"${event.summary ?? "(sem título)"}" será removido permanentemente do google calendar.`}
+              {`"${event.summary ?? "(no title)"}" will be permanently removed from google calendar.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>cancelar</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>cancel</AlertDialogCancel>
             <AlertDialogAction
               disabled={isDeleting}
               onClick={(e) => {
@@ -910,7 +911,7 @@ export function EventDetailDialog({ event, calendars, onClose }: Props) {
                 handleDelete();
               }}
             >
-              {isDeleting ? "excluindo..." : "excluir"}
+              {isDeleting ? "deleting..." : "delete"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
