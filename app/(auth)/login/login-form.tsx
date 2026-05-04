@@ -63,7 +63,7 @@ export function LoginForm({ next, initialError }: Props) {
         type="button"
         onClick={handleGoogle}
         disabled={isOAuthPending || isPending}
-        className="border-border hover:bg-muted/40 flex h-10 items-center justify-center gap-2.5 rounded-md border bg-card text-[13px] font-medium transition-colors disabled:opacity-50"
+        className="border-border hover:bg-muted/40 bg-card flex h-10 items-center justify-center gap-2.5 rounded-md border text-[13px] font-medium transition-colors disabled:opacity-50"
       >
         <GoogleGlyph className="size-4 shrink-0" />
         {isOAuthPending ? "opening google…" : "continue with google"}

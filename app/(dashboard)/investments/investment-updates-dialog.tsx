@@ -15,14 +15,8 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import {
-  deleteInvestmentUpdate,
-  recordInvestmentUpdate,
-} from "@/lib/actions/investment-updates";
-import type {
-  InvestmentKind,
-  InvestmentUpdateRow,
-} from "@/lib/queries/investment-updates";
+import { deleteInvestmentUpdate, recordInvestmentUpdate } from "@/lib/actions/investment-updates";
+import type { InvestmentKind, InvestmentUpdateRow } from "@/lib/queries/investment-updates";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -153,9 +147,7 @@ export function InvestmentUpdatesDialog({ open, onOpenChange, investment, update
 
         {/* ── New update form ─────────────────────────────────────── */}
         <form onSubmit={handleSubmit} className="border-border bg-muted/30 rounded-lg border p-4">
-          <h3 className="text-foreground mb-3 text-[12.5px] font-medium">
-            log a value update
-          </h3>
+          <h3 className="text-foreground mb-3 text-[12.5px] font-medium">log a value update</h3>
           <FieldGroup>
             <div className="grid grid-cols-2 gap-3">
               <Field>
@@ -181,9 +173,7 @@ export function InvestmentUpdatesDialog({ open, onOpenChange, investment, update
                   }}
                   required
                 />
-                {valueError && (
-                  <p className="text-destructive text-[11.5px]">{valueError}</p>
-                )}
+                {valueError && <p className="text-destructive text-[11.5px]">{valueError}</p>}
               </Field>
             </div>
             <Field>
@@ -258,21 +248,9 @@ export function InvestmentUpdatesDialog({ open, onOpenChange, investment, update
   );
 }
 
-function DeltaBadge({
-  label,
-  delta,
-  subtle,
-}: {
-  label: string;
-  delta: number;
-  subtle?: boolean;
-}) {
+function DeltaBadge({ label, delta, subtle }: { label: string; delta: number; subtle?: boolean }) {
   if (delta === 0) {
-    return (
-      <span className="text-muted-foreground/60 font-mono text-[11px]">
-        {label} —
-      </span>
-    );
+    return <span className="text-muted-foreground/60 font-mono text-[11px]">{label} —</span>;
   }
   const positive = delta > 0;
   return (

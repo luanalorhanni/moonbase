@@ -53,7 +53,12 @@ function parseCsv(text) {
 function parseBRL(s) {
   if (!s) return NaN;
   return Number(
-    s.replace(/[Rr]\$\s*/g, "").replace(/ /g, "").trim().replace(/\./g, "").replace(",", "."),
+    s
+      .replace(/[Rr]\$\s*/g, "")
+      .replace(/ /g, "")
+      .trim()
+      .replace(/\./g, "")
+      .replace(",", "."),
   );
 }
 function parseDate(s) {
@@ -69,9 +74,19 @@ function pad(n) {
 }
 
 const PT_MONTHS = {
-  janeiro: "01", fevereiro: "02", marco: "03", março: "03",
-  abril: "04", maio: "05", junho: "06", julho: "07",
-  agosto: "08", setembro: "09", outubro: "10", novembro: "11", dezembro: "12",
+  janeiro: "01",
+  fevereiro: "02",
+  marco: "03",
+  março: "03",
+  abril: "04",
+  maio: "05",
+  junho: "06",
+  julho: "07",
+  agosto: "08",
+  setembro: "09",
+  outubro: "10",
+  novembro: "11",
+  dezembro: "12",
 };
 function parsePtMonth(s) {
   if (!s) return null;
@@ -190,7 +205,8 @@ for (const c of csvRows) {
     const cy = m === 1 ? y - 1 : y;
     const cm = m === 1 ? 12 : m - 1;
     const closingMonth = `${cy}-${pad(cm)}`;
-    const cd = closingDayFor(db.card_id, closingMonth) ?? cardById.get(db.card_id)?.default_closing_day ?? 1;
+    const cd =
+      closingDayFor(db.card_id, closingMonth) ?? cardById.get(db.card_id)?.default_closing_day ?? 1;
     const last = daysInMonth(closingMonth);
     return `${closingMonth}-${pad(Math.min(cd, last))}`;
   }
@@ -210,7 +226,9 @@ for (const c of csvRows) {
   });
 }
 
-console.log(`matched: ${matched}, unmatched: ${unmatchedRows.length}, divergent: ${updates.length}`);
+console.log(
+  `matched: ${matched}, unmatched: ${unmatchedRows.length}, divergent: ${updates.length}`,
+);
 
 if (unmatchedRows.length) {
   console.log("\n— unmatched (CSV row not found in DB by card+date+amount+parcels) —");

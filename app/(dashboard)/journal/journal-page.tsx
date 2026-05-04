@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  BookOpen,
-  CalendarPlus,
-  NotebookPen,
-  Plus,
-  Quote as QuoteIcon,
-} from "lucide-react";
+import { BookOpen, CalendarPlus, NotebookPen, Plus, Quote as QuoteIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { EditorialHero } from "@/components/dashboard/editorial-hero";
@@ -104,10 +98,7 @@ export function JournalPage({ entries, quotes }: Props) {
         </div>
 
         {tab === "entries" ? (
-          <EntriesView
-            entries={entries}
-            onPick={(e) => setEditorDate(e.entryDate)}
-          />
+          <EntriesView entries={entries} onPick={(e) => setEditorDate(e.entryDate)} />
         ) : (
           <QuotesView quotes={quotes} onPick={setEditingQuote} />
         )}
@@ -149,15 +140,11 @@ function EntriesView({
   if (entries.length === 0) {
     return (
       <div className="flex h-[280px] flex-col items-center justify-center gap-2 px-6 text-center">
-        <BookOpen
-          className="text-muted-foreground/40 size-10"
-          strokeWidth={1}
-          aria-hidden
-        />
+        <BookOpen className="text-muted-foreground/40 size-10" strokeWidth={1} aria-hidden />
         <p className="text-foreground text-[14px]">nothing logged yet</p>
         <p className="text-muted-foreground/70 max-w-sm text-[12.5px] leading-relaxed">
-          at the end of the day, write down how it went — mood, cover, reflection. over
-          time it becomes an archive of your days.
+          at the end of the day, write down how it went — mood, cover, reflection. over time it
+          becomes an archive of your days.
         </p>
       </div>
     );
@@ -181,15 +168,10 @@ function QuotesView({
   if (quotes.length === 0) {
     return (
       <div className="flex h-[280px] flex-col items-center justify-center gap-2 px-6 text-center">
-        <QuoteIcon
-          className="text-muted-foreground/40 size-10"
-          strokeWidth={1}
-          aria-hidden
-        />
+        <QuoteIcon className="text-muted-foreground/40 size-10" strokeWidth={1} aria-hidden />
         <p className="text-foreground text-[14px]">no quotes saved</p>
         <p className="text-muted-foreground/70 max-w-sm text-[12.5px] leading-relaxed">
-          save quotes from books, conversations, and stray reflections to
-          revisit later.
+          save quotes from books, conversations, and stray reflections to revisit later.
         </p>
       </div>
     );
@@ -203,13 +185,7 @@ function QuotesView({
   );
 }
 
-function QuoteCard({
-  quote,
-  onClick,
-}: {
-  quote: JournalQuoteRow;
-  onClick: () => void;
-}) {
+function QuoteCard({ quote, onClick }: { quote: JournalQuoteRow; onClick: () => void }) {
   const dateLabel = (() => {
     const [y, m, d] = quote.collectedOn.split("-").map(Number);
     return new Intl.DateTimeFormat("en-US", {
@@ -231,9 +207,7 @@ function QuoteCard({
         className="text-primary/20 absolute -top-2 -right-2 size-12"
         strokeWidth={1}
       />
-      <p className="text-foreground/90 relative text-[14px] leading-relaxed italic">
-        {quote.text}
-      </p>
+      <p className="text-foreground/90 relative text-[14px] leading-relaxed italic">{quote.text}</p>
       <div className="border-border/60 mt-auto flex items-baseline justify-between gap-2 border-t pt-2">
         <span className="text-muted-foreground/85 truncate text-[12px]">
           {quote.author ? `— ${quote.author}` : "— anonymous"}

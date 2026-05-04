@@ -20,10 +20,9 @@ export function ForgotPasswordForm() {
     startTransition(async () => {
       const supabase = createClient();
       const origin = window.location.origin;
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(
-        email.trim(),
-        { redirectTo: `${origin}/api/auth-callback?next=/reset-password` },
-      );
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${origin}/api/auth-callback?next=/reset-password`,
+      });
       if (resetError) {
         setError(resetError.message);
         return;

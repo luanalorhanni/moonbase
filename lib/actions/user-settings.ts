@@ -66,9 +66,7 @@ export async function setHomeCover(input: CoverInput): Promise<UserSettingsActio
  * string) to clear it. The URL is validated against
  * {@link parseSpotifyUrl} so we never store something we can't render.
  */
-export async function setHomeSpotifyUrl(
-  url: string | null,
-): Promise<UserSettingsActionResult> {
+export async function setHomeSpotifyUrl(url: string | null): Promise<UserSettingsActionResult> {
   const user = await requireUser();
   const trimmed = (url ?? "").trim();
   let canonical: string | null = null;

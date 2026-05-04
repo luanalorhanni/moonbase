@@ -1,16 +1,12 @@
 import { z } from "zod";
 
-const isoDate = z
-  .string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/, "invalid date (expected yyyy-mm-dd)");
+const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "invalid date (expected yyyy-mm-dd)");
 
-const trimmedNullable = z
-  .union([z.string(), z.null(), z.undefined()])
-  .transform((v) => {
-    if (v === null || v === undefined) return null;
-    const t = v.trim();
-    return t.length === 0 ? null : t;
-  });
+const trimmedNullable = z.union([z.string(), z.null(), z.undefined()]).transform((v) => {
+  if (v === null || v === undefined) return null;
+  const t = v.trim();
+  return t.length === 0 ? null : t;
+});
 
 export const journalEntrySchema = z
   .object({
@@ -20,13 +16,11 @@ export const journalEntrySchema = z
       .transform((v) => (v === undefined ? null : v)),
     /** Trimmed list of gratitude items. Empty entries are dropped, an
      *  all-empty list collapses to null so the column stays sparse. */
-    gratitude: z
-      .union([z.array(z.string()), z.null(), z.undefined()])
-      .transform((v) => {
-        if (!v) return null;
-        const cleaned = v.map((s) => s.trim()).filter((s) => s.length > 0);
-        return cleaned.length > 0 ? cleaned : null;
-      }),
+    gratitude: z.union([z.array(z.string()), z.null(), z.undefined()]).transform((v) => {
+      if (!v) return null;
+      const cleaned = v.map((s) => s.trim()).filter((s) => s.length > 0);
+      return cleaned.length > 0 ? cleaned : null;
+    }),
     content: trimmedNullable,
     coverUrl: trimmedNullable,
     coverThumbUrl: trimmedNullable,
@@ -38,11 +32,7 @@ export const journalEntrySchema = z
   .refine(
     // At least one of mood / gratitude / content / cover should be
     // present — an entry that's purely empty is just noise.
-    (e) =>
-      e.mood !== null ||
-      e.gratitude !== null ||
-      e.content !== null ||
-      e.coverUrl !== null,
+    (e) => e.mood !== null || e.gratitude !== null || e.content !== null || e.coverUrl !== null,
     { message: "add at least a mood, gratitude, text, or cover." },
   );
 

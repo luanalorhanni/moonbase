@@ -23,28 +23,13 @@ export function PageSkeleton({
       </div>
       <div className="min-h-0 flex-1 space-y-3 overflow-hidden px-3 py-4 md:px-4">
         {Array.from({ length: rows }).map((_, i) => (
-          <Bar
-            key={i}
-            className="h-12 w-full"
-            style={{ animationDelay: `${i * 60}ms` }}
-          />
+          <Bar key={i} className="h-12 w-full" style={{ animationDelay: `${i * 60}ms` }} />
         ))}
       </div>
     </div>
   );
 }
 
-function Bar({
-  className,
-  style,
-}: {
-  className?: string;
-  style?: React.CSSProperties;
-}) {
-  return (
-    <div
-      className={cn("bg-muted/60 animate-pulse rounded-md", className)}
-      style={style}
-    />
-  );
+function Bar({ className, style }: { className?: string; style?: React.CSSProperties }) {
+  return <div className={cn("bg-muted/60 animate-pulse rounded-md", className)} style={style} />;
 }

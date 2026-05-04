@@ -1,11 +1,4 @@
-import {
-  Cloud,
-  CloudRain,
-  CloudSun,
-  type LucideIcon,
-  Sparkles,
-  Sun,
-} from "lucide-react";
+import { Cloud, CloudRain, CloudSun, type LucideIcon, Sparkles, Sun } from "lucide-react";
 
 /**
  * Climatic mood scale — five steps from a stormy day to a radiant

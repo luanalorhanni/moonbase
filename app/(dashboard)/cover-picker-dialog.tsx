@@ -113,8 +113,8 @@ export function CoverPickerDialog({ open, onOpenChange }: Props) {
             change home cover
           </DialogTitle>
           <DialogDescription>
-            powered by unsplash · search any vibe and click a photo to set it as your home
-            cover. photographers are credited automatically.
+            powered by unsplash · search any vibe and click a photo to set it as your home cover.
+            photographers are credited automatically.
           </DialogDescription>
         </DialogHeader>
 

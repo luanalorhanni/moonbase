@@ -17,15 +17,7 @@ import { setHabitLog } from "@/lib/actions/habits";
 import type { HabitLogRow, HabitWithCategory } from "@/lib/queries/habits";
 import { cn } from "@/lib/utils";
 
-const EN_DAY_LONG = [
-  "sunday",
-  "monday",
-  "tuesday",
-  "wednesday",
-  "thursday",
-  "friday",
-  "saturday",
-];
+const EN_DAY_LONG = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
 
 function formatLong(iso: string): { weekday: string; date: string } {
   const [y, m, d] = iso.split("-").map(Number);
@@ -51,13 +43,7 @@ type Props = {
   onClose: () => void;
 };
 
-export function DayEditorDialog({
-  dateIso,
-  habits,
-  logsForDate,
-  todayIso,
-  onClose,
-}: Props) {
+export function DayEditorDialog({ dateIso, habits, logsForDate, todayIso, onClose }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   // Track the rows we've optimistically toggled so the UI updates instantly
@@ -152,7 +138,7 @@ export function DayEditorDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CalendarCheck aria-hidden className="size-4" strokeWidth={1.6} />
-            <span className="font-display text-[20px] font-light italic tracking-tight">
+            <span className="font-display text-[20px] font-light tracking-tight italic">
               {weekday}
             </span>
             <span className="text-muted-foreground/80 font-mono text-[10.5px] tracking-[0.16em] uppercase">
@@ -260,7 +246,7 @@ function HabitToggleRow({
             <span
               className={cn(
                 "truncate text-[13px] font-medium",
-                done && "text-muted-foreground line-through decoration-muted-foreground/40",
+                done && "text-muted-foreground decoration-muted-foreground/40 line-through",
               )}
             >
               {habit.name}
@@ -269,20 +255,12 @@ function HabitToggleRow({
           {habit.categoryName && (
             <span className="text-muted-foreground text-[10.5px]">
               {habit.categoryName} ·{" "}
-              {habit.schedule === "daily"
-                ? "daily"
-                : `${habit.targetPerWeek}× / week`}
+              {habit.schedule === "daily" ? "daily" : `${habit.targetPerWeek}× / week`}
             </span>
           )}
         </div>
         {/* Decorative streak hint stays subtle for the past-day editor. */}
-        {done && (
-          <Flame
-            aria-hidden
-            className="text-primary/60 size-3 shrink-0"
-            strokeWidth={2}
-          />
-        )}
+        {done && <Flame aria-hidden className="text-primary/60 size-3 shrink-0" strokeWidth={2} />}
       </button>
     </li>
   );
