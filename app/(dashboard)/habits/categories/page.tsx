@@ -3,7 +3,7 @@ import { listHabitCategories, listHabits } from "@/lib/queries/habits";
 import { HabitCategoriesList } from "./categories-list";
 
 export const metadata = {
-  title: "Categorias de hábitos — moonbase",
+  title: "Habit categories — moonbase",
 };
 
 export default async function HabitCategoriesPage() {

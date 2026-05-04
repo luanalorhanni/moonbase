@@ -254,11 +254,11 @@ export function CardClosingsDialog({
     // Block save if any closing override has an invalid day.
     for (const o of payload) {
       if (o.closingDay !== null && (o.closingDay < 1 || o.closingDay > 31)) {
-        toast.error(`Fechamento inválido em ${formatLong(o.referenceMonth)}.`);
+        toast.error(`invalid closing day in ${formatLong(o.referenceMonth)}.`);
         return;
       }
       if (o.dueDay !== null && (o.dueDay < 1 || o.dueDay > 31)) {
-        toast.error(`Vencimento inválido em ${formatLong(o.referenceMonth)}.`);
+        toast.error(`invalid due day in ${formatLong(o.referenceMonth)}.`);
         return;
       }
     }

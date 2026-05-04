@@ -90,7 +90,7 @@ export function CreditExpenseForm({ expense, cards, subcategories, onSuccess }: 
         : await createCreditExpense(values);
 
       if (result.ok) {
-        toast.success(expense ? "Despesa atualizada." : "Despesa registrada.");
+        toast.success(expense ? "expense updated." : "expense logged.");
         onSuccess();
         return;
       }
@@ -111,10 +111,10 @@ export function CreditExpenseForm({ expense, cards, subcategories, onSuccess }: 
     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
       <FieldGroup>
         <Field>
-          <FieldLabel htmlFor="ce-description">Descrição</FieldLabel>
+          <FieldLabel htmlFor="ce-description">description</FieldLabel>
           <Input
             id="ce-description"
-            placeholder="Ex: Notebook"
+            placeholder="e.g. laptop"
             disabled={isPending}
             {...form.register("description")}
           />
@@ -124,7 +124,7 @@ export function CreditExpenseForm({ expense, cards, subcategories, onSuccess }: 
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="ce-card">Cartão de crédito</FieldLabel>
+          <FieldLabel htmlFor="ce-card">credit card</FieldLabel>
           <Controller
             control={form.control}
             name="cardId"
@@ -136,7 +136,7 @@ export function CreditExpenseForm({ expense, cards, subcategories, onSuccess }: 
                 items={cardLabels}
               >
                 <SelectTrigger id="ce-card" className="w-full">
-                  <SelectValue placeholder="Selecione…" />
+                  <SelectValue placeholder="select…" />
                 </SelectTrigger>
                 <SelectContent>
                   {creditCards.map((card) => (
@@ -155,7 +155,7 @@ export function CreditExpenseForm({ expense, cards, subcategories, onSuccess }: 
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="ce-subcategory">Subcategoria</FieldLabel>
+          <FieldLabel htmlFor="ce-subcategory">subcategory</FieldLabel>
           <Controller
             control={form.control}
             name="subcategoryId"
@@ -167,7 +167,7 @@ export function CreditExpenseForm({ expense, cards, subcategories, onSuccess }: 
                 items={subcategoryLabels}
               >
                 <SelectTrigger id="ce-subcategory" className="w-full">
-                  <SelectValue placeholder="Selecione…" />
+                  <SelectValue placeholder="select…" />
                 </SelectTrigger>
                 <SelectContent>
                   {[...grouped.entries()].map(([categoryName, { icon, items }]) => (
@@ -193,7 +193,7 @@ export function CreditExpenseForm({ expense, cards, subcategories, onSuccess }: 
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="ce-purchase-date">Data da compra</FieldLabel>
+          <FieldLabel htmlFor="ce-purchase-date">purchase date</FieldLabel>
           <Input
             id="ce-purchase-date"
             type="date"
@@ -207,11 +207,11 @@ export function CreditExpenseForm({ expense, cards, subcategories, onSuccess }: 
 
         <div className="grid grid-cols-2 gap-4">
           <Field>
-            <FieldLabel htmlFor="ce-parcels">Parcelas</FieldLabel>
+            <FieldLabel htmlFor="ce-parcels">installments</FieldLabel>
             <Input
               id="ce-parcels"
               inputMode="numeric"
-              placeholder="Ex: 3"
+              placeholder="e.g. 3"
               disabled={isPending}
               {...form.register("totalParcels")}
             />
@@ -221,11 +221,11 @@ export function CreditExpenseForm({ expense, cards, subcategories, onSuccess }: 
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="ce-parcel-value">Valor por parcela</FieldLabel>
+            <FieldLabel htmlFor="ce-parcel-value">installment value</FieldLabel>
             <Input
               id="ce-parcel-value"
               inputMode="decimal"
-              placeholder="Ex: 199.90"
+              placeholder="e.g. 199.90"
               disabled={isPending}
               {...form.register("parcelValue")}
             />
@@ -235,7 +235,7 @@ export function CreditExpenseForm({ expense, cards, subcategories, onSuccess }: 
           </Field>
         </div>
         <FieldDescription className="-mt-3">
-          Use ponto como separador decimal (ex: 199.90).
+          use a period as the decimal separator (e.g. 199.90).
         </FieldDescription>
 
         <div className="flex items-start gap-3 rounded-md border px-3 py-3">
@@ -251,10 +251,10 @@ export function CreditExpenseForm({ expense, cards, subcategories, onSuccess }: 
               htmlFor="ce-manual-override"
               className="cursor-pointer text-sm leading-snug font-medium"
             >
-              Substituição manual
+              manual override
             </label>
             <p className="text-muted-foreground text-sm">
-              Mantém as datas de parcelamento existentes ao salvar, sem recalcular.
+              keeps the existing installment dates on save, without recalculating.
             </p>
           </div>
         </div>
@@ -262,10 +262,10 @@ export function CreditExpenseForm({ expense, cards, subcategories, onSuccess }: 
 
       <div className="flex justify-end gap-2">
         <Button type="button" variant="ghost" onClick={onSuccess} disabled={isPending}>
-          Cancelar
+          cancel
         </Button>
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Salvando..." : expense ? "Salvar" : "Registrar"}
+          {isPending ? "saving..." : expense ? "save" : "log"}
         </Button>
       </div>
     </form>

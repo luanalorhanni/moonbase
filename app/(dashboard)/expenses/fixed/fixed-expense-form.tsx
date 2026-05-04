@@ -94,7 +94,7 @@ export function FixedExpenseForm({ expense, cards, subcategories, onSuccess }: P
         : await createFixedExpense(values);
 
       if (result.ok) {
-        toast.success(expense ? "Despesa atualizada." : "Despesa registrada.");
+        toast.success(expense ? "expense updated." : "expense logged.");
         onSuccess();
         return;
       }
@@ -115,10 +115,10 @@ export function FixedExpenseForm({ expense, cards, subcategories, onSuccess }: P
     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
       <FieldGroup>
         <Field>
-          <FieldLabel htmlFor="fe-description">Descrição</FieldLabel>
+          <FieldLabel htmlFor="fe-description">description</FieldLabel>
           <Input
             id="fe-description"
-            placeholder="Ex: Spotify"
+            placeholder="e.g. spotify"
             disabled={isPending}
             {...form.register("description")}
           />
@@ -128,7 +128,7 @@ export function FixedExpenseForm({ expense, cards, subcategories, onSuccess }: P
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="fe-subcategory">Subcategoria</FieldLabel>
+          <FieldLabel htmlFor="fe-subcategory">subcategory</FieldLabel>
           <Controller
             control={form.control}
             name="subcategoryId"
@@ -140,7 +140,7 @@ export function FixedExpenseForm({ expense, cards, subcategories, onSuccess }: P
                 items={subcategoryLabels}
               >
                 <SelectTrigger id="fe-subcategory" className="w-full">
-                  <SelectValue placeholder="Selecione…" />
+                  <SelectValue placeholder="select…" />
                 </SelectTrigger>
                 <SelectContent>
                   {[...grouped.entries()].map(([categoryName, { icon, items }]) => (
@@ -167,7 +167,7 @@ export function FixedExpenseForm({ expense, cards, subcategories, onSuccess }: P
 
         <div className="grid grid-cols-2 gap-4">
           <Field>
-            <FieldLabel htmlFor="fe-card">Cartão / Conta</FieldLabel>
+            <FieldLabel htmlFor="fe-card">card / account</FieldLabel>
             <Controller
               control={form.control}
               name="cardId"
@@ -179,7 +179,7 @@ export function FixedExpenseForm({ expense, cards, subcategories, onSuccess }: P
                   items={cardLabels}
                 >
                   <SelectTrigger id="fe-card" className="w-full">
-                    <SelectValue placeholder="Selecione…" />
+                    <SelectValue placeholder="select…" />
                   </SelectTrigger>
                   <SelectContent>
                     {cards.map((card) => (
@@ -198,7 +198,7 @@ export function FixedExpenseForm({ expense, cards, subcategories, onSuccess }: P
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="fe-method">Método</FieldLabel>
+            <FieldLabel htmlFor="fe-method">method</FieldLabel>
             <Controller
               control={form.control}
               name="paymentMethod"
@@ -227,11 +227,11 @@ export function FixedExpenseForm({ expense, cards, subcategories, onSuccess }: P
 
         <div className="grid grid-cols-2 gap-4">
           <Field>
-            <FieldLabel htmlFor="fe-amount">Valor mensal</FieldLabel>
+            <FieldLabel htmlFor="fe-amount">monthly amount</FieldLabel>
             <Input
               id="fe-amount"
               inputMode="decimal"
-              placeholder="Ex: 29.90"
+              placeholder="e.g. 29.90"
               disabled={isPending}
               {...form.register("monthlyAmount")}
             />
@@ -241,11 +241,11 @@ export function FixedExpenseForm({ expense, cards, subcategories, onSuccess }: P
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="fe-due-day">Dia de vencimento</FieldLabel>
+            <FieldLabel htmlFor="fe-due-day">due day</FieldLabel>
             <Input
               id="fe-due-day"
               inputMode="numeric"
-              placeholder="Ex: 5"
+              placeholder="e.g. 5"
               disabled={isPending}
               {...form.register("dueDay")}
             />
@@ -255,12 +255,12 @@ export function FixedExpenseForm({ expense, cards, subcategories, onSuccess }: P
           </Field>
         </div>
         <FieldDescription className="-mt-3">
-          Deixe o dia de vencimento em branco se não aplicável.
+          leave the due day empty if not applicable.
         </FieldDescription>
 
         <div className="grid grid-cols-2 gap-4">
           <Field>
-            <FieldLabel htmlFor="fe-start-date">Início</FieldLabel>
+            <FieldLabel htmlFor="fe-start-date">start</FieldLabel>
             <Input
               id="fe-start-date"
               type="date"
@@ -273,7 +273,7 @@ export function FixedExpenseForm({ expense, cards, subcategories, onSuccess }: P
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="fe-end-date">Fim</FieldLabel>
+            <FieldLabel htmlFor="fe-end-date">end</FieldLabel>
             <Input
               id="fe-end-date"
               type="date"
@@ -286,7 +286,7 @@ export function FixedExpenseForm({ expense, cards, subcategories, onSuccess }: P
           </Field>
         </div>
         <FieldDescription className="-mt-3">
-          Deixe o fim em branco se ainda está ativo.
+          leave the end date empty if still active.
         </FieldDescription>
 
         <div className="flex items-start gap-3 rounded-md border px-3 py-3">
@@ -305,7 +305,7 @@ export function FixedExpenseForm({ expense, cards, subcategories, onSuccess }: P
               Ativo
             </label>
             <p className="text-muted-foreground text-sm">
-              Despesas inativas não são incluídas nos totais mensais.
+              inactive expenses are not included in the monthly totals.
             </p>
           </div>
         </div>
@@ -313,10 +313,10 @@ export function FixedExpenseForm({ expense, cards, subcategories, onSuccess }: P
 
       <div className="flex justify-end gap-2">
         <Button type="button" variant="ghost" onClick={onSuccess} disabled={isPending}>
-          Cancelar
+          cancel
         </Button>
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Salvando..." : expense ? "Salvar" : "Registrar"}
+          {isPending ? "saving..." : expense ? "save" : "log"}
         </Button>
       </div>
     </form>

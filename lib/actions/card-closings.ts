@@ -55,18 +55,18 @@ export async function saveCardClosings(
     .where(and(eq(schema.cards.id, cardId), eq(schema.cards.userId, user.id)))
     .limit(1);
   const card = cardRows[0];
-  if (!card) return { ok: false, error: "Cartão não encontrado." };
+  if (!card) return { ok: false, error: "card not found." };
   if (card.type !== "credit") {
-    return { ok: false, error: "Apenas cartões de crédito têm fechamento." };
+    return { ok: false, error: "only credit cards have a closing day." };
   }
   if (card.defaultClosingDay === null) {
-    return { ok: false, error: "Configure o dia de fechamento padrão do cartão primeiro." };
+    return { ok: false, error: "set the card's default closing day first." };
   }
 
   // Validate inputs before touching the DB.
   for (const row of overrides) {
     if (!/^\d{4}-\d{2}-01$/.test(row.referenceMonth)) {
-      return { ok: false, error: `Mês inválido: ${row.referenceMonth}` };
+      return { ok: false, error: `invalid month: ${row.referenceMonth}` };
     }
     if (row.closingDay !== null && (row.closingDay < 1 || row.closingDay > 31)) {
       return { ok: false, error: `Fechamento fora do intervalo (${row.closingDay}).` };

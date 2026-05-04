@@ -56,7 +56,7 @@ export function FixedIncomeForm({ item, onSuccess }: Props) {
         : await createFixedIncome(values);
 
       if (result.ok) {
-        toast.success(item ? "Investimento atualizado." : "Investimento registrado.");
+        toast.success(item ? "investment updated." : "investment logged.");
         onSuccess();
         return;
       }
@@ -78,10 +78,10 @@ export function FixedIncomeForm({ item, onSuccess }: Props) {
       <FieldGroup>
         <div className="grid grid-cols-2 gap-4">
           <Field>
-            <FieldLabel htmlFor="fi-title">Nome</FieldLabel>
+            <FieldLabel htmlFor="fi-title">name</FieldLabel>
             <Input
               id="fi-title"
-              placeholder="Ex: LCI Bradesco"
+              placeholder="e.g. LCI Bradesco"
               disabled={isPending}
               {...form.register("title")}
             />
@@ -91,10 +91,10 @@ export function FixedIncomeForm({ item, onSuccess }: Props) {
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="fi-bank">Banco</FieldLabel>
+            <FieldLabel htmlFor="fi-bank">bank</FieldLabel>
             <Input
               id="fi-bank"
-              placeholder="Ex: Bradesco"
+              placeholder="e.g. Bradesco"
               disabled={isPending}
               {...form.register("bank")}
             />
@@ -106,11 +106,11 @@ export function FixedIncomeForm({ item, onSuccess }: Props) {
 
         <div className="grid grid-cols-2 gap-4">
           <Field>
-            <FieldLabel htmlFor="fi-applied">Valor aplicado</FieldLabel>
+            <FieldLabel htmlFor="fi-applied">applied amount</FieldLabel>
             <Input
               id="fi-applied"
               inputMode="decimal"
-              placeholder="Ex: 10000.00"
+              placeholder="e.g. 10000.00"
               disabled={isPending}
               {...form.register("appliedAmount")}
             />
@@ -120,11 +120,11 @@ export function FixedIncomeForm({ item, onSuccess }: Props) {
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="fi-yield">Rendimento atual</FieldLabel>
+            <FieldLabel htmlFor="fi-yield">current yield</FieldLabel>
             <Input
               id="fi-yield"
               inputMode="decimal"
-              placeholder="Ex: 10350.00"
+              placeholder="e.g. 10350.00"
               disabled={isPending}
               {...form.register("latestYield")}
             />
@@ -134,12 +134,12 @@ export function FixedIncomeForm({ item, onSuccess }: Props) {
           </Field>
         </div>
         <FieldDescription className="-mt-3">
-          Valor total atual do investimento incluindo rendimento.
+          total current value of the investment including yield.
         </FieldDescription>
 
         <div className="grid grid-cols-2 gap-4">
           <Field>
-            <FieldLabel htmlFor="fi-app-date">Data de aplicação</FieldLabel>
+            <FieldLabel htmlFor="fi-app-date">application date</FieldLabel>
             <Input
               id="fi-app-date"
               type="date"
@@ -152,7 +152,7 @@ export function FixedIncomeForm({ item, onSuccess }: Props) {
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="fi-maturity">Vencimento</FieldLabel>
+            <FieldLabel htmlFor="fi-maturity">maturity</FieldLabel>
             <Input
               id="fi-maturity"
               type="date"
@@ -166,7 +166,7 @@ export function FixedIncomeForm({ item, onSuccess }: Props) {
         </div>
 
         <Field>
-          <FieldLabel htmlFor="fi-update-date">Última atualização</FieldLabel>
+          <FieldLabel htmlFor="fi-update-date">last update</FieldLabel>
           <Input
             id="fi-update-date"
             type="date"
@@ -194,7 +194,7 @@ export function FixedIncomeForm({ item, onSuccess }: Props) {
               Ativo
             </label>
             <p className="text-muted-foreground text-sm">
-              Investimentos inativos não são somados ao patrimônio.
+              inactive investments are not added to the total balance.
             </p>
           </div>
         </div>
@@ -202,10 +202,10 @@ export function FixedIncomeForm({ item, onSuccess }: Props) {
 
       <div className="flex justify-end gap-2">
         <Button type="button" variant="ghost" onClick={onSuccess} disabled={isPending}>
-          Cancelar
+          cancel
         </Button>
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Salvando..." : item ? "Salvar" : "Registrar"}
+          {isPending ? "saving..." : item ? "save" : "log"}
         </Button>
       </div>
     </form>

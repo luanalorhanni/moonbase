@@ -98,7 +98,7 @@ export function InvestmentUpdatesDialog({ open, onOpenChange, investment, update
     e.preventDefault();
     if (!investment) return;
     if (!currentValue.trim()) {
-      setValueError("informe o valor atual.");
+      setValueError("enter the current value.");
       return;
     }
     startTransition(async () => {
@@ -110,7 +110,7 @@ export function InvestmentUpdatesDialog({ open, onOpenChange, investment, update
         notes: notes.trim() || null,
       });
       if (result.ok) {
-        toast.success("atualização registrada.");
+        toast.success("update logged.");
         reset();
         router.refresh();
       } else {
@@ -125,7 +125,7 @@ export function InvestmentUpdatesDialog({ open, onOpenChange, investment, update
     startTransition(async () => {
       const result = await deleteInvestmentUpdate(updateId);
       if (result.ok) {
-        toast.success("atualização removida.");
+        toast.success("update removed.");
         router.refresh();
       } else {
         toast.error(result.error);
@@ -143,10 +143,10 @@ export function InvestmentUpdatesDialog({ open, onOpenChange, investment, update
     >
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>histórico de atualizações</DialogTitle>
+          <DialogTitle>update history</DialogTitle>
           <DialogDescription>
             {investment
-              ? `${investment.title} · ${investment.bank} · aplicado em ${formatDate(investment.applicationDate)}`
+              ? `${investment.title} · ${investment.bank} · applied on ${formatDate(investment.applicationDate)}`
               : null}
           </DialogDescription>
         </DialogHeader>
@@ -154,12 +154,12 @@ export function InvestmentUpdatesDialog({ open, onOpenChange, investment, update
         {/* ── New update form ─────────────────────────────────────── */}
         <form onSubmit={handleSubmit} className="border-border bg-muted/30 rounded-lg border p-4">
           <h3 className="text-foreground mb-3 text-[12.5px] font-medium">
-            registrar atualização do valor
+            log a value update
           </h3>
           <FieldGroup>
             <div className="grid grid-cols-2 gap-3">
               <Field>
-                <FieldLabel htmlFor="recordedOn">data</FieldLabel>
+                <FieldLabel htmlFor="recordedOn">date</FieldLabel>
                 <Input
                   id="recordedOn"
                   type="date"
@@ -169,7 +169,7 @@ export function InvestmentUpdatesDialog({ open, onOpenChange, investment, update
                 />
               </Field>
               <Field data-invalid={valueError ? "" : undefined}>
-                <FieldLabel htmlFor="currentValue">valor atual</FieldLabel>
+                <FieldLabel htmlFor="currentValue">current value</FieldLabel>
                 <Input
                   id="currentValue"
                   inputMode="decimal"
@@ -187,10 +187,10 @@ export function InvestmentUpdatesDialog({ open, onOpenChange, investment, update
               </Field>
             </div>
             <Field>
-              <FieldLabel htmlFor="notes">notas (opcional)</FieldLabel>
+              <FieldLabel htmlFor="notes">notes (optional)</FieldLabel>
               <Input
                 id="notes"
-                placeholder="ex: rendimento mensal, aporte, resgate parcial"
+                placeholder="e.g. monthly yield, deposit, partial withdrawal"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
               />
@@ -199,7 +199,7 @@ export function InvestmentUpdatesDialog({ open, onOpenChange, investment, update
           <div className="mt-4 flex justify-end">
             <Button type="submit" size="sm" disabled={isPending || !investment}>
               <Plus aria-hidden className="size-3.5" />
-              {isPending ? "salvando..." : "registrar"}
+              {isPending ? "saving..." : "log"}
             </Button>
           </div>
         </form>
@@ -208,11 +208,11 @@ export function InvestmentUpdatesDialog({ open, onOpenChange, investment, update
         {investment && (
           <div className="mt-4 flex flex-col gap-2">
             <h3 className="text-muted-foreground font-mono text-[10.5px] tracking-[0.18em] uppercase">
-              histórico
+              history
             </h3>
             {enriched.length === 0 ? (
               <p className="text-muted-foreground rounded-lg border border-dashed py-6 text-center text-[12.5px]">
-                ainda sem atualizações registradas. cadastre a primeira acima.
+                no updates logged yet. add the first one above.
               </p>
             ) : (
               <ul className="divide-border divide-y rounded-lg border">
@@ -233,14 +233,14 @@ export function InvestmentUpdatesDialog({ open, onOpenChange, investment, update
                       <span className="numeric text-foreground text-[14px] font-semibold tabular-nums">
                         {formatBRL(value)}
                       </span>
-                      <DeltaBadge label="vs aplicado" delta={gainVsApplied} />
+                      <DeltaBadge label="vs applied" delta={gainVsApplied} />
                       {gainVsPrior != null && (
-                        <DeltaBadge label="vs anterior" delta={gainVsPrior} subtle />
+                        <DeltaBadge label="vs prior" delta={gainVsPrior} subtle />
                       )}
                     </div>
                     <button
                       type="button"
-                      aria-label="remover"
+                      aria-label="remove"
                       disabled={isPending}
                       onClick={() => handleDelete(row.id)}
                       className="text-muted-foreground/70 hover:text-destructive inline-flex size-7 items-center justify-center rounded-md transition-colors"
