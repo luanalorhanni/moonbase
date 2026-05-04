@@ -207,17 +207,17 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
       {/* ── trend (full width, expanded) ────────────────────────────── */}
       <div className="border-border flex shrink-0 flex-col border-b">
         <PanelHeader title="trend" subtitle="payment month · incomes · expenses · balance" />
-        {/* Soft legend strip — sits between the panel header and the
-            chart canvas, separated from both with a hairline of muted
-            border so the plot area reads as its own focused field. */}
-        <div className="border-border/50 bg-muted/20 flex items-center justify-end border-b px-5 py-2">
-          <div className="text-muted-foreground/80 flex items-center gap-4 font-mono text-[10.5px] tracking-wider">
+        {/* Legend strip — its own band of breathing room above the plot,
+            separated from the chart canvas by a hairline of muted border
+            so the grid never feels glued to the swatches. */}
+        <div className="border-border/50 bg-muted/20 flex items-center justify-end border-b px-5 py-3">
+          <div className="text-muted-foreground/80 flex items-center gap-5 font-mono text-[10.5px] tracking-wider">
             <LegendDot color="oklch(0.74 0.13 160)" label="incomes" filled />
             <LegendDot color="oklch(0.62 0.18 25)" label="expenses" filled />
             <LegendDot color="oklch(0.65 0.10 270)" label="balance" filled />
           </div>
         </div>
-        <div className="min-h-[420px] flex-1 px-3 pt-4 pb-4 md:px-5">
+        <div className="min-h-[340px] flex-1 px-3 pt-7 pb-5 md:px-5">
           <TrendChart
             data={trendData}
             series={["incomes", "expenses", "net"]}
