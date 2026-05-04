@@ -18,6 +18,15 @@ export const journalEntrySchema = z
     mood: z
       .union([z.number().int().min(1).max(5), z.null(), z.undefined()])
       .transform((v) => (v === undefined ? null : v)),
+    /** Trimmed list of gratitude items. Empty entries are dropped, an
+     *  all-empty list collapses to null so the column stays sparse. */
+    gratitude: z
+      .union([z.array(z.string()), z.null(), z.undefined()])
+      .transform((v) => {
+        if (!v) return null;
+        const cleaned = v.map((s) => s.trim()).filter((s) => s.length > 0);
+        return cleaned.length > 0 ? cleaned : null;
+      }),
     content: trimmedNullable,
     coverUrl: trimmedNullable,
     coverThumbUrl: trimmedNullable,
@@ -27,10 +36,14 @@ export const journalEntrySchema = z
     coverUnsplashId: trimmedNullable,
   })
   .refine(
-    // At least one of mood / content / cover should be present — an
-    // entry that's purely empty is just noise.
-    (e) => e.mood !== null || e.content !== null || e.coverUrl !== null,
-    { message: "registre pelo menos um humor, texto ou capa." },
+    // At least one of mood / gratitude / content / cover should be
+    // present — an entry that's purely empty is just noise.
+    (e) =>
+      e.mood !== null ||
+      e.gratitude !== null ||
+      e.content !== null ||
+      e.coverUrl !== null,
+    { message: "registre pelo menos um humor, motivo, texto ou capa." },
   );
 
 export type JournalEntryInput = z.input<typeof journalEntrySchema>;
