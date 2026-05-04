@@ -163,7 +163,7 @@ function SpotifyDialog({
           />
           {value && !ref && (
             <p className="text-destructive text-[11.5px]">
-              couldn't parse this — check the link is from spotify.
+              couldn&apos;t parse this — check the link is from spotify.
             </p>
           )}
           {error && (

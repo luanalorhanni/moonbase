@@ -203,11 +203,11 @@ export function EntryFormDialog({ open, onOpenChange, entries, initialDate }: Pr
               </div>
               {isFutureDate ? (
                 <span className="text-destructive text-[11.5px]">
-                  can't log the future — pick today or an earlier day.
+                  can&apos;t log the future — pick today or an earlier day.
                 </span>
               ) : isEditing ? (
                 <span className="text-muted-foreground/70 text-[11.5px]">
-                  this day already has an entry — you're editing it.
+                  this day already has an entry — you&apos;re editing it.
                 </span>
               ) : (
                 <span className="text-muted-foreground/70 text-[11.5px]">

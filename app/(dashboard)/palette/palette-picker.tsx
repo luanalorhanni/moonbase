@@ -51,7 +51,7 @@ export function PalettePicker({ palettes, activeId }: Props) {
               (paper, neutrals, semantic signals) stays stable so reading stays calm.
             </p>
             <p className="text-muted-foreground text-[12.5px]">
-              the choice applies to both modes (light and dark). switch as many times as you'd like.
+              the choice applies to both modes (light and dark). switch as many times as you&apos;d like.
             </p>
           </div>
         </header>

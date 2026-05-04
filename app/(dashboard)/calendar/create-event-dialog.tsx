@@ -144,7 +144,7 @@ export function CreateEventDialog({ open, onOpenChange, calendars, defaultDate }
             </DialogTitle>
           </DialogHeader>
           <p className="text-muted-foreground py-4 text-[13px]">
-            you don't have any calendars with write permission. ask the owner for "writer" access or
+            you don&apos;t have any calendars with write permission. ask the owner for &quot;writer&quot; access or
             create your own calendar in google.
           </p>
         </DialogContent>
