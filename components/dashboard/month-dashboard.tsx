@@ -36,10 +36,7 @@ const PT_METHOD: Record<string, string> = {
 };
 
 export async function MonthDashboard({ reference }: { reference: MonthRef }) {
-  const [summary, liquidSavings] = await Promise.all([
-    loadMonth(reference),
-    listLiquidSavings(),
-  ]);
+  const [summary, liquidSavings] = await Promise.all([loadMonth(reference), listLiquidSavings()]);
   const totalLiquidSavings = liquidSavings
     .filter((i) => i.isActive)
     .reduce((acc, i) => acc + Number(i.latestYield), 0)
@@ -347,108 +344,109 @@ export async function MonthDashboard({ reference }: { reference: MonthRef }) {
         <HistoricalLock reference={reference} />
       ) : (
         <>
-
-      {/* ── mid grid: trend | breakdowns | activity ─────────────────── */}
-      <div className="grid min-h-0 shrink-0 grid-cols-1 lg:grid-cols-12">
-        {/* expenses breakdown — cash + credit grouped, like the spreadsheet */}
-        <div className="border-border flex min-h-0 flex-col lg:col-span-7 lg:border-r">
-          <PanelHeader
-            title="expenses"
-            right={
-              <span className="numeric text-primary text-[13px] font-semibold tabular-nums">
-                {formatCurrency(String(paymentMethodTotal))}
-              </span>
-            }
-          />
-          <div className="flex flex-col gap-5 px-5 py-4">
-            {/* cash group — pix / debit / cash are payment methods of
+          {/* ── mid grid: trend | breakdowns | activity ─────────────────── */}
+          <div className="grid min-h-0 shrink-0 grid-cols-1 lg:grid-cols-12">
+            {/* expenses breakdown — cash + credit grouped, like the spreadsheet */}
+            <div className="border-border flex min-h-0 flex-col lg:col-span-7 lg:border-r">
+              <PanelHeader
+                title="expenses"
+                right={
+                  <span className="numeric text-primary text-[13px] font-semibold tabular-nums">
+                    {formatCurrency(String(paymentMethodTotal))}
+                  </span>
+                }
+              />
+              <div className="flex flex-col gap-5 px-5 py-4">
+                {/* cash group — pix / debit / cash are payment methods of
                 cash_expenses; "fixed" is the recurring fixed_expenses
                 paid in cash (subscriptions, gym, etc.) shown side by
                 side so they don't get lumped into the cash bucket. */}
-            <div className="flex flex-col gap-2.5">
-              <GroupHeader
-                label="cash"
-                total={cashByMethod.pix + cashByMethod.debit + cashByMethod.cash + fixedCashTotal}
-              />
-              <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
-                <Tile label="pix" value={cashByMethod.pix} />
-                <Tile label="debit" value={cashByMethod.debit} />
-                <Tile label="cash" value={cashByMethod.cash} />
-                <Tile label="fixed" value={fixedCashTotal} />
+                <div className="flex flex-col gap-2.5">
+                  <GroupHeader
+                    label="cash"
+                    total={
+                      cashByMethod.pix + cashByMethod.debit + cashByMethod.cash + fixedCashTotal
+                    }
+                  />
+                  <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+                    <Tile label="pix" value={cashByMethod.pix} />
+                    <Tile label="debit" value={cashByMethod.debit} />
+                    <Tile label="cash" value={cashByMethod.cash} />
+                    <Tile label="fixed" value={fixedCashTotal} />
+                  </div>
+                </div>
+
+                {/* credit group */}
+                <div className="flex flex-col gap-2.5">
+                  <GroupHeader
+                    label="credit"
+                    total={Number(summary.totalCreditExpenses) + fixedCreditTotal}
+                  />
+                  {creditByCard.length === 0 ? (
+                    <p className="text-muted-foreground py-2 text-[12px]">
+                      no credit charges this month.
+                    </p>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
+                      {creditByCard.map((c) => (
+                        <Tile
+                          key={c.id}
+                          label={c.name}
+                          value={c.total}
+                          accent
+                          color={c.color}
+                          billTotal={c.receivable > 0 ? c.billTotal : undefined}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* credit group */}
-            <div className="flex flex-col gap-2.5">
-              <GroupHeader
-                label="credit"
-                total={Number(summary.totalCreditExpenses) + fixedCreditTotal}
+            {/* expenses by category */}
+            <div className="border-border lg:col-span-5">
+              <PanelHeader
+                title="by category"
+                subtitle="cash + credit + recurring"
+                right={
+                  topCategory && (
+                    <span className="text-muted-foreground/70 font-mono text-[11px] tracking-wider">
+                      <span className="text-foreground">{topCategory.label}</span>{" "}
+                      <span className="numeric text-foreground/70 tabular-nums">
+                        {formatCurrency(String(topCategory.total))}
+                      </span>
+                    </span>
+                  )
+                }
               />
-              {creditByCard.length === 0 ? (
-                <p className="text-muted-foreground py-2 text-[12px]">
-                  no credit charges this month.
-                </p>
-              ) : (
-                <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
-                  {creditByCard.map((c) => (
-                    <Tile
-                      key={c.id}
-                      label={c.name}
-                      value={c.total}
-                      accent
-                      color={c.color}
-                      billTotal={c.receivable > 0 ? c.billTotal : undefined}
-                    />
-                  ))}
-                </div>
-              )}
+              <div className="max-h-[300px] overflow-auto px-2 py-2">
+                <CategoryBreakdownChart data={categoryChartData} />
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* expenses by category */}
-        <div className="border-border lg:col-span-5">
-          <PanelHeader
-            title="by category"
-            subtitle="cash + credit + recurring"
-            right={
-              topCategory && (
-                <span className="text-muted-foreground/70 font-mono text-[11px] tracking-wider">
-                  <span className="text-foreground">{topCategory.label}</span>{" "}
-                  <span className="numeric text-foreground/70 tabular-nums">
-                    {formatCurrency(String(topCategory.total))}
-                  </span>
-                </span>
-              )
-            }
-          />
-          <div className="max-h-[300px] overflow-auto px-2 py-2">
-            <CategoryBreakdownChart data={categoryChartData} />
+          {/* shared total — spans both panels above */}
+          <div className="border-border bg-primary/[0.05] flex shrink-0 items-baseline justify-between border-t border-b px-5 py-3">
+            <span className="text-foreground/70 font-mono text-[11.5px] tracking-[0.22em]">
+              total expenses
+            </span>
+            <span className="numeric text-primary text-[16px] font-semibold tabular-nums">
+              {formatCurrency(String(paymentMethodTotal))}
+            </span>
           </div>
-        </div>
-      </div>
 
-      {/* shared total — spans both panels above */}
-      <div className="border-border bg-primary/[0.05] flex shrink-0 items-baseline justify-between border-t border-b px-5 py-3">
-        <span className="text-foreground/70 font-mono text-[11.5px] tracking-[0.22em]">
-          total expenses
-        </span>
-        <span className="numeric text-primary text-[16px] font-semibold tabular-nums">
-          {formatCurrency(String(paymentMethodTotal))}
-        </span>
-      </div>
-
-      {/* ── detail tabs (bottom, fills rest) ────────────────────────── */}
-      <DetailTabs
-        lists={detailLists}
-        totals={{
-          cash: summary.totalCashExpenses,
-          credit: summary.totalCreditExpenses,
-          fixed: summary.totalFixedExpenses,
-          incomes: summary.totalIncomes,
-          receivables: summary.totalReceivables,
-        }}
-      />
+          {/* ── detail tabs (bottom, fills rest) ────────────────────────── */}
+          <DetailTabs
+            lists={detailLists}
+            totals={{
+              cash: summary.totalCashExpenses,
+              credit: summary.totalCreditExpenses,
+              fixed: summary.totalFixedExpenses,
+              incomes: summary.totalIncomes,
+              receivables: summary.totalReceivables,
+            }}
+          />
         </>
       )}
     </div>
@@ -461,13 +459,13 @@ function HistoricalLock({ reference }: { reference: MonthRef }) {
       <span className="bg-muted text-muted-foreground inline-flex size-10 items-center justify-center rounded-full">
         <PixelMoonFull size={14} className="text-primary/60" />
       </span>
-      <h3 className="font-display text-foreground text-[18px] font-light italic tracking-tight">
+      <h3 className="font-display text-foreground text-[18px] font-light tracking-tight italic">
         historical records
       </h3>
       <p className="text-muted-foreground/85 max-w-md text-[13px] leading-relaxed">
-        no per-transaction detail for {formatMonthLong(reference)} — this month was
-        seeded from the spreadsheet before active tracking began. the totals above
-        already count toward the cumulative balance, but you can't edit records here.
+        no per-transaction detail for {formatMonthLong(reference)} — this month was seeded from the
+        spreadsheet before active tracking began. the totals above already count toward the
+        cumulative balance, but you can't edit records here.
       </p>
       <span className="text-muted-foreground/60 mt-1 font-mono text-[10px] tracking-[0.18em] uppercase">
         snapshot · locked

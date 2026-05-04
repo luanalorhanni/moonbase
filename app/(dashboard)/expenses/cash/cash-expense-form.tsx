@@ -277,9 +277,7 @@ export function CashExpenseForm({
                 className="border-input mt-0.5 size-4 rounded border accent-current"
               />
               <span className="flex flex-1 flex-col gap-0.5">
-                <span className="text-foreground text-[13px] font-medium">
-                  Tirei do cofrinho?
-                </span>
+                <span className="text-foreground text-[13px] font-medium">Tirei do cofrinho?</span>
                 <span className="text-muted-foreground text-[11.5px]">
                   when checked, the amount is deducted automatically from the savings balance.
                 </span>

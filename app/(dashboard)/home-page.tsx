@@ -130,9 +130,27 @@ const REGISTER_CARDS: Card[] = [
 ];
 
 const CONFIG_CARDS: Card[] = [
-  { href: "/cards", label: "cards", description: "credit + accounts", icon: CreditCard, tone: "aqua" },
-  { href: "/categories", label: "categories", description: "classify expenses", icon: Tag, tone: "mauve" },
-  { href: "/palette", label: "palette", description: "system color story", icon: Palette, tone: "sand" },
+  {
+    href: "/cards",
+    label: "cards",
+    description: "credit + accounts",
+    icon: CreditCard,
+    tone: "aqua",
+  },
+  {
+    href: "/categories",
+    label: "categories",
+    description: "classify expenses",
+    icon: Tag,
+    tone: "mauve",
+  },
+  {
+    href: "/palette",
+    label: "palette",
+    description: "system color story",
+    icon: Palette,
+    tone: "sand",
+  },
 ];
 
 const TONE_CLASSES: Record<Card["tone"], string> = {
@@ -172,14 +190,8 @@ function MoonForToday() {
   const Glyph = day % 2 === 0 ? PixelMoonFull : PixelMoonCrescent;
   return (
     <span className="relative inline-block shrink-0">
-      <Glyph
-        size={48}
-        className="text-white drop-shadow-[0_0_18px_oklch(0.65_0.10_200/0.85)]"
-      />
-      <PixelStarSmall
-        size={5}
-        className="absolute -top-1 -right-1.5 animate-pulse text-white/90"
-      />
+      <Glyph size={48} className="text-white drop-shadow-[0_0_18px_oklch(0.65_0.10_200/0.85)]" />
+      <PixelStarSmall size={5} className="absolute -top-1 -right-1.5 animate-pulse text-white/90" />
     </span>
   );
 }
@@ -230,15 +242,15 @@ export function HomePage({ settings }: { settings: UserSettingsRow | null }) {
         </div>
 
         <div className="relative flex min-h-[440px] flex-col justify-end gap-5 px-8 pt-16 pb-8 md:min-h-[520px] md:px-12 md:pt-24 md:pb-12">
-          <div className="flex animate-in fade-in slide-in-from-bottom-4 flex-col gap-2 duration-700">
-            <span className="text-white/70 flex items-center gap-2 font-mono text-[11px] tracking-[0.32em] uppercase">
+          <div className="animate-in fade-in slide-in-from-bottom-4 flex flex-col gap-2 duration-700">
+            <span className="flex items-center gap-2 font-mono text-[11px] tracking-[0.32em] text-white/70 uppercase">
               <PixelStarSmall size={5} className="text-white" />
               moonbase
             </span>
-            <h1 className="font-display text-white flex flex-wrap items-center gap-x-4 gap-y-2 leading-none tracking-[-0.04em]">
+            <h1 className="font-display flex flex-wrap items-center gap-x-4 gap-y-2 leading-none tracking-[-0.04em] text-white">
               <MoonForToday />
               <span className="text-[44px] font-light italic md:text-[72px]">{greeting}</span>
-              <span className="text-white/60 font-display text-[20px] font-light italic md:text-[26px]">
+              <span className="font-display text-[20px] font-light text-white/60 italic md:text-[26px]">
                 luana
               </span>
             </h1>
@@ -246,16 +258,16 @@ export function HomePage({ settings }: { settings: UserSettingsRow | null }) {
 
           {customQuote ? (
             <blockquote className="animate-in fade-in slide-in-from-bottom-2 max-w-2xl duration-1000">
-              <p className="text-white/85 font-display flex items-start gap-3 text-[16px] leading-relaxed font-light italic md:text-[18px]">
+              <p className="font-display flex items-start gap-3 text-[16px] leading-relaxed font-light text-white/85 italic md:text-[18px]">
                 <Quote
                   aria-hidden
-                  className="text-white/40 mt-1 size-4 shrink-0"
+                  className="mt-1 size-4 shrink-0 text-white/40"
                   strokeWidth={1.5}
                 />
                 <span>{customQuote}</span>
               </p>
               {customQuoteAuthor && (
-                <cite className="text-white/55 mt-2 ml-7 block font-mono text-[10.5px] tracking-[0.18em] not-italic uppercase">
+                <cite className="mt-2 ml-7 block font-mono text-[10.5px] tracking-[0.18em] text-white/55 uppercase not-italic">
                   — {customQuoteAuthor}
                 </cite>
               )}
@@ -266,7 +278,7 @@ export function HomePage({ settings }: { settings: UserSettingsRow | null }) {
 
           {/* Cover attribution + change button */}
           <div className="mt-2 flex items-center justify-between gap-3">
-            <span className="text-white/50 font-mono text-[10px] tracking-wider">
+            <span className="font-mono text-[10px] tracking-wider text-white/50">
               {photographerName ? (
                 <>
                   photo by{" "}
@@ -274,7 +286,7 @@ export function HomePage({ settings }: { settings: UserSettingsRow | null }) {
                     href={`${photographerUrl}?utm_source=moonbase&utm_medium=referral`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="hover:text-white/80 underline-offset-2 hover:underline"
+                    className="underline-offset-2 hover:text-white/80 hover:underline"
                   >
                     {photographerName}
                   </a>{" "}
@@ -283,7 +295,7 @@ export function HomePage({ settings }: { settings: UserSettingsRow | null }) {
                     href="https://unsplash.com/?utm_source=moonbase&utm_medium=referral"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="hover:text-white/80 underline-offset-2 hover:underline"
+                    className="underline-offset-2 hover:text-white/80 hover:underline"
                   >
                     unsplash
                   </a>
@@ -295,7 +307,7 @@ export function HomePage({ settings }: { settings: UserSettingsRow | null }) {
             <button
               type="button"
               onClick={() => setCoverPickerOpen(true)}
-              className="border-white/20 bg-white/10 hover:bg-white/20 hover:border-white/40 inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-[11.5px] text-white backdrop-blur-md transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-md border border-white/20 bg-white/10 px-3 py-1.5 text-[11.5px] text-white backdrop-blur-md transition-colors hover:border-white/40 hover:bg-white/20"
             >
               <ImageIcon aria-hidden className="size-3" strokeWidth={1.6} />
               change cover
@@ -306,17 +318,36 @@ export function HomePage({ settings }: { settings: UserSettingsRow | null }) {
 
       {/* ── SECTIONS ───────────────────────────────────────────────── */}
       <div className="relative flex flex-col px-6 py-10 md:px-10 md:py-14">
-        <div className="animate-in fade-in slide-in-from-bottom-2 duration-700" style={{ animationDelay: "50ms", animationFillMode: "both" }}>
+        <div
+          className="animate-in fade-in slide-in-from-bottom-2 duration-700"
+          style={{ animationDelay: "50ms", animationFillMode: "both" }}
+        >
           <SpotifyEmbed url={settings?.homeSpotifyUrl ?? null} />
         </div>
         <SectionDivider />
-        <SectionGrid title="routines" caption="routines and rituals" cards={ROUTINE_CARDS} delay={150} />
+        <SectionGrid
+          title="routines"
+          caption="routines and rituals"
+          cards={ROUTINE_CARDS}
+          delay={150}
+        />
         <SectionDivider />
         <SectionGrid title="finance control" caption="overview" cards={FINANCE_CARDS} delay={250} />
         <SectionDivider />
-        <SectionGrid title="finance register" caption="ins and outs" cards={REGISTER_CARDS} delay={350} />
+        <SectionGrid
+          title="finance register"
+          caption="ins and outs"
+          cards={REGISTER_CARDS}
+          delay={350}
+        />
         <SectionDivider />
-        <SectionGrid title="config" caption="system settings" cards={CONFIG_CARDS} delay={450} compact />
+        <SectionGrid
+          title="config"
+          caption="system settings"
+          cards={CONFIG_CARDS}
+          delay={450}
+          compact
+        />
       </div>
 
       <CoverPickerDialog open={coverPickerOpen} onOpenChange={setCoverPickerOpen} />
@@ -390,7 +421,7 @@ function RedirectCard({ card, compact }: { card: Card; compact?: boolean }) {
     <Link
       href={card.href}
       className={cn(
-        "group ring-border-strong hover:-translate-y-1 hover:shadow-lg relative isolate overflow-hidden rounded-xl ring-1 transition-all duration-300",
+        "group ring-border-strong relative isolate overflow-hidden rounded-xl ring-1 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg",
         compact ? "p-4" : "p-5",
       )}
     >
@@ -432,13 +463,10 @@ function RedirectCard({ card, compact }: { card: Card; compact?: boolean }) {
             {card.label}
           </h3>
           {!compact && (
-            <p className="text-muted-foreground/85 text-[12px] leading-snug">
-              {card.description}
-            </p>
+            <p className="text-muted-foreground/85 text-[12px] leading-snug">{card.description}</p>
           )}
         </div>
       </div>
     </Link>
   );
 }
-

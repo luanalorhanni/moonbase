@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  Check,
-  CircleCheckBig,
-  Flame,
-  MoreHorizontal,
-  Plus,
-  ShieldOff,
-  Tag,
-} from "lucide-react";
+import { Check, CircleCheckBig, Flame, MoreHorizontal, Plus, ShieldOff, Tag } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
@@ -44,11 +36,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { deleteHabit, setHabitLog } from "@/lib/actions/habits";
-import type {
-  HabitCategoryRow,
-  HabitLogRow,
-  HabitWithCategory,
-} from "@/lib/queries/habits";
+import type { HabitCategoryRow, HabitLogRow, HabitWithCategory } from "@/lib/queries/habits";
 import { cn } from "@/lib/utils";
 
 import { DayEditorDialog } from "./day-editor-dialog";
@@ -312,9 +300,7 @@ export function HabitsPage({ habits, categories, recentLogs, todayIso }: Props) 
             label="today"
             value={`${kpis.doneToday}/${kpis.activeCount}`}
             accent={
-              kpis.activeCount > 0 && kpis.doneToday === kpis.activeCount
-                ? "success"
-                : "primary"
+              kpis.activeCount > 0 && kpis.doneToday === kpis.activeCount ? "success" : "primary"
             }
             highlight
           />
@@ -402,7 +388,8 @@ export function HabitsPage({ habits, categories, recentLogs, todayIso }: Props) 
                         <span
                           className={cn(
                             "truncate text-[13.5px] font-medium",
-                            done && "text-muted-foreground line-through decoration-muted-foreground/40",
+                            done &&
+                              "text-muted-foreground decoration-muted-foreground/40 line-through",
                           )}
                         >
                           {h.name}
@@ -417,11 +404,7 @@ export function HabitsPage({ habits, categories, recentLogs, todayIso }: Props) 
                               borderColor: `color-mix(in oklab, ${h.categoryColor ?? "#7e82aa"} 35%, var(--border))`,
                             }}
                           >
-                            <CategoryIcon
-                              icon={h.categoryIcon}
-                              color={h.categoryColor}
-                              size={9}
-                            />
+                            <CategoryIcon icon={h.categoryIcon} color={h.categoryColor} size={9} />
                             {h.categoryName}
                           </span>
                         )}
@@ -474,9 +457,7 @@ export function HabitsPage({ habits, categories, recentLogs, todayIso }: Props) 
                 <PolarityBadge polarity={h.polarity} />
                 <ScheduleBadge habit={h} />
                 {h.categoryName && (
-                  <span className="text-muted-foreground text-[11.5px]">
-                    in {h.categoryName}
-                  </span>
+                  <span className="text-muted-foreground text-[11.5px]">in {h.categoryName}</span>
                 )}
                 <span className="ml-auto" />
                 <DropdownMenu>
@@ -490,10 +471,7 @@ export function HabitsPage({ habits, categories, recentLogs, todayIso }: Props) 
                     <DropdownMenuItem onClick={() => setDialog({ kind: "edit", habit: h })}>
                       edit
                     </DropdownMenuItem>
-                    <DropdownMenuItem
-                      variant="destructive"
-                      onClick={() => setPendingDelete(h)}
-                    >
+                    <DropdownMenuItem variant="destructive" onClick={() => setPendingDelete(h)}>
                       delete
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -508,9 +486,7 @@ export function HabitsPage({ habits, categories, recentLogs, todayIso }: Props) 
       <DayEditorDialog
         dateIso={editingDate}
         habits={habits}
-        logsForDate={
-          editingDate ? recentLogs.filter((l) => l.date === editingDate) : []
-        }
+        logsForDate={editingDate ? recentLogs.filter((l) => l.date === editingDate) : []}
         todayIso={todayIso}
         onClose={() => setEditingDate(null)}
       />
@@ -553,9 +529,7 @@ export function HabitsPage({ habits, categories, recentLogs, todayIso }: Props) 
           <AlertDialogHeader>
             <AlertDialogTitle>delete habit?</AlertDialogTitle>
             <AlertDialogDescription>
-              {pendingDelete
-                ? `"${pendingDelete.name}" and all its logs will be removed.`
-                : null}
+              {pendingDelete ? `"${pendingDelete.name}" and all its logs will be removed.` : null}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -673,9 +647,7 @@ function Kpi({
           {value}
         </span>
         {hint && (
-          <span className="text-muted-foreground font-mono text-[11px] tracking-wider">
-            {hint}
-          </span>
+          <span className="text-muted-foreground font-mono text-[11px] tracking-wider">{hint}</span>
         )}
       </div>
     </div>
@@ -698,4 +670,3 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
     </div>
   );
 }
-

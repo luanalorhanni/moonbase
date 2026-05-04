@@ -16,13 +16,7 @@ import { cn } from "@/lib/utils";
  * link should feel like clicking it on desktop, not "navigated and
  * the drawer is still in your face".
  */
-export function MobileNav({
-  trigger,
-  children,
-}: {
-  trigger?: ReactNode;
-  children: ReactNode;
-}) {
+export function MobileNav({ trigger, children }: { trigger?: ReactNode; children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
@@ -62,7 +56,7 @@ export function MobileNav({
             "bg-sidebar text-sidebar-foreground border-sidebar-border fixed inset-y-0 left-0 z-[70] flex w-[80%] max-w-[280px] flex-col border-r shadow-2xl outline-none",
             "data-open:animate-in data-open:slide-in-from-left",
             "data-closed:animate-out data-closed:slide-out-to-left",
-            "data-open:duration-[280ms] data-closed:duration-[200ms] ease-[cubic-bezier(0.2,0.7,0.2,1)]",
+            "ease-[cubic-bezier(0.2,0.7,0.2,1)] data-closed:duration-[200ms] data-open:duration-[280ms]",
           )}
         >
           <DialogPrimitive.Close

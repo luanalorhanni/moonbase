@@ -121,10 +121,7 @@ function formatDate(dateStr: string | null): string {
     .toLowerCase();
 }
 
-function unifiedFromRows(
-  liquid: LiquidSavingsRow[],
-  fixed: FixedIncomeRow[],
-): UnifiedRow[] {
+function unifiedFromRows(liquid: LiquidSavingsRow[], fixed: FixedIncomeRow[]): UnifiedRow[] {
   const fromLiquid: UnifiedRow[] = liquid.map((i) => {
     const applied = Number(i.appliedAmount);
     const balance = Number(i.latestYield);
@@ -345,12 +342,7 @@ export function InvestmentsPage({ liquidSavings, fixedIncome, updates }: Props) 
 
       {/* ── KPI strip ─────────────────────────────────────────────── */}
       <div className="border-border grid shrink-0 grid-cols-1 border-b sm:grid-cols-2 lg:grid-cols-5">
-        <Kpi
-          label="total balance"
-          value={summary.totalBalance}
-          accent="primary"
-          highlight
-        />
+        <Kpi label="total balance" value={summary.totalBalance} accent="primary" highlight />
         <Kpi
           label="total gain"
           value={summary.totalGain}
@@ -526,10 +518,7 @@ export function InvestmentsPage({ liquidSavings, fixedIncome, updates }: Props) 
                         log update
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => openEdit(row)}>edit</DropdownMenuItem>
-                      <DropdownMenuItem
-                        variant="destructive"
-                        onClick={() => openDelete(row)}
-                      >
+                      <DropdownMenuItem variant="destructive" onClick={() => openDelete(row)}>
                         delete
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -736,9 +725,7 @@ function Kpi({
           </span>
         )}
         {hint && !showDelta && (
-          <span className="text-muted-foreground font-mono text-[11px] tracking-wider">
-            {hint}
-          </span>
+          <span className="text-muted-foreground font-mono text-[11px] tracking-wider">{hint}</span>
         )}
       </div>
     </div>
@@ -803,13 +790,7 @@ function GainCell({ gain, pct }: { gain: number; pct: number }) {
   );
 }
 
-function EmptyState({
-  onAdd,
-  description,
-}: {
-  onAdd: () => void;
-  description: string;
-}) {
+function EmptyState({ onAdd, description }: { onAdd: () => void; description: string }) {
   return (
     <div className="flex h-full flex-col items-center justify-center gap-3 px-6 py-16 text-center">
       <Banknote className="text-muted-foreground/60 size-10" strokeWidth={1} aria-hidden />

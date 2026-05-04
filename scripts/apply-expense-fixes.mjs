@@ -57,7 +57,12 @@ function parseCsv(text) {
 function parseBRL(s) {
   if (!s) return NaN;
   return Number(
-    s.replace(/[Rr]\$\s*/g, "").replace(/ /g, "").trim().replace(/\./g, "").replace(",", "."),
+    s
+      .replace(/[Rr]\$\s*/g, "")
+      .replace(/ /g, "")
+      .trim()
+      .replace(/\./g, "")
+      .replace(",", "."),
   );
 }
 function parseDate(s) {
@@ -117,7 +122,13 @@ function loadCashCsv() {
     .filter((r) => r[0]?.trim())
     .map((r) => {
       const m = r[1]?.trim().toLowerCase();
-      const method = m?.includes("debit") ? "debit" : m?.includes("pix") ? "pix" : m?.includes("cash") ? "cash" : m;
+      const method = m?.includes("debit")
+        ? "debit"
+        : m?.includes("pix")
+          ? "pix"
+          : m?.includes("cash")
+            ? "cash"
+            : m;
       return {
         card: r[0].trim(),
         method,
@@ -181,11 +192,7 @@ const csvCash = loadCashCsv();
 
 const csvCreditMap = new Map();
 for (const r of csvCredit) {
-  pushKey(
-    csvCreditMap,
-    `${norm(r.card)}|${r.date}|${r.amount.toFixed(2)}|${r.parcels}`,
-    r,
-  );
+  pushKey(csvCreditMap, `${norm(r.card)}|${r.date}|${r.amount.toFixed(2)}|${r.parcels}`, r);
 }
 const dbCreditMap = new Map();
 for (const r of dbCredit) {
@@ -234,11 +241,7 @@ for (const [key, csvList] of csvCreditMap) {
 /* cash plan */
 const csvCashMap = new Map();
 for (const r of csvCash) {
-  pushKey(
-    csvCashMap,
-    `${norm(r.card)}|${r.method}|${r.date}|${r.amount.toFixed(2)}`,
-    r,
-  );
+  pushKey(csvCashMap, `${norm(r.card)}|${r.method}|${r.date}|${r.amount.toFixed(2)}`, r);
 }
 const dbCashMap = new Map();
 for (const r of dbCash) {
@@ -292,7 +295,14 @@ for (const [key, csvList] of csvCashMap) {
 
 /* ─── apply ────────────────────────────────────────────────────────── */
 console.log("\n══ applying credit fixes ══");
-let counters = { creditShift: 0, creditDesc: 0, creditInsert: 0, cashShift: 0, cashMethod: 0, cashInsert: 0 };
+let counters = {
+  creditShift: 0,
+  creditDesc: 0,
+  creditInsert: 0,
+  cashShift: 0,
+  cashMethod: 0,
+  cashInsert: 0,
+};
 
 for (const u of creditDateShifts) {
   await sql`UPDATE credit_expenses SET purchase_date = ${u.to} WHERE id = ${u.id} AND user_id = ${USER_ID}`;
@@ -320,7 +330,9 @@ for (const r of creditInserts) {
     )
   `;
   counters.creditInsert++;
-  console.log(`  + ${r.card} | ${r.description} | ${r.date} | ${r.parcels}× R$ ${r.amount.toFixed(2)}`);
+  console.log(
+    `  + ${r.card} | ${r.description} | ${r.date} | ${r.parcels}× R$ ${r.amount.toFixed(2)}`,
+  );
 }
 if (counters.creditInsert) console.log(`✓ inserted ${counters.creditInsert} credit rows`);
 
@@ -354,7 +366,9 @@ for (const r of cashInserts) {
     )
   `;
   counters.cashInsert++;
-  console.log(`  + ${r.card} | ${r.method} | ${r.description} | ${r.date} | R$ ${r.amount.toFixed(2)}`);
+  console.log(
+    `  + ${r.card} | ${r.method} | ${r.description} | ${r.date} | R$ ${r.amount.toFixed(2)}`,
+  );
 }
 if (counters.cashInsert) console.log(`✓ inserted ${counters.cashInsert} cash rows`);
 

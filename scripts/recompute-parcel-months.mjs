@@ -95,7 +95,9 @@ const expenses = await sql`
   FROM credit_expenses WHERE user_id = ${USER}
 `;
 
-let updatedExp = 0, skippedExp = 0, sameExp = 0;
+let updatedExp = 0,
+  skippedExp = 0,
+  sameExp = 0;
 for (const e of expenses) {
   const r = compute({
     cardId: e.card_id,
@@ -124,7 +126,9 @@ for (const e of expenses) {
   updatedExp++;
 }
 
-console.log(`credit_expenses: ${updatedExp} updated · ${sameExp} unchanged · ${skippedExp} skipped (no closing day)`);
+console.log(
+  `credit_expenses: ${updatedExp} updated · ${sameExp} unchanged · ${skippedExp} skipped (no closing day)`,
+);
 
 /* ─── recompute credit_receivables ─────────────────────────────────── */
 const recv = await sql`
@@ -133,7 +137,9 @@ const recv = await sql`
   FROM credit_receivables WHERE user_id = ${USER}
 `;
 
-let updatedRecv = 0, skippedRecv = 0, sameRecv = 0;
+let updatedRecv = 0,
+  skippedRecv = 0,
+  sameRecv = 0;
 for (const r of recv) {
   const computed = compute({
     cardId: r.card_id,
@@ -162,7 +168,9 @@ for (const r of recv) {
   updatedRecv++;
 }
 
-console.log(`credit_receivables: ${updatedRecv} updated · ${sameRecv} unchanged · ${skippedRecv} skipped`);
+console.log(
+  `credit_receivables: ${updatedRecv} updated · ${sameRecv} unchanged · ${skippedRecv} skipped`,
+);
 
 await sql.end();
 console.log("done.");

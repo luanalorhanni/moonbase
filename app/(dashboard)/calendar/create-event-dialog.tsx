@@ -14,13 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -150,8 +144,8 @@ export function CreateEventDialog({ open, onOpenChange, calendars, defaultDate }
             </DialogTitle>
           </DialogHeader>
           <p className="text-muted-foreground py-4 text-[13px]">
-            you don't have any calendars with write permission. ask the owner for
-            "writer" access or create your own calendar in google.
+            you don't have any calendars with write permission. ask the owner for "writer" access or
+            create your own calendar in google.
           </p>
         </DialogContent>
       </Dialog>
@@ -295,14 +289,10 @@ export function CreateEventDialog({ open, onOpenChange, calendars, defaultDate }
               onChange={(e) => setDescription(e.target.value)}
               disabled={isPending}
             />
-            <FieldDescription>
-              detected timezone: {browserTimezone()}
-            </FieldDescription>
+            <FieldDescription>detected timezone: {browserTimezone()}</FieldDescription>
           </Field>
 
-          {error && (
-            <FieldError>{error}</FieldError>
-          )}
+          {error && <FieldError>{error}</FieldError>}
         </FieldGroup>
 
         <DialogFooter>

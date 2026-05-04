@@ -98,18 +98,16 @@ export async function saveCardClosings(
     // Delete-then-insert. Simpler than a Drizzle upsert with EXCLUDED.* and
     // safe because we hold the latest values for every (card, month) the
     // user is editing.
-    await db
-      .delete(schema.cardClosings)
-      .where(
-        and(
-          eq(schema.cardClosings.userId, user.id),
-          eq(schema.cardClosings.cardId, cardId),
-          inArray(
-            schema.cardClosings.referenceMonth,
-            toUpsert.map((o) => o.referenceMonth),
-          ),
+    await db.delete(schema.cardClosings).where(
+      and(
+        eq(schema.cardClosings.userId, user.id),
+        eq(schema.cardClosings.cardId, cardId),
+        inArray(
+          schema.cardClosings.referenceMonth,
+          toUpsert.map((o) => o.referenceMonth),
         ),
-      );
+      ),
+    );
     await db.insert(schema.cardClosings).values(
       toUpsert.map((o) => ({
         userId: user.id,
@@ -125,11 +123,7 @@ export async function saveCardClosings(
   // card. We re-fetch closings to pick up the changes we just wrote.
   await recomputeCardParcels(cardId, user.id);
 
-  invalidate(
-    TAGS.cardClosings,
-    TAGS.creditExpenses,
-    TAGS.creditReceivables,
-  );
+  invalidate(TAGS.cardClosings, TAGS.creditExpenses, TAGS.creditReceivables);
   revalidatePath("/cards");
   revalidatePath("/expenses/credit");
   revalidatePath("/receivables");
