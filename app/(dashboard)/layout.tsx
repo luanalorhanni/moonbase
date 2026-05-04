@@ -10,14 +10,22 @@ import { SidebarUser } from "@/components/dashboard/sidebar-user";
 import { PixelMoonCrescent } from "@/components/decorative/pixel-icons";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { requireUser, type CurrentUser } from "@/lib/auth/session";
+import { getUserSettings } from "@/lib/queries/user-settings";
+import { findPalette, paletteCss } from "@/lib/theme/palettes";
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   // Defense in depth — middleware already redirects unauthed users,
   // but if the cookie disappears between requests we still bounce out
   // cleanly here instead of rendering an empty shell.
-  const user = await requireUser();
+  const [user, settings] = await Promise.all([requireUser(), getUserSettings()]);
+  const palette = findPalette(settings?.palette);
   return (
     <div className="flex h-[100dvh] flex-col overflow-hidden md:h-screen md:flex-row md:gap-[15px] md:p-[15px]">
+      {/* User-selected palette — overrides the defaults from globals.css.
+          A render-time <style> block keeps this data-driven without
+          shipping the full preset table to the client. */}
+      <style dangerouslySetInnerHTML={{ __html: paletteCss(palette) }} />
+
       {/* Desktop sidebar — only mounts at md+; hidden on mobile in
           favor of the slide-in drawer below. */}
       <ResizableSidebar>

@@ -7,6 +7,7 @@ import { requireUser } from "@/lib/auth/session";
 import { TAGS, invalidate } from "@/lib/cache/tags";
 import { db, schema } from "@/lib/db";
 import { parseSpotifyUrl } from "@/lib/spotify";
+import { PALETTES } from "@/lib/theme/palettes";
 
 export type UserSettingsActionResult = { ok: true } | { ok: false; error: string };
 
@@ -123,6 +124,30 @@ export async function setHomeQuote(
 
   invalidate(TAGS.userSettings);
   revalidatePath("/");
+  return { ok: true };
+}
+
+/**
+ * Switch the active color palette. Validates against the curated list
+ * in `lib/theme/palettes.ts` so we can't end up with an unknown id
+ * persisted in the database.
+ */
+export async function setPalette(paletteId: string): Promise<UserSettingsActionResult> {
+  const user = await requireUser();
+  const known = PALETTES.some((p) => p.id === paletteId);
+  if (!known) return { ok: false, error: "Paleta desconhecida." };
+
+  await db
+    .insert(schema.userSettings)
+    .values({ userId: user.id, palette: paletteId })
+    .onConflictDoUpdate({
+      target: schema.userSettings.userId,
+      set: { palette: paletteId, updatedAt: new Date() },
+    });
+
+  invalidate(TAGS.userSettings);
+  // Palette cascades through every page, so revalidate the layout root.
+  revalidatePath("/", "layout");
   return { ok: true };
 }
 
