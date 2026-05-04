@@ -349,15 +349,38 @@ export function cashByMethod(
 }
 
 /**
+ * Frozen monthly snapshot — same shape as the rows in `monthly_snapshots`,
+ * but only the fields the cumulative needs. Used to seed history from
+ * before active tracking (the user's pre-moonbase spreadsheet).
+ */
+export type HistoricalSnapshot = {
+  /** First-day-of-month string `yyyy-mm-01`. */
+  referenceMonth: string;
+  /** Numeric strings — same convention as the rest of `numeric(12,2)`. */
+  totalIncomes: string;
+  totalExpenses: string;
+};
+
+/**
  * Cumulative balance (sum of monthly balances) from the earliest data point
  * up to and including `reference`. Mirrors the spreadsheet's "Total Save"
  * running figure.
  *
- * Iterates aggregateMonth from the earliest month present in the dataset to
- * `reference`. O(months × dataset) — for a few-years history this is well
- * under a millisecond and avoids a separate cumulative table.
+ * For months that have a `monthly_snapshots` row, the frozen
+ * `incomes − expenses` is used; for months without a snapshot, the raw
+ * data is aggregated on the fly. This lets the user seed history before
+ * they started using moonbase without inserting fake transaction rows.
  */
-export function cumulativeBalance(rows: AggregateInputs, reference: MonthRef): string {
+export function cumulativeBalance(
+  rows: AggregateInputs,
+  reference: MonthRef,
+  snapshots: ReadonlyArray<HistoricalSnapshot> = [],
+): string {
+  const snapByMonth = new Map<string, HistoricalSnapshot>();
+  for (const s of snapshots) {
+    snapByMonth.set(s.referenceMonth.slice(0, 7), s);
+  }
+
   const dates: string[] = [];
   for (const i of rows.incomes) dates.push(i.date);
   for (const e of rows.cashExpenses) dates.push(e.date);
@@ -365,6 +388,7 @@ export function cumulativeBalance(rows: AggregateInputs, reference: MonthRef): s
     if (e.firstParcelMonth) dates.push(e.firstParcelMonth);
   }
   for (const e of rows.fixedExpenses) dates.push(e.startDate);
+  for (const s of snapshots) dates.push(s.referenceMonth);
 
   if (dates.length === 0) return "0.00";
 
@@ -373,8 +397,12 @@ export function cumulativeBalance(rows: AggregateInputs, reference: MonthRef): s
   let acc = 0;
   let cursor = earliest;
   while (cursor <= reference) {
-    const a = aggregateMonth(rows, cursor);
-    acc += Number(a.balance);
+    const snap = snapByMonth.get(cursor);
+    if (snap) {
+      acc += Number(snap.totalIncomes) - Number(snap.totalExpenses);
+    } else {
+      acc += Number(aggregateMonth(rows, cursor).balance);
+    }
     cursor = shiftMonth(cursor, 1);
   }
   return acc.toFixed(2);

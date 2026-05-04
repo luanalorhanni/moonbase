@@ -3,15 +3,21 @@ import Link from "next/link";
 
 import { CategoryBreakdownChart } from "@/components/charts/category-breakdown-chart";
 import { DetailTabs, type DetailLists } from "@/components/dashboard/detail-tabs";
+import { SnapshotBadge } from "@/components/dashboard/snapshot-badge";
 import {
   PixelMoonCrescent,
   PixelMoonFull,
   PixelStarSmall,
 } from "@/components/decorative/pixel-icons";
-import { aggregateMonth, cumulativeBalance } from "@/lib/finance/aggregate";
-import { formatMonthLong, formatMonthShort, shiftMonth, type MonthRef } from "@/lib/finance/month";
+import {
+  currentMonthRef,
+  formatMonthLong,
+  formatMonthShort,
+  shiftMonth,
+  type MonthRef,
+} from "@/lib/finance/month";
 import { listLiquidSavings } from "@/lib/queries/investments";
-import { loadMonth, toAggregateInputs } from "@/lib/queries/month";
+import { loadMonth } from "@/lib/queries/month";
 import { cn, formatCurrency } from "@/lib/utils";
 
 const PT_INCOME_TYPE: Record<string, string> = {
@@ -38,20 +44,18 @@ export async function MonthDashboard({ reference }: { reference: MonthRef }) {
     .filter((i) => i.isActive)
     .reduce((acc, i) => acc + Number(i.latestYield), 0)
     .toFixed(2);
-  const inputs = toAggregateInputs({
-    cashExpenses: summary.data.cashExpenses,
-    creditExpenses: summary.data.creditExpenses,
-    fixedExpenses: summary.data.fixedExpenses,
-    incomes: summary.data.incomes,
-    cashReceivables: summary.data.cashReceivables,
-    creditReceivables: summary.data.creditReceivables,
-  });
-
-  const previousMonthAgg = aggregateMonth(inputs, shiftMonth(reference, -1));
-  const cumulativeNow = cumulativeBalance(inputs, reference);
+  // The previous month's aggregate is computed in loadMonth from the
+  // FULL dataset (not the slice filtered for `reference`) — using the
+  // slice would re-filter May data by April and only keep multi-parcel
+  // ongoing rows + recurring fixed expenses, which is wrong.
+  const previousMonthAgg = summary.previousMonth;
 
   const incomeDelta = pctDelta(previousMonthAgg.totalIncomes, summary.totalIncomes);
   const expenseDelta = pctDelta(previousMonthAgg.totalExpenses, summary.totalExpenses);
+  // Past month "saved" = balance of the prior month. Delta shows how the
+  // current month compares — positive means current is doing better than
+  // last (saving more), negative means it slipped.
+  const lastMonthSaveDelta = pctDelta(previousMonthAgg.balance, summary.balance);
 
   // Combined category breakdown (cash + credit + fixed) — already aggregated
   // by aggregateMonth as summary.byCategory. We use the full list here, not
@@ -90,7 +94,8 @@ export async function MonthDashboard({ reference }: { reference: MonthRef }) {
     },
     { key: "pix", label: "pix", total: cashByMethod.pix },
     { key: "debit", label: "debit", total: cashByMethod.debit },
-    { key: "cash", label: "cash", total: cashByMethod.cash + fixedCashTotal },
+    { key: "cash", label: "cash", total: cashByMethod.cash },
+    { key: "fixed", label: "fixed", total: fixedCashTotal },
   ].filter((m) => m.total > 0);
 
   // Credit detail per card (parcels of the month + fixed credit charged here)
@@ -121,7 +126,25 @@ export async function MonthDashboard({ reference }: { reference: MonthRef }) {
         total: Number(f.monthlyAmount),
       });
   }
-  const creditByCard = Array.from(creditCardMap.values()).sort((a, b) => b.total - a.total);
+  // Credit receivables per card — what other people owe me on this card
+  // for parcels falling in this reference month. Subtracting from the
+  // card's bill gives the amount that actually hits the bank.
+  const creditReceivableByCard = new Map<string, number>();
+  for (const r of summary.data.creditReceivables) {
+    const prev = creditReceivableByCard.get(r.cardId) ?? 0;
+    creditReceivableByCard.set(r.cardId, prev + Number(r.parcelValue));
+  }
+
+  const creditByCard = Array.from(creditCardMap.values())
+    .map((c) => {
+      const receivable = creditReceivableByCard.get(c.id) ?? 0;
+      // c.total is what *I* pay (expenses only). The receivables for
+      // others are also charged to this card, so the bill = my part +
+      // what they owe me. That's the "total que vai dar no cartão"
+      // shown as the faded detail.
+      return { ...c, receivable, billTotal: c.total + receivable };
+    })
+    .sort((a, b) => b.total - a.total);
   const creditByCardTotal = creditByCard.reduce((acc, c) => acc + c.total, 0);
   const paymentMethodTotal = paymentMethodTotals.reduce((acc, m) => acc + m.total, 0);
 
@@ -261,6 +284,18 @@ export async function MonthDashboard({ reference }: { reference: MonthRef }) {
       <div className="border-border bg-background/60 flex shrink-0 items-center justify-between gap-4 border-b px-6 py-5">
         <div className="flex items-center gap-4">
           <MoonForMonth reference={reference} />
+          <SnapshotBadge
+            reference={reference}
+            isPastMonth={reference < currentMonthRef()}
+            snapshot={
+              summary.historicalSnapshot
+                ? {
+                    totalIncomes: summary.historicalSnapshot.totalIncomes,
+                    totalExpenses: summary.historicalSnapshot.totalExpenses,
+                  }
+                : null
+            }
+          />
           <div className="flex items-baseline gap-3">
             <h2 className="font-display text-foreground text-[40px] leading-none font-light tracking-[-0.02em] capitalize italic md:text-[52px]">
               {formatMonthLong(reference).split(" ")[0]}
@@ -291,7 +326,13 @@ export async function MonthDashboard({ reference }: { reference: MonthRef }) {
           deltaTone="inverted"
           accent="muted"
         />
-        <Kpi label="cumulative save" value={cumulativeNow} accent="muted" />
+        <Kpi
+          label="last month save"
+          value={previousMonthAgg.balance}
+          delta={lastMonthSaveDelta}
+          deltaTone="positive"
+          accent="muted"
+        />
         <Kpi
           label="incomes"
           value={summary.totalIncomes}
@@ -301,6 +342,11 @@ export async function MonthDashboard({ reference }: { reference: MonthRef }) {
         />
         <Kpi label="liquid savings" value={totalLiquidSavings} accent="muted" />
       </div>
+
+      {summary.isHistoricalLocked ? (
+        <HistoricalLock reference={reference} />
+      ) : (
+        <>
 
       {/* ── mid grid: trend | breakdowns | activity ─────────────────── */}
       <div className="grid min-h-0 shrink-0 grid-cols-1 lg:grid-cols-12">
@@ -315,16 +361,20 @@ export async function MonthDashboard({ reference }: { reference: MonthRef }) {
             }
           />
           <div className="flex flex-col gap-5 px-5 py-4">
-            {/* cash group */}
+            {/* cash group — pix / debit / cash are payment methods of
+                cash_expenses; "fixed" is the recurring fixed_expenses
+                paid in cash (subscriptions, gym, etc.) shown side by
+                side so they don't get lumped into the cash bucket. */}
             <div className="flex flex-col gap-2.5">
               <GroupHeader
                 label="cash"
                 total={cashByMethod.pix + cashByMethod.debit + cashByMethod.cash + fixedCashTotal}
               />
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
                 <Tile label="pix" value={cashByMethod.pix} />
                 <Tile label="debit" value={cashByMethod.debit} />
-                <Tile label="cash" value={cashByMethod.cash + fixedCashTotal} />
+                <Tile label="cash" value={cashByMethod.cash} />
+                <Tile label="fixed" value={fixedCashTotal} />
               </div>
             </div>
 
@@ -341,7 +391,14 @@ export async function MonthDashboard({ reference }: { reference: MonthRef }) {
               ) : (
                 <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
                   {creditByCard.map((c) => (
-                    <Tile key={c.id} label={c.name} value={c.total} accent color={c.color} />
+                    <Tile
+                      key={c.id}
+                      label={c.name}
+                      value={c.total}
+                      accent
+                      color={c.color}
+                      billTotal={c.receivable > 0 ? c.billTotal : undefined}
+                    />
                   ))}
                 </div>
               )}
@@ -392,6 +449,29 @@ export async function MonthDashboard({ reference }: { reference: MonthRef }) {
           receivables: summary.totalReceivables,
         }}
       />
+        </>
+      )}
+    </div>
+  );
+}
+
+function HistoricalLock({ reference }: { reference: MonthRef }) {
+  return (
+    <div className="border-border flex min-h-[280px] flex-col items-center justify-center gap-3 border-b px-6 py-12 text-center">
+      <span className="bg-muted text-muted-foreground inline-flex size-10 items-center justify-center rounded-full">
+        <PixelMoonFull size={14} className="text-primary/60" />
+      </span>
+      <h3 className="font-display text-foreground text-[18px] font-light italic tracking-tight">
+        registros históricos
+      </h3>
+      <p className="text-muted-foreground/85 max-w-md text-[13px] leading-relaxed">
+        sem detalhamento por transação para {formatMonthLong(reference)} — esse mês foi
+        seedado da planilha antes do controle ativo. os totais acima já contam pro
+        acumulado, mas você não pode editar registros aqui.
+      </p>
+      <span className="text-muted-foreground/60 mt-1 font-mono text-[10px] tracking-[0.18em] uppercase">
+        snapshot · locked
+      </span>
     </div>
   );
 }
@@ -439,11 +519,16 @@ function Tile({
   value,
   accent,
   color,
+  billTotal,
 }: {
   label: string;
   value: number;
   accent?: boolean;
   color?: string;
+  /** When set, displayed (faded but readable) next to the main value
+   *  — used for credit cards to surface "the total that'll show on the
+   *  bill" once receivables are added back to the user's own spend. */
+  billTotal?: number;
 }) {
   const isZero = value === 0;
   const dotHex = color;
@@ -472,13 +557,23 @@ function Tile({
         )}
         <span className="truncate">{label}</span>
       </span>
-      <span
-        className={cn(
-          "numeric text-[14px] tabular-nums",
-          isZero ? "text-muted-foreground/70" : "text-foreground",
+      <span className="flex items-baseline justify-between gap-1.5">
+        <span
+          className={cn(
+            "numeric text-[14px] tabular-nums",
+            isZero ? "text-muted-foreground/70" : "text-foreground",
+          )}
+        >
+          {formatCurrency(String(value))}
+        </span>
+        {billTotal !== undefined && (
+          <span
+            className="text-muted-foreground/75 numeric truncate font-mono text-[10.5px] tabular-nums"
+            title={`total na fatura — inclui receivables: ${formatCurrency(String(billTotal))}`}
+          >
+            fatura {formatCurrency(String(billTotal))}
+          </span>
         )}
-      >
-        {formatCurrency(String(value))}
       </span>
     </div>
   );
