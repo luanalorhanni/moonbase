@@ -1,4 +1,3 @@
- 
 // One-shot script: discover which Supabase pooler region accepts our credentials.
 // Reads SUPABASE_PROJECT_REF and SUPABASE_DB_PASSWORD from process.env.
 // Prints the working pooler URL on stdout and exits 0; exits 1 if none worked.
