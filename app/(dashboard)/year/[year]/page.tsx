@@ -9,9 +9,10 @@ import {
   PixelPlanet,
   PixelStarSmall,
 } from "@/components/decorative/pixel-icons";
-import { cumulativeBalance } from "@/lib/finance/aggregate";
+import { cumulativeBalance, type HistoricalSnapshot } from "@/lib/finance/aggregate";
 import { currentMonthRef, formatMonthShort, type MonthRef } from "@/lib/finance/month";
 import { loadFullDataset, toAggregateInputs } from "@/lib/queries/month";
+import { listSnapshots } from "@/lib/queries/snapshots";
 import { loadYear } from "@/lib/queries/year";
 import { cn, formatCurrency } from "@/lib/utils";
 
@@ -24,13 +25,22 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
     redirect(`/year/${new Date().getFullYear()}`);
   }
 
-  const [summary, dataset] = await Promise.all([loadYear(parsed), loadFullDataset()]);
+  const [summary, dataset, snapshotRows] = await Promise.all([
+    loadYear(parsed),
+    loadFullDataset(),
+    listSnapshots(),
+  ]);
   const inputs = toAggregateInputs(dataset);
+  const snapshots: HistoricalSnapshot[] = snapshotRows.map((s) => ({
+    referenceMonth: s.referenceMonth.toString().slice(0, 10),
+    totalIncomes: s.totalIncomes,
+    totalExpenses: s.totalExpenses,
+  }));
 
   const trendData = summary.months.map((m) => ({
     label: formatMonthShort(m.reference).split("/")[0],
     net: Number(m.balance),
-    cumulative: Number(cumulativeBalance(inputs, m.reference as MonthRef)),
+    cumulative: Number(cumulativeBalance(inputs, m.reference as MonthRef, snapshots)),
     incomes: Number(m.totalIncomes),
     expenses: Number(m.totalExpenses),
   }));
@@ -38,7 +48,13 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
   const yearEndCumulative = trendData[trendData.length - 1]?.cumulative ?? 0;
   const yearStartCumulative =
     summary.months[0] != null
-      ? Number(cumulativeBalance(inputs, previousMonthRef(summary.months[0].reference as MonthRef)))
+      ? Number(
+          cumulativeBalance(
+            inputs,
+            previousMonthRef(summary.months[0].reference as MonthRef),
+            snapshots,
+          ),
+        )
       : 0;
   const yearDelta = yearEndCumulative - yearStartCumulative;
 
