@@ -36,16 +36,9 @@ export function PageShell({
             <span className="text-muted-foreground truncate text-[12px]">{subtitle}</span>
           )}
         </div>
-        {toolbar && (
-          <div className="flex shrink-0 flex-wrap items-center gap-2">{toolbar}</div>
-        )}
+        {toolbar && <div className="flex shrink-0 flex-wrap items-center gap-2">{toolbar}</div>}
       </div>
-      <div
-        className={cn(
-          "min-h-0 flex-1 overflow-auto px-3 py-3 md:px-4",
-          staggered && "enter",
-        )}
-      >
+      <div className={cn("min-h-0 flex-1 overflow-auto px-3 py-3 md:px-4", staggered && "enter")}>
         {children}
       </div>
     </div>

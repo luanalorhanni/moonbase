@@ -51,10 +51,7 @@ export const listHabits = cachedQuery(
         categoryIcon: schema.habitCategories.icon,
       })
       .from(schema.habits)
-      .leftJoin(
-        schema.habitCategories,
-        eq(schema.habits.categoryId, schema.habitCategories.id),
-      )
+      .leftJoin(schema.habitCategories, eq(schema.habits.categoryId, schema.habitCategories.id))
       .where(eq(schema.habits.userId, userId))
       .orderBy(desc(schema.habits.isActive), asc(schema.habits.name)),
 );
@@ -65,10 +62,7 @@ export const listHabits = cachedQuery(
  * cache key), so we hit the DB directly. The route-level fetch cache
  * still amortises across components on the same render.
  */
-export async function listHabitLogsBetween(
-  fromIso: string,
-  toIso: string,
-): Promise<HabitLogRow[]> {
+export async function listHabitLogsBetween(fromIso: string, toIso: string): Promise<HabitLogRow[]> {
   const user = await requireUser();
   return db
     .select()

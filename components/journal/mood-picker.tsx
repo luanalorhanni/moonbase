@@ -39,14 +39,8 @@ export function MoodPicker({
               disabled && "opacity-50",
             )}
           >
-            <Icon
-              aria-hidden
-              strokeWidth={1.5}
-              className={cn("size-4", active ? m.color : "")}
-            />
-            <span className="font-mono text-[9px] tracking-[0.14em] uppercase">
-              {m.label}
-            </span>
+            <Icon aria-hidden strokeWidth={1.5} className={cn("size-4", active ? m.color : "")} />
+            <span className="font-mono text-[9px] tracking-[0.14em] uppercase">{m.label}</span>
           </button>
         );
       })}

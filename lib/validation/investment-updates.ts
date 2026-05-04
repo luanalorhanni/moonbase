@@ -1,8 +1,6 @@
 import { z } from "zod";
 
-const isoDate = z
-  .string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/, "invalid date (expected yyyy-mm-dd)");
+const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "invalid date (expected yyyy-mm-dd)");
 
 const moneyString = z
   .string()
@@ -12,13 +10,11 @@ const moneyString = z
   .transform((v) => v.replace(",", "."))
   .refine((v) => Number(v) >= 0, "amount cannot be negative.");
 
-const trimmedNullable = z
-  .union([z.string(), z.null(), z.undefined()])
-  .transform((v) => {
-    if (v === null || v === undefined) return null;
-    const t = v.trim();
-    return t.length === 0 ? null : t;
-  });
+const trimmedNullable = z.union([z.string(), z.null(), z.undefined()]).transform((v) => {
+  if (v === null || v === undefined) return null;
+  const t = v.trim();
+  return t.length === 0 ? null : t;
+});
 
 export const investmentUpdateSchema = z.object({
   investmentKind: z.enum(["liquid_savings", "fixed_income"]),

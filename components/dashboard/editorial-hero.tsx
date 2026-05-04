@@ -44,9 +44,7 @@ export function EditorialHero({
 }: Props) {
   return (
     <section
-      className={cn(
-        "border-border relative isolate -mx-3 -mt-3 mb-4 overflow-hidden border-b",
-      )}
+      className={cn("border-border relative isolate -mx-3 -mt-3 mb-4 overflow-hidden border-b")}
     >
       <div
         aria-hidden

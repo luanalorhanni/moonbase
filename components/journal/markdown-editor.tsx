@@ -169,12 +169,7 @@ export function MarkdownEditor({
           title="quote"
           disabled={disabled}
         />
-        <ToolButton
-          onClick={() => linePrefix("- ")}
-          icon={List}
-          title="list"
-          disabled={disabled}
-        />
+        <ToolButton onClick={() => linePrefix("- ")} icon={List} title="list" disabled={disabled} />
         <ToolButton
           onClick={() => linePrefix("1. ")}
           icon={ListOrdered}
@@ -182,18 +177,8 @@ export function MarkdownEditor({
           disabled={disabled}
         />
         <Divider />
-        <ToolButton
-          onClick={() => wrap("`")}
-          icon={Code}
-          title="code"
-          disabled={disabled}
-        />
-        <ToolButton
-          onClick={insertLink}
-          icon={Link2}
-          title="link (Ctrl+K)"
-          disabled={disabled}
-        />
+        <ToolButton onClick={() => wrap("`")} icon={Code} title="code" disabled={disabled} />
+        <ToolButton onClick={insertLink} icon={Link2} title="link (Ctrl+K)" disabled={disabled} />
       </div>
       <textarea
         ref={ref}
@@ -230,7 +215,7 @@ function ToolButton({
       disabled={disabled}
       title={title}
       aria-label={title}
-      className="text-muted-foreground hover:bg-muted hover:text-foreground active:scale-[0.94] inline-flex size-7 items-center justify-center rounded-md transition-all duration-150 ease-[cubic-bezier(0.2,0.7,0.2,1)] disabled:opacity-50"
+      className="text-muted-foreground hover:bg-muted hover:text-foreground inline-flex size-7 items-center justify-center rounded-md transition-all duration-150 ease-[cubic-bezier(0.2,0.7,0.2,1)] active:scale-[0.94] disabled:opacity-50"
     >
       <Icon aria-hidden className="size-3.5" strokeWidth={1.7} />
     </button>

@@ -95,10 +95,7 @@ export function InvestmentsBalanceChart({ data }: { data: BalanceDatum[] }) {
           }}
         >
           {sorted.map((d) => (
-            <Cell
-              key={d.key}
-              fill={d.gain >= 0 ? "oklch(0.78 0.09 200)" : "oklch(0.55 0.20 20)"}
-            />
+            <Cell key={d.key} fill={d.gain >= 0 ? "oklch(0.78 0.09 200)" : "oklch(0.55 0.20 20)"} />
           ))}
         </Bar>
       </BarChart>

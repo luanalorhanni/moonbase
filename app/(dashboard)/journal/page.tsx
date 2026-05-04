@@ -7,9 +7,6 @@ export const metadata = {
 };
 
 export default async function Page() {
-  const [entries, quotes] = await Promise.all([
-    listJournalEntries(),
-    listJournalQuotes(),
-  ]);
+  const [entries, quotes] = await Promise.all([listJournalEntries(), listJournalQuotes()]);
   return <JournalPage entries={entries} quotes={quotes} />;
 }
