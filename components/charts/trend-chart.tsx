@@ -5,7 +5,6 @@ import {
   CartesianGrid,
   ComposedChart,
   LabelList,
-  Line,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -110,15 +109,26 @@ export function TrendChart({
         }}
       >
         <defs>
-          <linearGradient id="trend-fill" x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id="trend-fill-cumulative" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={COLORS.cumulative} stopOpacity={0.32} />
             <stop offset="100%" stopColor={COLORS.cumulative} stopOpacity={0} />
           </linearGradient>
+          <linearGradient id="trend-fill-incomes" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={COLORS.incomes} stopOpacity={0.18} />
+            <stop offset="100%" stopColor={COLORS.incomes} stopOpacity={0} />
+          </linearGradient>
+          <linearGradient id="trend-fill-expenses" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={COLORS.expenses} stopOpacity={0.18} />
+            <stop offset="100%" stopColor={COLORS.expenses} stopOpacity={0} />
+          </linearGradient>
+          <linearGradient id="trend-fill-net" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={COLORS.net} stopOpacity={0.16} />
+            <stop offset="100%" stopColor={COLORS.net} stopOpacity={0} />
+          </linearGradient>
         </defs>
         <CartesianGrid
-          stroke="oklch(1 0 0 / 0.06)"
-          strokeDasharray="2 4"
-          vertical={false}
+          stroke="color-mix(in oklab, var(--border) 65%, transparent)"
+          strokeDasharray="3 4"
         />
         <XAxis
           dataKey="label"
@@ -185,7 +195,7 @@ export function TrendChart({
             dataKey="cumulative"
             stroke={COLORS.cumulative}
             strokeWidth={1.5}
-            fill="url(#trend-fill)"
+            fill="url(#trend-fill-cumulative)"
             dot={
               showPointLabels
                 ? { r: 2.5, fill: COLORS.cumulative, stroke: "var(--background)", strokeWidth: 1 }
@@ -209,11 +219,12 @@ export function TrendChart({
         )}
 
         {active.has("incomes") && (
-          <Line
+          <Area
             type="monotone"
             dataKey="incomes"
             stroke={COLORS.incomes}
-            strokeWidth={1.5}
+            strokeWidth={1.75}
+            fill="url(#trend-fill-incomes)"
             dot={{ r: 2.5, fill: COLORS.incomes, stroke: "var(--background)", strokeWidth: 1 }}
             activeDot={{ r: 4, fill: COLORS.incomes, stroke: "none" }}
           >
@@ -221,47 +232,49 @@ export function TrendChart({
               <LabelList
                 dataKey="incomes"
                 position="top"
-                offset={8}
+                offset={10}
                 fill={COLORS.incomes}
-                fontSize={9}
+                fontSize={9.5}
                 fontFamily="var(--font-mono)"
                 letterSpacing="0.04em"
                 formatter={(v: unknown) => formatTick(Number(v))}
               />
             )}
-          </Line>
+          </Area>
         )}
 
         {active.has("expenses") && (
-          <Line
+          <Area
             type="monotone"
             dataKey="expenses"
             stroke={COLORS.expenses}
-            strokeWidth={2}
-            dot={{ r: 3, fill: COLORS.expenses, stroke: "var(--background)", strokeWidth: 1 }}
-            activeDot={{ r: 4.5, fill: COLORS.expenses, stroke: "none" }}
+            strokeWidth={1.75}
+            fill="url(#trend-fill-expenses)"
+            dot={{ r: 2.5, fill: COLORS.expenses, stroke: "var(--background)", strokeWidth: 1 }}
+            activeDot={{ r: 4, fill: COLORS.expenses, stroke: "none" }}
           >
             {showPointLabels && (
               <LabelList
                 dataKey="expenses"
-                position="top"
+                position="bottom"
                 offset={10}
                 fill={COLORS.expenses}
-                fontSize={10}
+                fontSize={9.5}
                 fontFamily="var(--font-mono)"
                 letterSpacing="0.04em"
                 formatter={(v: unknown) => formatTick(Number(v))}
               />
             )}
-          </Line>
+          </Area>
         )}
 
         {active.has("net") && (
-          <Line
+          <Area
             type="monotone"
             dataKey="net"
             stroke={COLORS.net}
             strokeWidth={1.5}
+            fill="url(#trend-fill-net)"
             dot={{ r: 2.5, fill: COLORS.net, stroke: "var(--background)", strokeWidth: 1 }}
             activeDot={{ r: 4, fill: COLORS.net, stroke: "none" }}
           >
@@ -277,7 +290,7 @@ export function TrendChart({
                 formatter={(v: unknown) => formatTick(Number(v))}
               />
             )}
-          </Line>
+          </Area>
         )}
       </ComposedChart>
     </ResponsiveContainer>
