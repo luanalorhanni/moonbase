@@ -687,7 +687,7 @@ function CreditByMonthSection({
     <div className="flex flex-col gap-3 px-4 py-4">
       {upcoming.length === 0 ? (
         <p className="text-muted-foreground bg-muted/30 rounded-md px-4 py-6 text-center text-[12.5px]">
-          no upcoming parcels — everything's been paid up.
+          no upcoming parcels — everything&apos;s been paid up.
         </p>
       ) : (
         upcoming.map((month) => (

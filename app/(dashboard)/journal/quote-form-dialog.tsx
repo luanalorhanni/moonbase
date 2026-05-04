@@ -200,7 +200,7 @@ export function QuoteFormDialog({ open, onOpenChange, quote }: Props) {
           <AlertDialogHeader>
             <AlertDialogTitle>delete this quote?</AlertDialogTitle>
             <AlertDialogDescription>
-              the quote disappears from your collection. this can't be undone.
+              the quote disappears from your collection. this can&apos;t be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
