@@ -69,6 +69,15 @@
   --star-bright: oklch(0.55 0.05 265);
   --star-dim: oklch(0.62 0.045 325);
 
+  /* Habit heatmap ramp — five steps from "no activity" to "best day".
+     Tuned for the bright off-white background of light mode. Dark
+     mode redefines them below for proper contrast. */
+  --heatmap-0: color-mix(in oklab, var(--muted) 70%, transparent);
+  --heatmap-1: oklch(0.82 0.05 200 / 0.55);
+  --heatmap-2: oklch(0.74 0.09 200 / 0.8);
+  --heatmap-3: oklch(0.66 0.12 200);
+  --heatmap-4: oklch(0.56 0.14 200);
+
   --radius: 0.5rem;
 }
 
@@ -119,6 +128,15 @@
 
   --star-bright: oklch(0.86 0.08 200);
   --star-dim: oklch(0.65 0.045 325);
+
+  /* Heatmap ramp tuned for the deep night-sky background. Lightness
+     climbs from a quiet 0.30 to a luminous 0.92 so each step pops
+     against the dark canvas — the light-mode ramp would just blend in. */
+  --heatmap-0: oklch(0.32 0.02 280);
+  --heatmap-1: oklch(0.50 0.10 200);
+  --heatmap-2: oklch(0.65 0.13 200);
+  --heatmap-3: oklch(0.78 0.13 200);
+  --heatmap-4: oklch(0.92 0.10 200);
 }
 
 @theme inline {

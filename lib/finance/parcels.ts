@@ -36,18 +36,27 @@ export type ParcelDates = {
 /**
  * Computes the four derived dates for a credit-card purchase.
  *
+ * Convention: `firstParcelMonth` / `lastParcelMonth` are the **months the
+ * user pays the parcel**, not the closing months. A purchase on the bill
+ * that closes 25/03 is paid in early April, so it shows up under "April"
+ * in the monthly views — that matches how the user thinks of bills
+ * ("a fatura de abril").
+ *
  * Rule of attribution (Brazilian credit-card convention):
  *   - If `purchaseDate.day <= closingDay(purchaseMonth)`, the purchase
- *     lands on the statement that closes during purchaseMonth itself.
- *   - Otherwise, it rolls forward to the next month's statement.
+ *     lands on the statement that **closes during purchaseMonth** and
+ *     is paid the month after (firstParcelMonth = purchaseMonth + 1).
+ *   - Otherwise, it rolls forward — closes next month, paid the month
+ *     after that (firstParcelMonth = purchaseMonth + 2).
  *
  * `closingDay` for a given month is taken from `card_closings` if an
  * override exists, otherwise `card.defaultClosingDay`.
  *
- * The actual `firstParcelDate` / `lastParcelDate` is the closing date of
- * those statements. When the closing day falls beyond the month's last
- * day (e.g., closing day 31 in February), it is clamped to the last day
- * of the month — matching how banks themselves resolve impossible dates.
+ * `firstParcelDate` / `lastParcelDate` are the closing dates of those
+ * statements (which sit in the month BEFORE the parcel month — that's
+ * when the bank actually cut the bill). Closing days beyond the month's
+ * last day (e.g., 31 in February) are clamped to the last day —
+ * matching how banks themselves resolve impossible dates.
  */
 export function computeParcelDates(input: ComputeParcelDatesInput): ParcelDates {
   const { card, purchaseDate, totalParcels, cardClosings } = input;
@@ -64,16 +73,19 @@ export function computeParcelDates(input: ComputeParcelDatesInput): ParcelDates 
   });
 
   const purchaseDayOfMonth = purchaseDate.getDate();
-  const firstParcelMonth =
+  // The month whose closing statement the purchase lands on.
+  const firstClosingMonth =
     purchaseDayOfMonth <= closingDayOfPurchaseMonth ? purchaseMonth : addMonths(purchaseMonth, 1);
-
-  const lastParcelMonth = addMonths(firstParcelMonth, totalParcels - 1);
+  // The month the user actually pays it — one month after closing.
+  const firstParcelMonth = addMonths(firstClosingMonth, 1);
+  const lastClosingMonth = addMonths(firstClosingMonth, totalParcels - 1);
+  const lastParcelMonth = addMonths(lastClosingMonth, 1);
 
   return {
     firstParcelMonth,
     lastParcelMonth,
-    firstParcelDate: closingDateForMonth({ month: firstParcelMonth, card, cardClosings }),
-    lastParcelDate: closingDateForMonth({ month: lastParcelMonth, card, cardClosings }),
+    firstParcelDate: closingDateForMonth({ month: firstClosingMonth, card, cardClosings }),
+    lastParcelDate: closingDateForMonth({ month: lastClosingMonth, card, cardClosings }),
   };
 }
 
