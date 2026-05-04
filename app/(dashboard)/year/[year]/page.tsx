@@ -227,11 +227,11 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
       </div>
 
       {/* ── kpi strip ───────────────────────────────────────────────── */}
-      {/* Two semantic groups, separated by a slightly stronger vertical
-          rule on lg+ : (1) the year ledger — incomes / expenses / balance
-          — and (2) the savings story — what was kept, what was kept on
-          average, and what was invested. */}
-      <div className="border-border grid shrink-0 grid-cols-3 border-b lg:grid-cols-6">
+      {/* Two rows of three. Top: the year ledger (incomes / expenses /
+          balance). Bottom: the savings story (year save / avg / invested),
+          marked with `groupStart` so the second row sits under a hairline
+          rule that visually separates the two. */}
+      <div className="border-border grid shrink-0 grid-cols-3 border-b">
         <YearKpi label="incomes" value={summary.totalIncomes} accent="success" />
         <YearKpi label="expenses" value={summary.totalExpenses} accent="muted" />
         <YearKpi
@@ -253,12 +253,14 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
           value={averageMonthlySave.toFixed(2)}
           hint={monthsWithData > 0 ? `over ${monthsWithData} mo` : "no data yet"}
           accent={averageMonthlySave < 0 ? "destructive" : "primary"}
+          groupStart
         />
         <YearKpi
           label="invested"
           value={yearInvested.toFixed(2)}
           hint="fixed income, by date"
           accent="muted"
+          groupStart
         />
       </div>
 
@@ -500,9 +502,9 @@ function YearKpi({
   hint?: string;
   accent: "success" | "muted" | "primary" | "destructive";
   highlight?: boolean;
-  /** Marks the start of the second semantic group on lg+ — adds a
-   *  slightly stronger left rule and drops the top border on mobile so
-   *  the second row reads as its own band when wrapping. */
+  /** Marks a cell that opens the second row (savings group). Adds a
+   *  hairline top border so the two semantic rows read as separate
+   *  bands stacked under each other. */
   groupStart?: boolean;
 }) {
   return (
@@ -510,10 +512,7 @@ function YearKpi({
       className={cn(
         "border-border flex flex-col gap-1 border-r px-6 py-4 last:border-r-0",
         highlight && "bg-primary/[0.04]",
-        // groupStart marks the savings group on lg+ — adds a slightly
-        // stronger left rule. On mobile (3-col wrap) the second group
-        // automatically lands on its own row so no extra rule is needed.
-        groupStart && "lg:border-l-border-strong lg:border-l",
+        groupStart && "border-t",
       )}
     >
       <span className="text-muted-foreground font-mono text-[11px] tracking-[0.18em]">{label}</span>
