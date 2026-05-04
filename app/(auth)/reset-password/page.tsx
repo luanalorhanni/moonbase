@@ -19,7 +19,7 @@ export default function ResetPasswordPage() {
               new password
             </h1>
             <p className="text-muted-foreground/85 max-w-[280px] text-[12.5px] leading-relaxed">
-              pick a strong password — you'll only use it here.
+              pick a strong password — you&apos;ll only use it here.
             </p>
           </div>
         </div>

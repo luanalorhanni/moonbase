@@ -292,7 +292,7 @@ function RemindersEditor({
         />
         <span className="text-foreground inline-flex items-center gap-1.5 text-[13px] font-medium">
           <Bell aria-hidden className="size-3.5" strokeWidth={1.6} />
-          use calendar's default reminders
+          use calendar&apos;s default reminders
         </span>
       </label>
 

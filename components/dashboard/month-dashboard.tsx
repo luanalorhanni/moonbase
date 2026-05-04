@@ -465,7 +465,7 @@ function HistoricalLock({ reference }: { reference: MonthRef }) {
       <p className="text-muted-foreground/85 max-w-md text-[13px] leading-relaxed">
         no per-transaction detail for {formatMonthLong(reference)} — this month was seeded from the
         spreadsheet before active tracking began. the totals above already count toward the
-        cumulative balance, but you can't edit records here.
+        cumulative balance, but you can&apos;t edit records here.
       </p>
       <span className="text-muted-foreground/60 mt-1 font-mono text-[10px] tracking-[0.18em] uppercase">
         snapshot · locked

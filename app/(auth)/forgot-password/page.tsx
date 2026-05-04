@@ -20,7 +20,7 @@ export default function ForgotPasswordPage() {
               recover password
             </h1>
             <p className="text-muted-foreground/85 max-w-[280px] text-[12.5px] leading-relaxed">
-              enter your email — we'll send you a link to set a new password.
+              enter your email — we&apos;ll send you a link to set a new password.
             </p>
           </div>
         </div>

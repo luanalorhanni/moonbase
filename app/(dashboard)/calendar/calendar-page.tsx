@@ -178,7 +178,7 @@ function DisconnectedView() {
       <div className="flex max-w-md flex-col gap-2">
         <h2 className="text-foreground text-[18px] font-medium">connect your google calendar</h2>
         <p className="text-muted-foreground text-[13px] leading-relaxed">
-          authorize moonbase to read your primary calendar's events. it's read-only — we don't
+          authorize moonbase to read your primary calendar&apos;s events. it&apos;s read-only — we don&apos;t
           change anything in your schedule. you can disconnect any time.
         </p>
       </div>
