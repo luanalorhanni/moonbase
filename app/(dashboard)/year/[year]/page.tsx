@@ -81,27 +81,26 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
       : "full year";
 
   // ── Yearly savings KPIs ───────────────────────────────────────────────
-  // 1. Cumulative year save: sum of every monthly balance within the year.
-  //    For elapsed months in the current year, mathematically identical to
-  //    ytdBalance — kept as its own line so the user can read it in
-  //    savings terms ("how much did I keep this year") rather than ledger
-  //    terms ("incomes minus expenses").
-  // 2. Average monthly save: cumulative save divided by months counted.
-  //    "Months counted" = elapsed months for current year, 12 otherwise,
-  //    excluding months that have neither incomes nor expenses (so a
-  //    snapshot-less, raw-less month doesn't drag the average to zero).
+  // Counted months = elapsed months in the current year (1..currentMonth)
+  // or 12 for past years, minus any month that's completely empty (no
+  // incomes and no expenses). This keeps a snapshot-less, raw-less month
+  // from dragging averages to zero.
   let monthsWithData = 0;
-  let cumulativeYearSave = 0;
+  let totalExpensesYear = 0;
+  let totalSaveYear = 0;
   for (const m of summary.months) {
     const monthNum = Number(m.reference.split("-")[1]);
     if (monthNum > monthCutoff) continue;
     const inc = Number(m.totalIncomes);
     const exp = Number(m.totalExpenses);
     if (inc === 0 && exp === 0) continue;
-    cumulativeYearSave += inc - exp;
+    totalExpensesYear += exp;
+    totalSaveYear += inc - exp;
     monthsWithData += 1;
   }
-  const averageMonthlySave = monthsWithData > 0 ? cumulativeYearSave / monthsWithData : 0;
+  const averageMonthlyExpenses =
+    monthsWithData > 0 ? totalExpensesYear / monthsWithData : 0;
+  const averageMonthlySave = monthsWithData > 0 ? totalSaveYear / monthsWithData : 0;
 
   // 3. Year invested: applied amounts from `fixed_income` (LCI/LCA/CDB,
   //    treasury, etc.) whose application_date falls inside the year.
@@ -242,14 +241,14 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
           highlight
         />
         <YearKpi
-          label="year save"
-          value={cumulativeYearSave.toFixed(2)}
-          hint="sum of monthly leftovers"
-          accent={cumulativeYearSave < 0 ? "destructive" : "success"}
+          label="avg expenses"
+          value={averageMonthlyExpenses.toFixed(2)}
+          hint={monthsWithData > 0 ? `over ${monthsWithData} mo` : "no data yet"}
+          accent="muted"
           groupStart
         />
         <YearKpi
-          label="avg / month"
+          label="avg save"
           value={averageMonthlySave.toFixed(2)}
           hint={monthsWithData > 0 ? `over ${monthsWithData} mo` : "no data yet"}
           accent={averageMonthlySave < 0 ? "destructive" : "primary"}
