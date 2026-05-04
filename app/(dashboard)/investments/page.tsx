@@ -1,3 +1,4 @@
+import { listInvestmentUpdates } from "@/lib/queries/investment-updates";
 import { listFixedIncome, listLiquidSavings } from "@/lib/queries/investments";
 
 import { InvestmentsPage } from "./investments-page";
@@ -7,7 +8,17 @@ export const metadata = {
 };
 
 export default async function InvestmentsRoute() {
-  const [liquidSavings, fixedIncome] = await Promise.all([listLiquidSavings(), listFixedIncome()]);
+  const [liquidSavings, fixedIncome, updates] = await Promise.all([
+    listLiquidSavings(),
+    listFixedIncome(),
+    listInvestmentUpdates(),
+  ]);
 
-  return <InvestmentsPage liquidSavings={liquidSavings} fixedIncome={fixedIncome} />;
+  return (
+    <InvestmentsPage
+      liquidSavings={liquidSavings}
+      fixedIncome={fixedIncome}
+      updates={updates}
+    />
+  );
 }
