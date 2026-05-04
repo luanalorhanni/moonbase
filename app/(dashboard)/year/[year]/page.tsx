@@ -208,22 +208,20 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
       <div className="border-border flex shrink-0 flex-col border-b">
         <PanelHeader
           title="trend"
-          subtitle="cumulative · incomes · expenses · net"
+          subtitle="incomes · expenses · balance"
           legend={
             <div className="text-muted-foreground/80 hidden items-center gap-4 font-mono text-[10.5px] tracking-wider sm:flex">
-              <LegendDot color="oklch(0.65 0.10 200)" label="cumulative" />
               <LegendDot color="oklch(0.74 0.13 160)" label="incomes" />
               <LegendDot color="oklch(0.62 0.18 25)" label="expenses" />
-              <LegendDot color="oklch(0.74 0.13 160)" label="net" dashed />
+              <LegendDot color="oklch(0.65 0.10 270)" label="balance" />
             </div>
           }
         />
         <div className="min-h-[420px] flex-1 px-3 pt-3 pb-4 md:px-5">
           <TrendChart
             data={trendData}
+            series={["incomes", "expenses", "net"]}
             showPointLabels
-            showIncomeExpense
-            showNet
             showYAxis
             tall
           />
