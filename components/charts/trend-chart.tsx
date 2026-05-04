@@ -70,6 +70,8 @@ export function TrendChart({
   showPointLabels,
   showIncomeExpense,
   showNet = true,
+  showYAxis = false,
+  tall = false,
 }: {
   data: TrendDatum[];
   showPointLabels?: boolean;
@@ -77,12 +79,23 @@ export function TrendChart({
   showIncomeExpense?: boolean;
   /** When false, hides the dashed net line. Default true. */
   showNet?: boolean;
+  /** When true, renders a labelled Y axis with compact currency ticks. */
+  showYAxis?: boolean;
+  /** Bumps the canvas to ~420px — used by the year ledger where the chart
+   *  is the centerpiece. */
+  tall?: boolean;
 }) {
+  const height = tall ? 420 : showPointLabels ? 280 : 220;
   return (
-    <ResponsiveContainer width="100%" height={showPointLabels ? 280 : 220}>
+    <ResponsiveContainer width="100%" height={height}>
       <ComposedChart
         data={data}
-        margin={{ top: showPointLabels ? 32 : 24, right: 24, bottom: 8, left: 8 }}
+        margin={{
+          top: showPointLabels ? 32 : 24,
+          right: 24,
+          bottom: 8,
+          left: showYAxis ? 8 : 8,
+        }}
       >
         <defs>
           <linearGradient id="trend-fill" x1="0" y1="0" x2="0" y2="1">
@@ -90,7 +103,11 @@ export function TrendChart({
             <stop offset="100%" stopColor={COLORS.cumulative} stopOpacity={0} />
           </linearGradient>
         </defs>
-        <CartesianGrid stroke="oklch(1 0 0 / 0.04)" vertical={false} />
+        <CartesianGrid
+          stroke="oklch(1 0 0 / 0.06)"
+          strokeDasharray="2 4"
+          vertical={false}
+        />
         <XAxis
           dataKey="label"
           tickLine={false}
@@ -104,7 +121,23 @@ export function TrendChart({
           className="text-muted-foreground"
           dy={8}
         />
-        <YAxis hide />
+        {showYAxis ? (
+          <YAxis
+            tickLine={false}
+            axisLine={false}
+            width={56}
+            tickFormatter={(v: number) => formatCompact(v)}
+            tick={{
+              fontSize: 10,
+              fontFamily: "var(--font-mono)",
+              letterSpacing: "0.06em",
+              fill: "currentColor",
+            }}
+            className="text-muted-foreground"
+          />
+        ) : (
+          <YAxis hide />
+        )}
         <Tooltip
           cursor={{ stroke: "var(--border)", strokeDasharray: "2 2" }}
           contentStyle={{
