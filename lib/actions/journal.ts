@@ -35,6 +35,7 @@ export async function saveJournalEntry(input: JournalEntryInput): Promise<Action
         userId: user.id,
         entryDate: e.entryDate,
         mood: e.mood,
+        gratitude: e.gratitude,
         content: e.content,
         coverUrl: e.coverUrl,
         coverThumbUrl: e.coverThumbUrl,
@@ -47,6 +48,7 @@ export async function saveJournalEntry(input: JournalEntryInput): Promise<Action
         target: [schema.journalEntries.userId, schema.journalEntries.entryDate],
         set: {
           mood: e.mood,
+          gratitude: e.gratitude,
           content: e.content,
           coverUrl: e.coverUrl,
           coverThumbUrl: e.coverThumbUrl,

@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarRange } from "lucide-react";
+import { CalendarRange, Heart } from "lucide-react";
 
 import { moodFor } from "@/lib/journal/mood";
 import type { JournalEntryRow } from "@/lib/queries/journal";
@@ -83,22 +83,8 @@ export function EntryCard({
             <CalendarRange aria-hidden className="size-8" strokeWidth={1.2} />
           </div>
         )}
-        {MoodIcon && (
-          <span
-            className={cn(
-              "bg-background/85 absolute top-2 right-2 inline-flex size-7 items-center justify-center rounded-full backdrop-blur-sm",
-            )}
-            title={mood?.label}
-          >
-            <MoodIcon
-              aria-hidden
-              strokeWidth={1.6}
-              className={cn("size-3.5", mood?.color)}
-            />
-          </span>
-        )}
       </div>
-      <div className="flex flex-col gap-1.5 px-4 py-3">
+      <div className="flex flex-col gap-2 px-4 py-3">
         <div className="flex items-baseline justify-between gap-2">
           <span className="text-foreground text-[13.5px] font-medium tracking-tight">
             {date}
@@ -107,6 +93,48 @@ export function EntryCard({
             {isToday ? "hoje" : weekday}
           </span>
         </div>
+        {mood && MoodIcon && (
+          <span
+            title={mood.label}
+            className="border-border bg-muted/30 inline-flex w-fit items-center gap-1.5 rounded-full border px-2 py-0.5"
+          >
+            <MoodIcon
+              aria-hidden
+              strokeWidth={1.6}
+              className={cn("size-3", mood.color)}
+            />
+            <span
+              className={cn(
+                "font-mono text-[10px] tracking-[0.14em] uppercase",
+                mood.color,
+              )}
+            >
+              {mood.label}
+            </span>
+          </span>
+        )}
+        {entry.gratitude && entry.gratitude.length > 0 && (
+          <ul className="flex flex-col gap-1">
+            {entry.gratitude.slice(0, 3).map((item, idx) => (
+              <li
+                key={idx}
+                className="text-foreground/80 flex items-start gap-1.5 text-[12px] leading-snug"
+              >
+                <Heart
+                  aria-hidden
+                  className="text-accent fill-accent mt-[3px] size-2.5 shrink-0"
+                  strokeWidth={1.5}
+                />
+                <span className="line-clamp-1">{item}</span>
+              </li>
+            ))}
+            {entry.gratitude.length > 3 && (
+              <li className="text-muted-foreground/60 ml-4 font-mono text-[10px] tracking-wider">
+                +{entry.gratitude.length - 3} mais
+              </li>
+            )}
+          </ul>
+        )}
         {previewText && (
           <p className="text-muted-foreground line-clamp-2 text-[12.5px] leading-relaxed">
             {previewText}
