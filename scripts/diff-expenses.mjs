@@ -76,12 +76,7 @@ function parseDate(s) {
   return `${yyyy}-${mm}-${dd}`;
 }
 function norm(s) {
-  return (s ?? "")
-    .normalize("NFKD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase()
-    .replace(/\s+/g, " ")
-    .trim();
+  return (s ?? "").normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
 }
 function isoDateOf(d) {
   // postgres-js returns DATE columns as JS Date — coerce to yyyy-mm-dd.

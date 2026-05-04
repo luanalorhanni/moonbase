@@ -14,9 +14,7 @@ const TODAY = (() => {
 function formatDayLabel(iso: string): { weekday: string; date: string; isToday: boolean } {
   const [y, m, d] = iso.split("-").map(Number);
   const date = new Date(y, m - 1, d);
-  const weekday = new Intl.DateTimeFormat("en-US", { weekday: "long" })
-    .format(date)
-    .toLowerCase();
+  const weekday = new Intl.DateTimeFormat("en-US", { weekday: "long" }).format(date).toLowerCase();
   const dateLabel = new Intl.DateTimeFormat("en-US", {
     day: "2-digit",
     month: "long",
@@ -42,13 +40,7 @@ function preview(content: string | null): string {
  * mood + preview below. The whole card is clickable (opens the
  * editor dialog).
  */
-export function EntryCard({
-  entry,
-  onClick,
-}: {
-  entry: JournalEntryRow;
-  onClick: () => void;
-}) {
+export function EntryCard({ entry, onClick }: { entry: JournalEntryRow; onClick: () => void }) {
   const { weekday, date, isToday } = formatDayLabel(entry.entryDate);
   const mood = moodFor(entry.mood);
   const MoodIcon = mood?.icon;
@@ -60,13 +52,13 @@ export function EntryCard({
       onClick={onClick}
       className={cn(
         "group border-border bg-card flex flex-col overflow-hidden rounded-xl border text-left shadow-sm transition-all duration-200 ease-[cubic-bezier(0.2,0.7,0.2,1)] hover:-translate-y-0.5 hover:shadow-md",
-        isToday && "border-primary/40 ring-1 ring-primary/20",
+        isToday && "border-primary/40 ring-primary/20 ring-1",
       )}
     >
       <div
         className={cn(
           "bg-muted relative aspect-[16/10] w-full overflow-hidden",
-          !entry.coverUrl && "bg-gradient-to-br from-muted to-muted/40",
+          !entry.coverUrl && "from-muted to-muted/40 bg-gradient-to-br",
         )}
       >
         {entry.coverUrl ? (
@@ -86,9 +78,7 @@ export function EntryCard({
       </div>
       <div className="flex flex-col gap-2 px-4 py-3">
         <div className="flex items-baseline justify-between gap-2">
-          <span className="text-foreground text-[13.5px] font-medium tracking-tight">
-            {date}
-          </span>
+          <span className="text-foreground text-[13.5px] font-medium tracking-tight">{date}</span>
           <span className="text-muted-foreground/70 font-mono text-[10px] tracking-[0.14em] uppercase">
             {isToday ? "today" : weekday}
           </span>
@@ -98,17 +88,8 @@ export function EntryCard({
             title={mood.label}
             className="border-border bg-muted/30 inline-flex w-fit items-center gap-1.5 rounded-full border px-2 py-0.5"
           >
-            <MoodIcon
-              aria-hidden
-              strokeWidth={1.6}
-              className={cn("size-3", mood.color)}
-            />
-            <span
-              className={cn(
-                "font-mono text-[10px] tracking-[0.14em] uppercase",
-                mood.color,
-              )}
-            >
+            <MoodIcon aria-hidden strokeWidth={1.6} className={cn("size-3", mood.color)} />
+            <span className={cn("font-mono text-[10px] tracking-[0.14em] uppercase", mood.color)}>
               {mood.label}
             </span>
           </span>

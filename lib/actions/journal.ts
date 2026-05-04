@@ -115,10 +115,7 @@ export async function saveJournalQuote(
           collectedOn: q.collectedOn,
         })
         .where(
-          and(
-            eq(schema.journalQuotes.userId, user.id),
-            eq(schema.journalQuotes.id, input.id),
-          ),
+          and(eq(schema.journalQuotes.userId, user.id), eq(schema.journalQuotes.id, input.id)),
         );
     } else {
       await db.insert(schema.journalQuotes).values({
@@ -145,12 +142,7 @@ export async function deleteJournalQuote(id: string): Promise<ActionResult> {
   try {
     await db
       .delete(schema.journalQuotes)
-      .where(
-        and(
-          eq(schema.journalQuotes.userId, user.id),
-          eq(schema.journalQuotes.id, id),
-        ),
-      );
+      .where(and(eq(schema.journalQuotes.userId, user.id), eq(schema.journalQuotes.id, id)));
   } catch (err) {
     return {
       ok: false,

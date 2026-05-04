@@ -34,9 +34,7 @@ export async function GET(request: Request) {
     ?.split("=")[1];
 
   if (!stateCookie || stateCookie !== state) {
-    return NextResponse.redirect(
-      new URL("/calendar?error=invalid_state", request.url),
-    );
+    return NextResponse.redirect(new URL("/calendar?error=invalid_state", request.url));
   }
 
   try {

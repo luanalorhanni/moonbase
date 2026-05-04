@@ -3,11 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { TrendChart } from "@/components/charts/trend-chart";
-import {
-  PixelComet,
-  PixelPlanet,
-  PixelStarSmall,
-} from "@/components/decorative/pixel-icons";
+import { PixelComet, PixelPlanet, PixelStarSmall } from "@/components/decorative/pixel-icons";
 import { cumulativeBalance, type HistoricalSnapshot } from "@/lib/finance/aggregate";
 import { currentMonthRef, formatMonthShort, type MonthRef } from "@/lib/finance/month";
 import { listFixedIncome } from "@/lib/queries/investments";
@@ -76,9 +72,7 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
   }
   const ytdBalance = (ytdIncomes - ytdExpenses).toFixed(2);
   const ytdLabel =
-    summary.year === currentYear
-      ? `jan → ${formatMonthShort(today).split("/")[0]}`
-      : "full year";
+    summary.year === currentYear ? `jan → ${formatMonthShort(today).split("/")[0]}` : "full year";
 
   // ── Yearly savings KPIs ───────────────────────────────────────────────
   // Counted months = elapsed months in the current year (1..currentMonth)
@@ -98,8 +92,7 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
     totalSaveYear += inc - exp;
     monthsWithData += 1;
   }
-  const averageMonthlyExpenses =
-    monthsWithData > 0 ? totalExpensesYear / monthsWithData : 0;
+  const averageMonthlyExpenses = monthsWithData > 0 ? totalExpensesYear / monthsWithData : 0;
   const averageMonthlySave = monthsWithData > 0 ? totalSaveYear / monthsWithData : 0;
 
   // 3. Year invested: applied amounts from `fixed_income` (LCI/LCA/CDB,
@@ -151,16 +144,10 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
           }}
         />
         {/* corner decorations */}
-        <div
-          aria-hidden
-          className="text-primary/40 absolute top-4 right-6 hidden md:block"
-        >
+        <div aria-hidden className="text-primary/40 absolute top-4 right-6 hidden md:block">
           <PixelPlanet size={18} />
         </div>
-        <div
-          aria-hidden
-          className="text-primary/30 absolute bottom-3 left-5 hidden md:block"
-        >
+        <div aria-hidden className="text-primary/30 absolute bottom-3 left-5 hidden md:block">
           <PixelComet size={14} />
         </div>
 
@@ -180,9 +167,7 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
                 annual ledger
               </span>
               <h1 className="font-display text-foreground flex items-baseline gap-1 leading-none tracking-[-0.04em]">
-                <span className="text-[72px] font-light italic md:text-[112px]">
-                  {headPair}
-                </span>
+                <span className="text-[72px] font-light italic md:text-[112px]">{headPair}</span>
                 <span className="text-primary/85 text-[72px] font-medium italic md:text-[112px]">
                   {tailPair}
                 </span>
@@ -477,11 +462,7 @@ function LegendDot({
           }}
         />
       ) : (
-        <span
-          aria-hidden
-          className="size-2 rounded-sm"
-          style={{ backgroundColor: color }}
-        />
+        <span aria-hidden className="size-2 rounded-sm" style={{ backgroundColor: color }} />
       )}
       <span>{label}</span>
     </span>

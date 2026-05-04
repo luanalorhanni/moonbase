@@ -72,9 +72,7 @@ function SidebarChrome({ user }: { user: CurrentUser }) {
         <SidebarNav />
       </div>
       <SidebarFooter
-        user={
-          <SidebarUser email={user.email} name={user.name} avatarUrl={user.avatarUrl} />
-        }
+        user={<SidebarUser email={user.email} name={user.name} avatarUrl={user.avatarUrl} />}
       />
     </>
   );

@@ -51,10 +51,7 @@ async function adjustLiquidSavings(
     .select({ id: schema.liquidSavings.id, latestYield: schema.liquidSavings.latestYield })
     .from(schema.liquidSavings)
     .where(
-      and(
-        eq(schema.liquidSavings.id, liquidSavingsId),
-        eq(schema.liquidSavings.userId, userId),
-      ),
+      and(eq(schema.liquidSavings.id, liquidSavingsId), eq(schema.liquidSavings.userId, userId)),
     )
     .limit(1);
   const row = rows[0];
@@ -131,9 +128,7 @@ export async function updateCashExpense(
           liquidSavingsId: schema.cashExpenses.liquidSavingsId,
         })
         .from(schema.cashExpenses)
-        .where(
-          and(eq(schema.cashExpenses.id, id), eq(schema.cashExpenses.userId, user.id)),
-        )
+        .where(and(eq(schema.cashExpenses.id, id), eq(schema.cashExpenses.userId, user.id)))
         .limit(1);
       const prior = priorRows[0];
       if (!prior) throw new Error("expense not found.");
@@ -188,9 +183,7 @@ export async function deleteCashExpense(id: string): Promise<CashExpenseActionRe
           liquidSavingsId: schema.cashExpenses.liquidSavingsId,
         })
         .from(schema.cashExpenses)
-        .where(
-          and(eq(schema.cashExpenses.id, id), eq(schema.cashExpenses.userId, user.id)),
-        )
+        .where(and(eq(schema.cashExpenses.id, id), eq(schema.cashExpenses.userId, user.id)))
         .limit(1);
       const prior = priorRows[0];
 

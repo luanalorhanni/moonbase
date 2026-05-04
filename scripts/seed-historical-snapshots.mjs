@@ -12,19 +12,37 @@ const CSV = "C:\\Users\\luana\\Downloads\\logs_past_years.csv";
 const USER = "3827dc6f-2b5b-4590-a7a6-4f5f8506f36b";
 
 const PT_MONTHS = {
-  janeiro: "01", fevereiro: "02", marco: "03", março: "03",
-  abril: "04", maio: "05", junho: "06", julho: "07",
-  agosto: "08", setembro: "09", outubro: "10", novembro: "11", dezembro: "12",
+  janeiro: "01",
+  fevereiro: "02",
+  marco: "03",
+  março: "03",
+  abril: "04",
+  maio: "05",
+  junho: "06",
+  julho: "07",
+  agosto: "08",
+  setembro: "09",
+  outubro: "10",
+  novembro: "11",
+  dezembro: "12",
 };
 
 function parseBRL(s) {
   return Number(
-    s.replace(/[Rr]\$\s*/g, "").replace(/ /g, "").trim().replace(/\./g, "").replace(",", "."),
+    s
+      .replace(/[Rr]\$\s*/g, "")
+      .replace(/ /g, "")
+      .trim()
+      .replace(/\./g, "")
+      .replace(",", "."),
   );
 }
 
 function parsePtMonth(s) {
-  const m = s.trim().toLowerCase().match(/^([a-zçãéíóôú]+)\s+(\d{4})$/);
+  const m = s
+    .trim()
+    .toLowerCase()
+    .match(/^([a-zçãéíóôú]+)\s+(\d{4})$/);
   if (!m) throw new Error(`bad month label: ${s}`);
   const norm = m[1].normalize("NFKD").replace(/[̀-ͯ]/g, "");
   const mm = PT_MONTHS[norm];
@@ -41,18 +59,29 @@ function parseCsv(text) {
     const c = text[i];
     if (inQ) {
       if (c === '"') {
-        if (text[i + 1] === '"') { cell += '"'; i++; }
-        else inQ = false;
+        if (text[i + 1] === '"') {
+          cell += '"';
+          i++;
+        } else inQ = false;
       } else cell += c;
     } else {
       if (c === '"') inQ = true;
-      else if (c === ",") { row.push(cell); cell = ""; }
-      else if (c === "\r") {}
-      else if (c === "\n") { row.push(cell); out.push(row); row = []; cell = ""; }
-      else cell += c;
+      else if (c === ",") {
+        row.push(cell);
+        cell = "";
+      } else if (c === "\r") {
+      } else if (c === "\n") {
+        row.push(cell);
+        out.push(row);
+        row = [];
+        cell = "";
+      } else cell += c;
     }
   }
-  if (cell.length || row.length) { row.push(cell); out.push(row); }
+  if (cell.length || row.length) {
+    row.push(cell);
+    out.push(row);
+  }
   return out;
 }
 
@@ -76,7 +105,9 @@ const records = body
     };
   });
 
-console.log(`parsed ${records.length} historical months, ending cumulative R$ ${cumulative.toFixed(2)}`);
+console.log(
+  `parsed ${records.length} historical months, ending cumulative R$ ${cumulative.toFixed(2)}`,
+);
 
 const sql = postgres(process.env.DATABASE_URL, { prepare: false, max: 1 });
 

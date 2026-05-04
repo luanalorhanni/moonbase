@@ -7,13 +7,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { ColorPicker } from "@/components/ui/color-picker";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { IconPicker } from "@/components/ui/icon-picker";
 import { Input } from "@/components/ui/input";
 import {
@@ -83,18 +77,14 @@ export function HabitForm({ habit, categories, onSuccess }: Props) {
     weekly_target: HABIT_SCHEDULE_LABEL.weekly_target,
   };
 
-  const categoryLabels: Record<string, string> = Object.fromEntries(
-    [
-      [NO_CATEGORY, "no category"] as const,
-      ...categories.map((c) => [c.id, c.name] as const),
-    ],
-  );
+  const categoryLabels: Record<string, string> = Object.fromEntries([
+    [NO_CATEGORY, "no category"] as const,
+    ...categories.map((c) => [c.id, c.name] as const),
+  ]);
 
   function onSubmit(values: HabitFormInput) {
     startTransition(async () => {
-      const result = habit
-        ? await updateHabit(habit.id, values)
-        : await createHabit(values);
+      const result = habit ? await updateHabit(habit.id, values) : await createHabit(values);
       if (result.ok) {
         toast.success(habit ? "habit updated." : "habit created.");
         onSuccess();
@@ -293,9 +283,7 @@ export function HabitForm({ habit, categories, onSuccess }: Props) {
               type="checkbox"
               checked={form.watch("isActive")}
               disabled={isPending}
-              onChange={(e) =>
-                form.setValue("isActive", e.target.checked, { shouldDirty: true })
-              }
+              onChange={(e) => form.setValue("isActive", e.target.checked, { shouldDirty: true })}
               className="border-input mt-0.5 size-4 rounded border accent-current"
             />
             <span className="flex flex-col gap-0.5">

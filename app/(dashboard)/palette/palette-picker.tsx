@@ -37,10 +37,7 @@ export function PalettePicker({ palettes, activeId }: Props) {
   }
 
   return (
-    <PageShell
-      title="palette"
-      subtitle="choose how the system dresses each season of the month"
-    >
+    <PageShell title="palette" subtitle="choose how the system dresses each season of the month">
       <div className="mx-auto max-w-4xl px-2 py-4">
         <header className="mb-6 flex items-start gap-3">
           <PaletteIcon
@@ -50,13 +47,12 @@ export function PalettePicker({ palettes, activeId }: Props) {
           />
           <div className="flex flex-col gap-1">
             <p className="text-foreground text-[14px]">
-              each palette swaps the primary, accent, and warmth scale — the
-              rest of the system (paper, neutrals, semantic signals) stays
-              stable so reading stays calm.
+              each palette swaps the primary, accent, and warmth scale — the rest of the system
+              (paper, neutrals, semantic signals) stays stable so reading stays calm.
             </p>
             <p className="text-muted-foreground text-[12.5px]">
-              the choice applies to both modes (light and dark). switch as
-              many times as you'd like.
+              the choice applies to both modes (light and dark). switch as many times as you&apos;d
+              like.
             </p>
           </div>
         </header>
@@ -97,9 +93,7 @@ function PaletteCard({
       className={cn(
         "group ring-border-strong relative flex flex-col gap-3 overflow-hidden rounded-xl border p-4 text-left transition-all duration-200",
         "hover:-translate-y-0.5 hover:shadow-md disabled:pointer-events-none disabled:opacity-60",
-        active
-          ? "border-primary/60 bg-primary/[0.04]"
-          : "border-border bg-card",
+        active ? "border-primary/60 bg-primary/[0.04]" : "border-border bg-card",
       )}
     >
       {active && (
@@ -114,31 +108,15 @@ function PaletteCard({
       {/* Sample band — a horizontal sandwich of the two main tokens so
           the user reads the personality at a glance without trying. */}
       <div className="border-border-strong relative flex h-16 w-full overflow-hidden rounded-md border">
-        <div
-          className="flex-1"
-          style={{ background: palette.tokens.light.primary }}
-        />
-        <div
-          className="flex-1"
-          style={{ background: palette.tokens.light.accent }}
-        />
-        <div
-          className="flex-1"
-          style={{ background: palette.tokens.dark.primary }}
-        />
-        <div
-          className="flex-1"
-          style={{ background: palette.tokens.dark.accent }}
-        />
+        <div className="flex-1" style={{ background: palette.tokens.light.primary }} />
+        <div className="flex-1" style={{ background: palette.tokens.light.accent }} />
+        <div className="flex-1" style={{ background: palette.tokens.dark.primary }} />
+        <div className="flex-1" style={{ background: palette.tokens.dark.accent }} />
       </div>
 
       <div className="flex flex-col gap-0.5">
-        <span className="text-foreground text-[14px] font-medium capitalize">
-          {palette.name}
-        </span>
-        <span className="text-muted-foreground text-[12.5px]">
-          {palette.description}
-        </span>
+        <span className="text-foreground text-[14px] font-medium capitalize">{palette.name}</span>
+        <span className="text-muted-foreground text-[12.5px]">{palette.description}</span>
       </div>
 
       <div className="text-muted-foreground/70 mt-1 flex items-center gap-2 font-mono text-[10px] tracking-[0.16em] uppercase">

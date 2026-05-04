@@ -20,7 +20,8 @@ const subs = await sql`
 `;
 function findSub(s, c) {
   const r = subs.find(
-    (x) => x.sub_name.toLowerCase() === s.toLowerCase() && x.cat_name.toLowerCase() === c.toLowerCase(),
+    (x) =>
+      x.sub_name.toLowerCase() === s.toLowerCase() && x.cat_name.toLowerCase() === c.toLowerCase(),
   );
   if (!r) throw new Error(`subcategory not found: ${s}/${c}`);
   return r.id;

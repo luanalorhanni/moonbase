@@ -1,4 +1,4 @@
-import { drizzle } from "drizzle-orm/postgres-js";
+import { drizzle, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
 import * as schema from "./schema";
@@ -18,28 +18,34 @@ import * as schema from "./schema";
  * sequential round-trips. `prepare: false` is still required because
  * pgbouncer can't track prepared statements across connections.
  *
+ * Why the lazy proxy: at build time on Vercel, Next.js collects page
+ * data by evaluating route modules. Some of those imports `db` even
+ * though no query actually runs. Throwing on missing DATABASE_URL at
+ * import time blew up `next build` whenever the env wasn't injected.
+ * The proxy defers the connection string check (and the postgres()
+ * call) until the first real read or write — so module evaluation is
+ * always cheap and side-effect-free.
+ *
  * In dev, the module is re-evaluated on HMR; the `globalThis` cache
  * keeps a single client across reloads so we don't leak sockets.
  *
  * Migrations are run separately via `pnpm db:migrate` (drizzle-kit), which
  * picks up its own connection from drizzle.config.ts.
  */
-const connectionString = process.env.DATABASE_URL;
-
-if (!connectionString) {
-  throw new Error(
-    "DATABASE_URL is not set. Copy .env.local.example to .env.local and fill in the connection string.",
-  );
-}
 
 type DbGlobal = typeof globalThis & {
   __moonbasePgClient?: ReturnType<typeof postgres>;
+  __moonbaseDrizzle?: PostgresJsDatabase<typeof schema>;
 };
-const g = globalThis as DbGlobal;
 
-const client =
-  g.__moonbasePgClient ??
-  postgres(connectionString, {
+function buildClient(): ReturnType<typeof postgres> {
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    throw new Error(
+      "DATABASE_URL is not set. Copy .env.local.example to .env.local and fill in the connection string.",
+    );
+  }
+  return postgres(connectionString, {
     max: 10,
     idle_timeout: 20,
     connect_timeout: 10,
@@ -60,10 +66,32 @@ const client =
       },
     },
   });
-
-if (process.env.NODE_ENV !== "production") {
-  g.__moonbasePgClient = client;
 }
 
-export const db = drizzle(client, { schema });
+function getDrizzle(): PostgresJsDatabase<typeof schema> {
+  const g = globalThis as DbGlobal;
+  if (g.__moonbaseDrizzle) return g.__moonbaseDrizzle;
+  const client = g.__moonbasePgClient ?? buildClient();
+  const instance = drizzle(client, { schema });
+  if (process.env.NODE_ENV !== "production") {
+    g.__moonbasePgClient = client;
+    g.__moonbaseDrizzle = instance;
+  }
+  return instance;
+}
+
+/**
+ * Proxy that forwards every property access to a real Drizzle client
+ * built on first use. The proxy itself is created at module-load time,
+ * but `getDrizzle()` only runs when something actually reads off it —
+ * so an unused import never trips the env-var check.
+ */
+export const db = new Proxy({} as PostgresJsDatabase<typeof schema>, {
+  get(_target, prop, receiver) {
+    const real = getDrizzle();
+    const value = Reflect.get(real, prop, receiver);
+    return typeof value === "function" ? value.bind(real) : value;
+  },
+});
+
 export { schema };

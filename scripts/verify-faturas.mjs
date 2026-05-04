@@ -18,11 +18,11 @@ const BB_FATURA = [
   // single charges
   { date: "2026-02-22", amount: 29.48, parcels: 1, desc: "IFD*DENIS BARROS LOBO" },
   { date: "2026-03-12", amount: 7.95, parcels: 1, desc: "IFD*iFood Osasco" },
-  { date: "2026-03-06", amount: 12.90, parcels: 1, desc: "UBER PENDING" },
+  { date: "2026-03-06", amount: 12.9, parcels: 1, desc: "UBER PENDING" },
   // 2026-03-09 -12.90 (estorno) — ignored
   // parcels
-  { date: "2025-07-19", amount: 100.00, parcels: 10, desc: "OticasEvidenc PARC 08/10" },
-  { date: "2025-09-09", amount: 25.90, parcels: 12, desc: "RESPONDE AI PARC 07/12" },
+  { date: "2025-07-19", amount: 100.0, parcels: 10, desc: "OticasEvidenc PARC 08/10" },
+  { date: "2025-09-09", amount: 25.9, parcels: 12, desc: "RESPONDE AI PARC 07/12" },
   { date: "2025-10-15", amount: 202.91, parcels: 12, desc: "HUBLA HBL PARC 06/12" },
   { date: "2025-12-24", amount: 417.47, parcels: 6, desc: "DECOLAR PARC 03/06" },
   { date: "2026-02-06", amount: 102.61, parcels: 12, desc: "JIM.COM SOPHI PARC 02/12" },
@@ -31,36 +31,36 @@ const BB_FATURA = [
 // Nubank — fatura with due 2026-05-05.
 const NUBANK_FATURA = [
   // single charges (mostly Apr 2026)
-  { date: "2026-04-27", amount: 40.90, parcels: 1, desc: "Spotify" },
+  { date: "2026-04-27", amount: 40.9, parcels: 1, desc: "Spotify" },
   { date: "2026-04-25", amount: 4.08, parcels: 1, desc: "Uber" },
   { date: "2026-04-21", amount: 35.43, parcels: 1, desc: "Frosty Cohatrac" },
-  { date: "2026-04-21", amount: 23.00, parcels: 1, desc: "Mk Ilha" },
-  { date: "2026-04-21", amount: 20.00, parcels: 1, desc: "Loucos Por Coxinha" },
-  { date: "2026-04-21", amount: 36.00, parcels: 1, desc: "Lucianoveigada" },
-  { date: "2026-04-18", amount: 64.00, parcels: 1, desc: "Dona Licor Acessorios" },
+  { date: "2026-04-21", amount: 23.0, parcels: 1, desc: "Mk Ilha" },
+  { date: "2026-04-21", amount: 20.0, parcels: 1, desc: "Loucos Por Coxinha" },
+  { date: "2026-04-21", amount: 36.0, parcels: 1, desc: "Lucianoveigada" },
+  { date: "2026-04-18", amount: 64.0, parcels: 1, desc: "Dona Licor Acessorios" },
   { date: "2026-04-18", amount: 17.99, parcels: 1, desc: "Pague Menos" },
-  { date: "2026-04-17", amount: 9.00, parcels: 1, desc: "R P Cunha" },
-  { date: "2026-04-13", amount: 35.00, parcels: 1, desc: "Canva" },
-  { date: "2026-04-12", amount: 48.00, parcels: 1, desc: "Churras do Cearazinho" },
-  { date: "2026-04-10", amount: 20.00, parcels: 1, desc: "P J Refeicoes" },
-  { date: "2026-04-10", amount: 26.00, parcels: 1, desc: "G Latte Sapore" },
+  { date: "2026-04-17", amount: 9.0, parcels: 1, desc: "R P Cunha" },
+  { date: "2026-04-13", amount: 35.0, parcels: 1, desc: "Canva" },
+  { date: "2026-04-12", amount: 48.0, parcels: 1, desc: "Churras do Cearazinho" },
+  { date: "2026-04-10", amount: 20.0, parcels: 1, desc: "P J Refeicoes" },
+  { date: "2026-04-10", amount: 26.0, parcels: 1, desc: "G Latte Sapore" },
   { date: "2026-04-05", amount: 14.99, parcels: 1, desc: "Google One" },
   { date: "2026-04-04", amount: 6.96, parcels: 1, desc: "Uber" },
   { date: "2026-04-04", amount: 11.35, parcels: 1, desc: "Franciscorocha" },
-  { date: "2026-04-03", amount: 63.00, parcels: 1, desc: "Nivaci de Freitas" },
+  { date: "2026-04-03", amount: 63.0, parcels: 1, desc: "Nivaci de Freitas" },
   // parcels (date is original purchase date for parc 1/N, posting date otherwise)
-  { date: "2026-04-20", amount: 9.00, parcels: 2, desc: "Steam (P1/2)" },
+  { date: "2026-04-20", amount: 9.0, parcels: 2, desc: "Steam (P1/2)" },
   { date: "2026-04-08", amount: 57.48, parcels: 3, desc: "Meapleingress (P1/3)" },
-  { date: "2026-04-02", amount: 48.00, parcels: 2, desc: "Karlabiancada (P1/2)" },
+  { date: "2026-04-02", amount: 48.0, parcels: 2, desc: "Karlabiancada (P1/2)" },
   { date: "2026-03-29", amount: 47.88, parcels: 2, desc: "Drogasil (P2/2)" },
   { date: "2026-03-29", amount: 54.92, parcels: 3, desc: "Amazon Marketplace (P2/3)" },
   { date: "2026-03-29", amount: 29.37, parcels: 2, desc: "Pag Steam (P2/2)" },
-  { date: "2026-03-29", amount: 76.30, parcels: 12, desc: "Alura (P6/12)" },
-  { date: "2026-03-29", amount: 50.00, parcels: 4, desc: "Bdg Bar (P3/4)" },
+  { date: "2026-03-29", amount: 76.3, parcels: 12, desc: "Alura (P6/12)" },
+  { date: "2026-03-29", amount: 50.0, parcels: 4, desc: "Bdg Bar (P3/4)" },
   { date: "2026-03-29", amount: 66.96, parcels: 6, desc: "Shopee Parpinellimvei (P4/6)" },
   { date: "2026-03-29", amount: 59.99, parcels: 2, desc: "Amazon (P2/2)" },
-  { date: "2026-03-29", amount: 180.00, parcels: 10, desc: "Loumar Turismo (P5/10)" },
-  { date: "2026-03-29", amount: 106.30, parcels: 3, desc: "OLX (P2/3)" },
+  { date: "2026-03-29", amount: 180.0, parcels: 10, desc: "Loumar Turismo (P5/10)" },
+  { date: "2026-03-29", amount: 106.3, parcels: 3, desc: "OLX (P2/3)" },
 ];
 
 function fmt(n) {
@@ -179,7 +179,7 @@ function findReceivableMatch(card, parcels, amount) {
       !usedRecv.has(r.id) &&
       r.card_name === card &&
       Number(r.total_parcels) === parcels &&
-      Math.abs(Number(r.parcel_value) - amount) < 0.10,
+      Math.abs(Number(r.parcel_value) - amount) < 0.1,
   );
   if (pureRecv) {
     usedRecv.add(pureRecv.id);
@@ -261,7 +261,9 @@ verify("Nubank", NUBANK_FATURA);
 
 // Now find DB rows whose parcels would fall in this fatura but didn't
 // appear on either statement (i.e., DB has it but bank doesn't).
-console.log("\n══════ DB credit rows with a parcel in April 2026 that aren't on either fatura ══════");
+console.log(
+  "\n══════ DB credit rows with a parcel in April 2026 that aren't on either fatura ══════",
+);
 
 // `usedDb` already accumulated all matched ids during verify().
 const matchedIds = usedDb;

@@ -33,7 +33,14 @@ Uber Aeroporto Foz\tNubank\tR$ 52,23\t12/02/2026\t1\tmarço 2026\tmarço 2026
 Congresso Mamãe\tBanco do Brasil\tR$ 96,00\t30/03/2026\t6\tmaio 2026\toutubro 2026`;
 
 function parseBRL(s) {
-  return Number(s.replace(/[Rr]\$\s*/g, "").replace(/ /g, "").trim().replace(/\./g, "").replace(",", "."));
+  return Number(
+    s
+      .replace(/[Rr]\$\s*/g, "")
+      .replace(/ /g, "")
+      .trim()
+      .replace(/\./g, "")
+      .replace(",", "."),
+  );
 }
 function parseDate(s) {
   const m = s.trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
@@ -132,7 +139,8 @@ for (const [key, csvList] of csvMap) {
     }
   }
 }
-for (const r of dbRows) if (!used.has(r.id)) onlyInDb.push({ ...r, purchase_date: isoDateOf(r.purchase_date) });
+for (const r of dbRows)
+  if (!used.has(r.id)) onlyInDb.push({ ...r, purchase_date: isoDateOf(r.purchase_date) });
 
 console.log(`\nOff-by-one date:   ${offByOne.length}  (DB date is 1 day earlier than spreadsheet)`);
 console.log(`Description diffs: ${descDiffs.length}`);
@@ -142,13 +150,17 @@ console.log(`Only in DB:          ${onlyInDb.length}`);
 if (offByOne.length) {
   console.log("\n— off-by-one rows —");
   for (const { csv, db } of offByOne) {
-    console.log(`  · ${csv.card} | ${csv.description} | csv=${csv.date} db=${db.purchase_date} | ${csv.parcels}× ${fmtBRL(csv.amount)}`);
+    console.log(
+      `  · ${csv.card} | ${csv.description} | csv=${csv.date} db=${db.purchase_date} | ${csv.parcels}× ${fmtBRL(csv.amount)}`,
+    );
   }
 }
 if (descDiffs.length) {
   console.log("\n— description diffs —");
   for (const { csv, db } of descDiffs) {
-    console.log(`  · ${csv.card} | ${csv.date} | ${fmtBRL(csv.amount)}\n      db: "${db.description}"\n     csv: "${csv.description}"`);
+    console.log(
+      `  · ${csv.card} | ${csv.date} | ${fmtBRL(csv.amount)}\n      db: "${db.description}"\n     csv: "${csv.description}"`,
+    );
   }
 }
 if (onlyInCsv.length) {
@@ -160,7 +172,9 @@ if (onlyInCsv.length) {
 if (onlyInDb.length) {
   console.log("\n— only in DB —");
   for (const r of onlyInDb) {
-    console.log(`  · ${r.card_name} | ${r.description} | ${r.purchase_date} | ${r.total_parcels}× ${fmtBRL(r.parcel_value)}`);
+    console.log(
+      `  · ${r.card_name} | ${r.description} | ${r.purchase_date} | ${r.total_parcels}× ${fmtBRL(r.parcel_value)}`,
+    );
   }
 }
 

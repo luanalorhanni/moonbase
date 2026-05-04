@@ -139,13 +139,7 @@ export function SidebarNav() {
   if (collapsed) {
     return <CollapsedTree pathname={pathname} />;
   }
-  return (
-    <ExpandedTree
-      pathname={pathname}
-      openGroups={openGroups}
-      toggleGroup={toggleGroup}
-    />
-  );
+  return <ExpandedTree pathname={pathname} openGroups={openGroups} toggleGroup={toggleGroup} />;
 }
 
 /* ── expanded layout (full-width grouped tree) ──────────────────── */
@@ -193,9 +187,7 @@ function ExpandedTree({
                 strokeWidth={1.6}
                 className={cn(
                   "size-[14px] shrink-0 transition-colors",
-                  hasActive
-                    ? "text-primary"
-                    : "opacity-60 group-hover/header:opacity-100",
+                  hasActive ? "text-primary" : "opacity-60 group-hover/header:opacity-100",
                 )}
               />
               <span className="flex-1 font-mono text-[10.5px] tracking-[0.18em] uppercase">
@@ -277,10 +269,7 @@ function ExpandedLink({ item, isActive }: { item: NavItem; isActive: boolean }) 
 function CollapsedTree({ pathname }: { pathname: string }) {
   const flat = [HOME_ITEM, ...GROUPS.flatMap((g) => g.items)];
   return (
-    <nav
-      aria-label="primary"
-      className="flex flex-col items-center gap-1 px-2 py-3"
-    >
+    <nav aria-label="primary" className="flex flex-col items-center gap-1 px-2 py-3">
       {flat.map((item) => {
         const isActive = isItemActive(pathname, item.href);
         const Icon = item.icon;

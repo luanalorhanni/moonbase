@@ -14,13 +14,9 @@ import {
   type UpdateEventInput,
 } from "@/lib/google-calendar";
 
-export type GoogleCalendarActionResult =
-  | { ok: true }
-  | { ok: false; error: string };
+export type GoogleCalendarActionResult = { ok: true } | { ok: false; error: string };
 
-export type CreateEventActionResult =
-  | { ok: true; htmlLink: string }
-  | { ok: false; error: string };
+export type CreateEventActionResult = { ok: true; htmlLink: string } | { ok: false; error: string };
 
 /**
  * Disconnect — drops the persisted tokens entirely. The user can

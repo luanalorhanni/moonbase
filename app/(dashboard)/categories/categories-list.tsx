@@ -309,7 +309,7 @@ export function CategoriesList({ initialCategories }: { initialCategories: Categ
                 : pendingDelete?.kind === "subcategory"
                   ? `"${pendingDelete.item.name}" will be removed.`
                   : null}{" "}
-              this can't be undone.
+              this can&apos;t be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

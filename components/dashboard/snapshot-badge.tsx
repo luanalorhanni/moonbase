@@ -15,12 +15,10 @@ type Props = {
    *  month. Computed in the parent (server) and passed in so this
    *  client component doesn't need its own clock. */
   isPastMonth: boolean;
-  snapshot:
-    | {
-        totalIncomes: string;
-        totalExpenses: string;
-      }
-    | null;
+  snapshot: {
+    totalIncomes: string;
+    totalExpenses: string;
+  } | null;
 };
 
 /**
