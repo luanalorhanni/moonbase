@@ -32,11 +32,15 @@ export type TrendDatum = {
 };
 
 /**
- * Tick / label formatter — shows the full number with the pt-BR thousands
- * separator (a dot), no currency symbol, no abbreviation. e.g. 5600 → "5.600".
+ * Tick / label formatter — full pt-BR currency mask, e.g. 5600 → "R$ 5.600,00".
  */
 const formatTick = (value: number): string =>
-  new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 }).format(value);
+  new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
 
 const COLORS = {
   cumulative: "oklch(0.65 0.10 200)", // electric aqua
@@ -133,7 +137,7 @@ export function TrendChart({
           <YAxis
             tickLine={false}
             axisLine={false}
-            width={56}
+            width={88}
             tickFormatter={(v: number) => formatTick(v)}
             tick={{
               fontSize: 10,
