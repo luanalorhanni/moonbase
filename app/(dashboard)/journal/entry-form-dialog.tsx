@@ -81,10 +81,7 @@ export function EntryFormDialog({ open, onOpenChange, entries, initialDate }: Pr
   const router = useRouter();
 
   const today = todayIso();
-  const entriesByDate = useMemo(
-    () => new Map(entries.map((e) => [e.entryDate, e])),
-    [entries],
-  );
+  const entriesByDate = useMemo(() => new Map(entries.map((e) => [e.entryDate, e])), [entries]);
 
   // The "current date being edited" — driven by the date input. When
   // the user picks a new date, we look up its entry (if any) and load
@@ -172,7 +169,7 @@ export function EntryFormDialog({ open, onOpenChange, entries, initialDate }: Pr
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="font-display text-[20px] leading-tight font-light italic tracking-tight">
+            <DialogTitle className="font-display text-[20px] leading-tight font-light tracking-tight italic">
               {isEditing ? "edit entry" : "log day"}
             </DialogTitle>
             <DialogDescription className="font-mono text-[10.5px] tracking-[0.14em] uppercase">
@@ -206,11 +203,11 @@ export function EntryFormDialog({ open, onOpenChange, entries, initialDate }: Pr
               </div>
               {isFutureDate ? (
                 <span className="text-destructive text-[11.5px]">
-                  can't log the future — pick today or an earlier day.
+                  can&apos;t log the future — pick today or an earlier day.
                 </span>
               ) : isEditing ? (
                 <span className="text-muted-foreground/70 text-[11.5px]">
-                  this day already has an entry — you're editing it.
+                  this day already has an entry — you&apos;re editing it.
                 </span>
               ) : (
                 <span className="text-muted-foreground/70 text-[11.5px]">
@@ -234,11 +231,7 @@ export function EntryFormDialog({ open, onOpenChange, entries, initialDate }: Pr
 
             <Field>
               <FieldLabel>three things to be grateful for</FieldLabel>
-              <GratitudeList
-                value={gratitude}
-                onChange={setGratitude}
-                disabled={isSaving}
-              />
+              <GratitudeList value={gratitude} onChange={setGratitude} disabled={isSaving} />
               <span className="text-muted-foreground/70 text-[11.5px]">
                 small, medium, big — what matters is to stop and look.
               </span>
@@ -253,9 +246,7 @@ export function EntryFormDialog({ open, onOpenChange, entries, initialDate }: Pr
                     onClick={() => setTab("edit")}
                     className={cn(
                       "inline-flex h-full items-center gap-1 px-2.5 transition-colors",
-                      tab === "edit"
-                        ? "bg-muted text-foreground"
-                        : "hover:text-foreground",
+                      tab === "edit" ? "bg-muted text-foreground" : "hover:text-foreground",
                     )}
                   >
                     <Pencil aria-hidden className="size-3" strokeWidth={1.7} />
@@ -266,9 +257,7 @@ export function EntryFormDialog({ open, onOpenChange, entries, initialDate }: Pr
                     onClick={() => setTab("preview")}
                     className={cn(
                       "inline-flex h-full items-center gap-1 px-2.5 transition-colors",
-                      tab === "preview"
-                        ? "bg-muted text-foreground"
-                        : "hover:text-foreground",
+                      tab === "preview" ? "bg-muted text-foreground" : "hover:text-foreground",
                     )}
                   >
                     <Eye aria-hidden className="size-3" strokeWidth={1.7} />
@@ -324,11 +313,7 @@ export function EntryFormDialog({ open, onOpenChange, entries, initialDate }: Pr
             >
               cancel
             </Button>
-            <Button
-              type="button"
-              onClick={handleSave}
-              disabled={isSaving || isFutureDate}
-            >
+            <Button type="button" onClick={handleSave} disabled={isSaving || isFutureDate}>
               <Save aria-hidden className="size-3.5" />
               {isSaving ? "saving…" : isEditing ? "save" : "log"}
             </Button>

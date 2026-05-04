@@ -128,9 +128,9 @@ export function CardClosingsDialog({
   const [anchor, setAnchor] = useState(initialAnchor);
 
   // Local edits: keyed by ref. `null` = explicit "remove override".
-  const [edits, setEdits] = useState<Map<string, { closingDay: number | null; dueDay: number | null }>>(
-    () => new Map(),
-  );
+  const [edits, setEdits] = useState<
+    Map<string, { closingDay: number | null; dueDay: number | null }>
+  >(() => new Map());
 
   const closingsAsRef = useMemo(
     () => closings.map((c) => ({ ...c, referenceMonth: c.referenceMonth })),
@@ -380,9 +380,7 @@ export function CardClosingsDialog({
                     disabled={isSaving}
                     className={cn(
                       "border-input focus-visible:border-ring focus-visible:ring-ring/40 h-8 w-16 rounded-md border bg-transparent px-2 text-right text-[13px] tabular-nums transition-colors focus-visible:ring-2 focus-visible:outline-none",
-                      r.closingInput === "" &&
-                        inheritedClosing &&
-                        "placeholder:text-amber-600/70",
+                      r.closingInput === "" && inheritedClosing && "placeholder:text-amber-600/70",
                     )}
                   />
                   <input

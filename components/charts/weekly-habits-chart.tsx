@@ -56,7 +56,10 @@ function mixHex(hexes: string[]): string | null {
     count += 1;
   }
   if (count === 0) return null;
-  const avg = (n: number) => Math.round(n / count).toString(16).padStart(2, "0");
+  const avg = (n: number) =>
+    Math.round(n / count)
+      .toString(16)
+      .padStart(2, "0");
   return `#${avg(r)}${avg(g)}${avg(b)}`;
 }
 
@@ -123,15 +126,12 @@ export function WeeklyHabitsChart({ todayIso, habits, logs }: Props) {
   });
 
   const possibleSoFar = data.filter((d) => !d.isFuture).length * activeHabits.length;
-  const consistency =
-    possibleSoFar > 0 ? Math.round((totalDoneThisWeek / possibleSoFar) * 100) : 0;
+  const consistency = possibleSoFar > 0 ? Math.round((totalDoneThisWeek / possibleSoFar) * 100) : 0;
 
   // Per-day mixed color used to drive the line/area gradient. Days with
   // zero checks fall back to the muted neutral so they don't yank the
   // gradient toward an arbitrary palette.
-  const dayColors = data.map(
-    (d) => mixHex(d.doneHabits.map((h) => h.color)) ?? FALLBACK_COLOR,
-  );
+  const dayColors = data.map((d) => mixHex(d.doneHabits.map((h) => h.color)) ?? FALLBACK_COLOR);
 
   // Build a label → "dd/mm" map for the X axis tick subtitle.
   const datesByLabel = new Map(
@@ -206,11 +206,7 @@ export function WeeklyHabitsChart({ todayIso, habits, logs }: Props) {
               interval={0}
               tick={<DayDateTick datesByLabel={datesByLabel} />}
             />
-            <YAxis
-              domain={[0, Math.max(activeHabits.length, 1)]}
-              allowDecimals={false}
-              hide
-            />
+            <YAxis domain={[0, Math.max(activeHabits.length, 1)]} allowDecimals={false} hide />
             <Tooltip
               cursor={{ stroke: "var(--border)", strokeDasharray: "2 2" }}
               content={<HabitTooltip />}
@@ -308,10 +304,7 @@ export function WeeklyHabitsChart({ todayIso, habits, logs }: Props) {
  * habit completed that day with a swatch in the habit's own color.
  * Future / no-data days fall back to a quiet "no checks" line.
  */
-function HabitTooltip(props: {
-  active?: boolean;
-  payload?: Array<{ payload?: DayPoint }>;
-}) {
+function HabitTooltip(props: { active?: boolean; payload?: Array<{ payload?: DayPoint }> }) {
   const { active, payload } = props;
   if (!active || !payload || payload.length === 0) return null;
   const point = payload[0]?.payload;
@@ -344,7 +337,7 @@ function HabitTooltip(props: {
               <span className="text-foreground">{h.name}</span>
             </li>
           ))}
-          <li className="text-muted-foreground border-border/50 mt-1 border-t pt-1 text-[9.5px] tracking-wider tabular-nums uppercase">
+          <li className="text-muted-foreground border-border/50 mt-1 border-t pt-1 text-[9.5px] tracking-wider uppercase tabular-nums">
             total: {point.doneHabits.length}
           </li>
         </ul>

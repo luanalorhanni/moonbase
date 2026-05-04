@@ -57,7 +57,7 @@ export function SidebarUser({ email, name, avatarUrl }: Props) {
     <div className="flex min-w-0 flex-1 items-center gap-2.5">
       {avatar}
       <span
-        className="text-foreground/85 min-w-0 flex-1 truncate text-[12px] font-medium leading-tight"
+        className="text-foreground/85 min-w-0 flex-1 truncate text-[12px] leading-tight font-medium"
         title={email ?? undefined}
       >
         {display}

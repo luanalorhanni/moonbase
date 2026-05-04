@@ -15,10 +15,6 @@ export default async function InvestmentsRoute() {
   ]);
 
   return (
-    <InvestmentsPage
-      liquidSavings={liquidSavings}
-      fixedIncome={fixedIncome}
-      updates={updates}
-    />
+    <InvestmentsPage liquidSavings={liquidSavings} fixedIncome={fixedIncome} updates={updates} />
   );
 }

@@ -1,7 +1,4 @@
-import {
-  getGoogleCalendarConnection,
-  listEventsWindow,
-} from "@/lib/queries/google-calendar";
+import { getGoogleCalendarConnection, listEventsWindow } from "@/lib/queries/google-calendar";
 
 import { CalendarPage } from "./calendar-page";
 

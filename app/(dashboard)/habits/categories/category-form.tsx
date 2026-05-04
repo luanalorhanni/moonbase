@@ -7,21 +7,12 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { ColorPicker } from "@/components/ui/color-picker";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { IconPicker } from "@/components/ui/icon-picker";
 import { Input } from "@/components/ui/input";
 import { createHabitCategory, updateHabitCategory } from "@/lib/actions/habits";
 import type { HabitCategoryRow } from "@/lib/queries/habits";
-import {
-  habitCategoryFormSchema,
-  type HabitCategoryFormInput,
-} from "@/lib/validation/habit";
+import { habitCategoryFormSchema, type HabitCategoryFormInput } from "@/lib/validation/habit";
 
 type Props = {
   category?: HabitCategoryRow;

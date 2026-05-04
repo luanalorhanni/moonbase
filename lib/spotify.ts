@@ -32,9 +32,7 @@ export function parseSpotifyUrl(input: string): SpotifyRef | null {
   if (trimmed === "") return null;
 
   // Spotify URI form: spotify:type:id
-  const uri = /^spotify:(playlist|album|track|show|episode|artist):([a-zA-Z0-9]+)$/i.exec(
-    trimmed,
-  );
+  const uri = /^spotify:(playlist|album|track|show|episode|artist):([a-zA-Z0-9]+)$/i.exec(trimmed);
   if (uri) return { kind: uri[1]!.toLowerCase() as SpotifyEmbedKind, id: uri[2]! };
 
   // Web URL: https://open.spotify.com/[intl-xx/](embed/)?type/id

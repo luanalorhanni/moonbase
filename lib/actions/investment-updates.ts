@@ -108,9 +108,7 @@ export async function recordInvestmentUpdate(input: InvestmentUpdateInput): Prom
   }
 
   invalidate(TAGS.investmentUpdates);
-  invalidate(
-    data.investmentKind === "liquid_savings" ? TAGS.liquidSavings : TAGS.fixedIncome,
-  );
+  invalidate(data.investmentKind === "liquid_savings" ? TAGS.liquidSavings : TAGS.fixedIncome);
   revalidatePath("/investments");
   return { ok: true };
 }
@@ -124,10 +122,7 @@ export async function deleteInvestmentUpdate(updateId: string): Promise<ActionRe
     .select()
     .from(schema.investmentUpdates)
     .where(
-      and(
-        eq(schema.investmentUpdates.id, updateId),
-        eq(schema.investmentUpdates.userId, user.id),
-      ),
+      and(eq(schema.investmentUpdates.id, updateId), eq(schema.investmentUpdates.userId, user.id)),
     )
     .limit(1);
   const row = target[0];
@@ -136,10 +131,7 @@ export async function deleteInvestmentUpdate(updateId: string): Promise<ActionRe
   await db
     .delete(schema.investmentUpdates)
     .where(
-      and(
-        eq(schema.investmentUpdates.id, updateId),
-        eq(schema.investmentUpdates.userId, user.id),
-      ),
+      and(eq(schema.investmentUpdates.id, updateId), eq(schema.investmentUpdates.userId, user.id)),
     );
 
   // Re-sync parent: if there are any remaining updates, point at the
@@ -186,9 +178,7 @@ export async function deleteInvestmentUpdate(updateId: string): Promise<ActionRe
   }
 
   invalidate(TAGS.investmentUpdates);
-  invalidate(
-    row.investmentKind === "liquid_savings" ? TAGS.liquidSavings : TAGS.fixedIncome,
-  );
+  invalidate(row.investmentKind === "liquid_savings" ? TAGS.liquidSavings : TAGS.fixedIncome);
   revalidatePath("/investments");
   return { ok: true };
 }

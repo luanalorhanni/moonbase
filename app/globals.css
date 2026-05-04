@@ -133,10 +133,10 @@
      climbs from a quiet 0.30 to a luminous 0.92 so each step pops
      against the dark canvas — the light-mode ramp would just blend in. */
   --heatmap-0: oklch(0.32 0.02 280);
-  --heatmap-1: oklch(0.50 0.10 200);
+  --heatmap-1: oklch(0.5 0.1 200);
   --heatmap-2: oklch(0.65 0.13 200);
   --heatmap-3: oklch(0.78 0.13 200);
-  --heatmap-4: oklch(0.92 0.10 200);
+  --heatmap-4: oklch(0.92 0.1 200);
 }
 
 @theme inline {
@@ -430,12 +430,7 @@
   position: absolute;
   width: 110px;
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgb(255 255 255 / 0.95),
-    transparent
-  );
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.95), transparent);
   filter: drop-shadow(0 0 6px rgb(255 255 255 / 0.7));
   opacity: 0;
   transform: rotate(18deg);

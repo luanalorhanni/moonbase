@@ -15,11 +15,11 @@ export default function ResetPasswordPage() {
             <KeyRound aria-hidden className="size-5" strokeWidth={1.4} />
           </div>
           <div className="flex flex-col items-center gap-1.5 text-center">
-            <h1 className="font-display text-[20px] leading-none font-light italic tracking-tight">
+            <h1 className="font-display text-[20px] leading-none font-light tracking-tight italic">
               new password
             </h1>
             <p className="text-muted-foreground/85 max-w-[280px] text-[12.5px] leading-relaxed">
-              pick a strong password — you'll only use it here.
+              pick a strong password — you&apos;ll only use it here.
             </p>
           </div>
         </div>

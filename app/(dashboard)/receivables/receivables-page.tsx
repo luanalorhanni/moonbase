@@ -158,12 +158,7 @@ function paidKey(receivableId: string, parcelNumber: number): string {
   return `${receivableId}:${parcelNumber}`;
 }
 
-export function ReceivablesPage({
-  cashReceivables,
-  creditReceivables,
-  paidParcels,
-  cards,
-}: Props) {
+export function ReceivablesPage({ cashReceivables, creditReceivables, paidParcels, cards }: Props) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("credit");
   const [cashDialog, setCashDialog] = useState<CashDialog>({ kind: "closed" });
@@ -319,12 +314,7 @@ export function ReceivablesPage({
 
       {/* kpi strip — matches /home dashboard style */}
       <div className="border-border grid shrink-0 grid-cols-1 border-b sm:grid-cols-3">
-        <Kpi
-          label="this month parcels"
-          value={thisMonthCreditTotal}
-          accent="primary"
-          highlight
-        />
+        <Kpi label="this month parcels" value={thisMonthCreditTotal} accent="primary" highlight />
         <Kpi
           label="upcoming parcels"
           value={upcomingCreditParcels.total}
@@ -542,9 +532,7 @@ function Kpi({
           {formatAmount(value)}
         </span>
         {hint && (
-          <span className="text-muted-foreground font-mono text-[11px] tracking-wider">
-            {hint}
-          </span>
+          <span className="text-muted-foreground font-mono text-[11px] tracking-wider">{hint}</span>
         )}
       </div>
     </div>
@@ -619,10 +607,7 @@ function CreditByMonthSection({
   referenceMonth: string;
   isParcelPaid: (receivableId: string, parcelNumber: number) => boolean;
   onToggleParcel: (receivableId: string, parcelNumber: number, paid: boolean) => void;
-  onSettleMonth: (
-    parcels: { receivableId: string; parcelNumber: number }[],
-    paid: boolean,
-  ) => void;
+  onSettleMonth: (parcels: { receivableId: string; parcelNumber: number }[], paid: boolean) => void;
   isSettling: boolean;
   onAdd: () => void;
   onEdit: (r: CreditReceivableWithCard) => void;
@@ -702,7 +687,7 @@ function CreditByMonthSection({
     <div className="flex flex-col gap-3 px-4 py-4">
       {upcoming.length === 0 ? (
         <p className="text-muted-foreground bg-muted/30 rounded-md px-4 py-6 text-center text-[12.5px]">
-          no upcoming parcels — everything's been paid up.
+          no upcoming parcels — everything&apos;s been paid up.
         </p>
       ) : (
         upcoming.map((month) => (
@@ -733,8 +718,7 @@ function CreditByMonthSection({
             ) : (
               <ChevronDown className="size-3" strokeWidth={1.8} />
             )}
-            {showPast ? "hide" : "show"} {past.length} past{" "}
-            {past.length === 1 ? "month" : "months"}
+            {showPast ? "hide" : "show"} {past.length} past {past.length === 1 ? "month" : "months"}
           </button>
           {showPast &&
             past
@@ -779,10 +763,7 @@ function MonthGroup({
   isPast?: boolean;
   isParcelPaid: (receivableId: string, parcelNumber: number) => boolean;
   onToggleParcel: (receivableId: string, parcelNumber: number, paid: boolean) => void;
-  onSettleMonth: (
-    parcels: { receivableId: string; parcelNumber: number }[],
-    paid: boolean,
-  ) => void;
+  onSettleMonth: (parcels: { receivableId: string; parcelNumber: number }[], paid: boolean) => void;
   isSettling: boolean;
   onEdit: (r: CreditReceivableWithCard) => void;
   onDelete: (r: CreditReceivableWithCard) => void;
@@ -929,7 +910,7 @@ function MonthGroup({
                 <div
                   className={cn(
                     "text-[13.5px] font-medium",
-                    paid && "text-muted-foreground line-through decoration-muted-foreground/40",
+                    paid && "text-muted-foreground decoration-muted-foreground/40 line-through",
                   )}
                 >
                   {p.description}
@@ -998,10 +979,7 @@ function MonthGroup({
                   <DropdownMenuItem onClick={() => onEdit(p.receivable)}>
                     edit purchase
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    variant="destructive"
-                    onClick={() => onDelete(p.receivable)}
-                  >
+                  <DropdownMenuItem variant="destructive" onClick={() => onDelete(p.receivable)}>
                     delete purchase
                   </DropdownMenuItem>
                 </DropdownMenuContent>

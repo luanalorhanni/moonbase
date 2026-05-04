@@ -150,7 +150,7 @@ export function WeekView({ events, onEventClick }: Props) {
             <ChevronRight className="size-3.5" strokeWidth={1.7} />
           </button>
         </div>
-        <span className="font-display text-foreground text-[16px] font-light italic tracking-tight">
+        <span className="font-display text-foreground text-[16px] font-light tracking-tight italic">
           {monthLabel}
         </span>
       </div>
@@ -220,14 +220,8 @@ export function WeekView({ events, onEventClick }: Props) {
       )}
 
       {/* ── scrollable timed grid ───────────────────────────────── */}
-      <div
-        ref={scrollRef}
-        className="relative max-h-[640px] overflow-y-auto"
-      >
-        <div
-          className="grid"
-          style={{ gridTemplateColumns: `60px repeat(7, minmax(0, 1fr))` }}
-        >
+      <div ref={scrollRef} className="relative max-h-[640px] overflow-y-auto">
+        <div className="grid" style={{ gridTemplateColumns: `60px repeat(7, minmax(0, 1fr))` }}>
           {/* hour gutter */}
           <div className="flex flex-col">
             {Array.from({ length: 24 }, (_, i) => (
@@ -300,10 +294,7 @@ function DayColumn({
 
   return (
     <div
-      className={cn(
-        "border-border relative border-l",
-        isToday && "bg-primary/[0.025]",
-      )}
+      className={cn("border-border relative border-l", isToday && "bg-primary/[0.025]")}
       style={{ height: HOUR_PX * 24 }}
     >
       {/* hour grid lines */}
@@ -386,10 +377,7 @@ function EventBlock({
       }}
     >
       <div
-        className={cn(
-          "w-full truncate font-medium",
-          tooShort && "text-[9.5px]",
-        )}
+        className={cn("w-full truncate font-medium", tooShort && "text-[9.5px]")}
         style={{ color }}
       >
         {event.summary ?? "(no title)"}
@@ -416,7 +404,7 @@ function AllDayChip({
     <button
       type="button"
       onClick={() => onClick(event)}
-      className="hover:scale-[1.02] inline-flex items-center gap-1 truncate rounded px-1.5 py-0.5 text-[10.5px] leading-tight transition-transform focus-visible:outline-none"
+      className="inline-flex items-center gap-1 truncate rounded px-1.5 py-0.5 text-[10.5px] leading-tight transition-transform hover:scale-[1.02] focus-visible:outline-none"
       style={{
         backgroundColor: `color-mix(in oklab, ${color} 30%, var(--background))`,
         color,
@@ -447,9 +435,7 @@ type Layout = {
  */
 function layoutEvents(events: CalendarEvent[], dayStart: Date): Layout[] {
   if (events.length === 0) return [];
-  const sorted = [...events].sort(
-    (a, b) => parseStart(a).getTime() - parseStart(b).getTime(),
-  );
+  const sorted = [...events].sort((a, b) => parseStart(a).getTime() - parseStart(b).getTime());
   const dayStartMs = startOfDay(dayStart).getTime();
 
   return sorted.map((event, i) => {

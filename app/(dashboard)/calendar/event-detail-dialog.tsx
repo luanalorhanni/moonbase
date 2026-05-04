@@ -39,13 +39,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -234,7 +228,7 @@ function ColorPicker({
         className={cn(
           "relative inline-flex size-7 items-center justify-center rounded-full border-2 transition-all",
           value === null
-            ? "border-foreground/80 ring-2 ring-offset-2 ring-offset-background ring-foreground/20"
+            ? "border-foreground/80 ring-offset-background ring-foreground/20 ring-2 ring-offset-2"
             : "border-border hover:border-foreground/40",
         )}
         style={{ backgroundColor: fallbackColor }}
@@ -252,8 +246,8 @@ function ColorPicker({
           className={cn(
             "size-7 rounded-full border-2 transition-all",
             value === id
-              ? "border-foreground/80 ring-2 ring-offset-2 ring-offset-background ring-foreground/20"
-              : "border-transparent hover:border-foreground/30",
+              ? "border-foreground/80 ring-offset-background ring-foreground/20 ring-2 ring-offset-2"
+              : "hover:border-foreground/30 border-transparent",
           )}
           style={{ backgroundColor: hex }}
         />
@@ -298,7 +292,7 @@ function RemindersEditor({
         />
         <span className="text-foreground inline-flex items-center gap-1.5 text-[13px] font-medium">
           <Bell aria-hidden className="size-3.5" strokeWidth={1.6} />
-          use calendar's default reminders
+          use calendar&apos;s default reminders
         </span>
       </label>
 
@@ -314,9 +308,7 @@ function RemindersEditor({
             <div key={i} className="flex items-center gap-2">
               <Select
                 value={r.method}
-                onValueChange={(v) =>
-                  v && update(i, { method: v as "popup" | "email" })
-                }
+                onValueChange={(v) => v && update(i, { method: v as "popup" | "email" })}
                 disabled={disabled}
                 items={{ popup: "popup", email: "email" }}
               >
@@ -333,9 +325,7 @@ function RemindersEditor({
                 min={0}
                 max={40320}
                 value={r.minutes}
-                onChange={(e) =>
-                  update(i, { minutes: Math.max(0, Number(e.target.value) || 0) })
-                }
+                onChange={(e) => update(i, { minutes: Math.max(0, Number(e.target.value) || 0) })}
                 disabled={disabled}
                 className="h-9 w-[90px]"
               />
@@ -501,10 +491,7 @@ export function EventDetailDialog({ event, calendars, onClose }: Props) {
   function handleDelete() {
     if (!event) return;
     startDeleteTransition(async () => {
-      const result = await deleteGoogleCalendarEvent(
-        event.calendarId,
-        event.googleEventId,
-      );
+      const result = await deleteGoogleCalendarEvent(event.calendarId, event.googleEventId);
       if (result.ok) {
         toast.success("event deleted.");
         router.refresh();
@@ -529,8 +516,8 @@ export function EventDetailDialog({ event, calendars, onClose }: Props) {
                   className="mt-1.5 size-3 shrink-0 rounded-full"
                   style={{ backgroundColor: color }}
                 />
-                <span className="font-display flex-1 text-[18px] leading-tight font-light italic tracking-tight">
-                  {editing ? "edit event" : event.summary ?? "(no title)"}
+                <span className="font-display flex-1 text-[18px] leading-tight font-light tracking-tight italic">
+                  {editing ? "edit event" : (event.summary ?? "(no title)")}
                 </span>
               </DialogTitle>
               <DialogDescription className="ml-[22px] flex items-center gap-2 font-mono text-[10.5px] tracking-[0.14em] uppercase">
@@ -591,9 +578,7 @@ export function EventDetailDialog({ event, calendars, onClose }: Props) {
                     value={calendarId}
                     onValueChange={(v) => v && setCalendarId(v)}
                     disabled={isSaving}
-                    items={Object.fromEntries(
-                      writableCalendars.map((c) => [c.id, c.summary]),
-                    )}
+                    items={Object.fromEntries(writableCalendars.map((c) => [c.id, c.summary]))}
                   >
                     <SelectTrigger id="ev-calendar" className="h-10 w-full">
                       <SelectValue />
@@ -609,9 +594,7 @@ export function EventDetailDialog({ event, calendars, onClose }: Props) {
                             />
                             {c.summary}
                             {c.primary && (
-                              <span className="text-muted-foreground/60 text-[10px]">
-                                primary
-                              </span>
+                              <span className="text-muted-foreground/60 text-[10px]">primary</span>
                             )}
                           </span>
                         </SelectItem>
@@ -645,9 +628,7 @@ export function EventDetailDialog({ event, calendars, onClose }: Props) {
                     disabled={isSaving}
                     className="border-input size-4 rounded border accent-current"
                   />
-                  <span className="text-foreground text-[13px] font-medium">
-                    all day
-                  </span>
+                  <span className="text-foreground text-[13px] font-medium">all day</span>
                 </label>
               </Field>
 
@@ -780,9 +761,7 @@ export function EventDetailDialog({ event, calendars, onClose }: Props) {
                 />
                 <div className="flex flex-1 flex-col gap-0.5">
                   <SectionLabel>when</SectionLabel>
-                  <span className="text-foreground text-[13.5px]">
-                    {formatDateTimeLong(event)}
-                  </span>
+                  <span className="text-foreground text-[13.5px]">{formatDateTimeLong(event)}</span>
                 </div>
               </div>
 
@@ -795,9 +774,7 @@ export function EventDetailDialog({ event, calendars, onClose }: Props) {
                         className="text-muted-foreground/70 mt-0.5 size-4 shrink-0"
                         strokeWidth={1.6}
                       />
-                      <span className="text-foreground break-words">
-                        {event.location}
-                      </span>
+                      <span className="text-foreground break-words">{event.location}</span>
                     </div>
                   )}
                   {event.hangoutLink && (
@@ -846,9 +823,7 @@ export function EventDetailDialog({ event, calendars, onClose }: Props) {
                       <Bell aria-hidden className="size-3" strokeWidth={1.7} />
                       {event.reminders.length === 0
                         ? "no reminders"
-                        : event.reminders
-                            .map((r) => `${r.minutes}m ${r.method}`)
-                            .join(" · ")}
+                        : event.reminders.map((r) => `${r.minutes}m ${r.method}`).join(" · ")}
                     </span>
                   )}
                 </div>

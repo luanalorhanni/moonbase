@@ -47,10 +47,7 @@ export const loanTypeEnum = pgEnum("loan_type", ["pix", "debit", "cash"]);
 export const snapshotStatusEnum = pgEnum("snapshot_status", ["locked", "draft"]);
 export const habitPolarityEnum = pgEnum("habit_polarity", ["do", "avoid"]);
 export const habitScheduleEnum = pgEnum("habit_schedule", ["daily", "weekly_target"]);
-export const investmentKindEnum = pgEnum("investment_kind", [
-  "liquid_savings",
-  "fixed_income",
-]);
+export const investmentKindEnum = pgEnum("investment_kind", ["liquid_savings", "fixed_income"]);
 
 /**
  * Color is stored as a free-form text string holding a 6-digit hex code

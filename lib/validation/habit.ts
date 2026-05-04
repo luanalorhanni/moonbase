@@ -27,12 +27,12 @@ export const habitFormSchema = z
     }),
     polarity: z.enum(HABIT_POLARITIES),
     schedule: z.enum(HABIT_SCHEDULES),
-    targetPerWeek: z
+    targetPerWeek: z.string().refine((v) => v === "" || /^[1-7]$/.test(v), {
+      message: "target per week must be 1-7",
+    }),
+    color: z
       .string()
-      .refine((v) => v === "" || /^[1-7]$/.test(v), {
-        message: "target per week must be 1-7",
-      }),
-    color: z.string().refine((v) => hexPattern.test(v), { message: "use a hex color like #7e82aa" }),
+      .refine((v) => hexPattern.test(v), { message: "use a hex color like #7e82aa" }),
     icon: z.string(),
     isActive: z.boolean(),
   })

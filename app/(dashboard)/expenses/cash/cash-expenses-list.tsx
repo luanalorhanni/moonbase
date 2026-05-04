@@ -89,12 +89,7 @@ type Props = {
   liquidSavings: LiquidSavingsRow[];
 };
 
-export function CashExpensesList({
-  initialExpenses,
-  cards,
-  subcategories,
-  liquidSavings,
-}: Props) {
+export function CashExpensesList({ initialExpenses, cards, subcategories, liquidSavings }: Props) {
   const [dialog, setDialog] = useState<DialogState>({ kind: "closed" });
   const [pendingDelete, setPendingDelete] = useState<CashExpenseWithDetails | null>(null);
   const [isDeleting, startDeleteTransition] = useTransition();
@@ -305,97 +300,93 @@ export function CashExpensesList({
                     ? liquidSavings.find((s) => s.id === expense.liquidSavingsId)
                     : null;
                   return (
-                  <TableRow key={expense.id}>
-                    <TableCell className="py-3 text-[13px] font-medium">
-                      <span className="flex items-center gap-2">
-                        <span className="truncate">{expense.description}</span>
-                        {cofrinho && (
-                          <span
-                            className="border-border bg-primary/[0.06] text-primary inline-flex shrink-0 items-center gap-1 rounded-md border px-1.5 py-0.5 font-mono text-[10px] tracking-wider uppercase"
-                            title={`do cofrinho: ${cofrinho.title}`}
-                          >
-                            <PiggyBank
+                    <TableRow key={expense.id}>
+                      <TableCell className="py-3 text-[13px] font-medium">
+                        <span className="flex items-center gap-2">
+                          <span className="truncate">{expense.description}</span>
+                          {cofrinho && (
+                            <span
+                              className="border-border bg-primary/[0.06] text-primary inline-flex shrink-0 items-center gap-1 rounded-md border px-1.5 py-0.5 font-mono text-[10px] tracking-wider uppercase"
+                              title={`do cofrinho: ${cofrinho.title}`}
+                            >
+                              <PiggyBank aria-hidden className="size-2.5" strokeWidth={1.8} />
+                              cofrinho
+                            </span>
+                          )}
+                        </span>
+                      </TableCell>
+                      <TableCell className="py-3 text-[12px]">
+                        <span className="flex items-center gap-2">
+                          {expense.categoryIcon ? (
+                            <span
                               aria-hidden
-                              className="size-2.5"
-                              strokeWidth={1.8}
-                            />
-                            cofrinho
+                              className="border-border bg-card/60 flex size-5 shrink-0 items-center justify-center rounded-md border"
+                              style={{
+                                borderColor: `color-mix(in oklab, ${expense.categoryColor} 35%, var(--border))`,
+                              }}
+                            >
+                              <CategoryIcon
+                                icon={expense.categoryIcon}
+                                color={expense.categoryColor}
+                                size={12}
+                              />
+                            </span>
+                          ) : null}
+                          <span className="min-w-0 truncate">
+                            <span className="text-muted-foreground">{expense.categoryName}</span>
+                            <span className="text-muted-foreground/40 mx-1">/</span>
+                            <span className="text-foreground">{expense.subcategoryName}</span>
                           </span>
-                        )}
-                      </span>
-                    </TableCell>
-                    <TableCell className="py-3 text-[12px]">
-                      <span className="flex items-center gap-2">
-                        {expense.categoryIcon ? (
+                        </span>
+                      </TableCell>
+                      <TableCell className="py-3">
+                        <span className="flex items-center gap-2">
                           <span
+                            className="size-2 shrink-0 rounded-full"
+                            style={{ backgroundColor: expense.cardColor }}
                             aria-hidden
-                            className="border-border bg-card/60 flex size-5 shrink-0 items-center justify-center rounded-md border"
+                          />
+                          <span
+                            className="border-border bg-card/60 truncate rounded-md border px-2 py-0.5 text-[12px]"
                             style={{
-                              borderColor: `color-mix(in oklab, ${expense.categoryColor} 35%, var(--border))`,
+                              borderColor: `color-mix(in oklab, ${expense.cardColor} 35%, var(--border))`,
                             }}
                           >
-                            <CategoryIcon
-                              icon={expense.categoryIcon}
-                              color={expense.categoryColor}
-                              size={12}
-                            />
+                            {expense.cardName}
                           </span>
-                        ) : null}
-                        <span className="min-w-0 truncate">
-                          <span className="text-muted-foreground">{expense.categoryName}</span>
-                          <span className="text-muted-foreground/40 mx-1">/</span>
-                          <span className="text-foreground">{expense.subcategoryName}</span>
                         </span>
-                      </span>
-                    </TableCell>
-                    <TableCell className="py-3">
-                      <span className="flex items-center gap-2">
-                        <span
-                          className="size-2 shrink-0 rounded-full"
-                          style={{ backgroundColor: expense.cardColor }}
-                          aria-hidden
-                        />
-                        <span
-                          className="border-border bg-card/60 truncate rounded-md border px-2 py-0.5 text-[12px]"
-                          style={{
-                            borderColor: `color-mix(in oklab, ${expense.cardColor} 35%, var(--border))`,
-                          }}
-                        >
-                          {expense.cardName}
-                        </span>
-                      </span>
-                    </TableCell>
-                    <TableCell className="py-3 text-[12px]">
-                      {CASH_METHOD_LABEL[expense.method]}
-                    </TableCell>
-                    <TableCell className="py-3 font-mono text-[12px] tabular-nums">
-                      {formatDate(expense.date)}
-                    </TableCell>
-                    <TableCell className="numeric py-3 text-right text-[13px] tabular-nums">
-                      {formatAmount(expense.amount)}
-                    </TableCell>
-                    <TableCell className="py-3">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger
-                          aria-label="actions"
-                          className="hover:bg-muted aria-expanded:bg-muted focus-visible:ring-ring/50 inline-flex size-7 items-center justify-center rounded-md transition-colors focus-visible:ring-3 focus-visible:outline-none"
-                        >
-                          <MoreHorizontal aria-hidden className="size-3.5" />
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => setDialog({ kind: "edit", expense })}>
-                            edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            variant="destructive"
-                            onClick={() => setPendingDelete(expense)}
+                      </TableCell>
+                      <TableCell className="py-3 text-[12px]">
+                        {CASH_METHOD_LABEL[expense.method]}
+                      </TableCell>
+                      <TableCell className="py-3 font-mono text-[12px] tabular-nums">
+                        {formatDate(expense.date)}
+                      </TableCell>
+                      <TableCell className="numeric py-3 text-right text-[13px] tabular-nums">
+                        {formatAmount(expense.amount)}
+                      </TableCell>
+                      <TableCell className="py-3">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger
+                            aria-label="actions"
+                            className="hover:bg-muted aria-expanded:bg-muted focus-visible:ring-ring/50 inline-flex size-7 items-center justify-center rounded-md transition-colors focus-visible:ring-3 focus-visible:outline-none"
                           >
-                            delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
+                            <MoreHorizontal aria-hidden className="size-3.5" />
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => setDialog({ kind: "edit", expense })}>
+                              edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              variant="destructive"
+                              onClick={() => setPendingDelete(expense)}
+                            >
+                              delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
                   );
                 })}
               </TableBody>

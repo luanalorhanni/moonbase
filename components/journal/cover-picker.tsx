@@ -114,11 +114,7 @@ export function CoverPicker({
     return (
       <div className="border-border bg-muted/10 relative overflow-hidden rounded-lg border">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={value.url}
-          alt={value.alt ?? ""}
-          className="aspect-[16/7] w-full object-cover"
-        />
+        <img src={value.url} alt={value.alt ?? ""} className="aspect-[16/7] w-full object-cover" />
         <div className="bg-background/80 absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 px-3 py-2 backdrop-blur-sm">
           <span className="text-muted-foreground/80 truncate font-mono text-[10px] tracking-wide">
             foto por{" "}
@@ -228,9 +224,7 @@ export function CoverPicker({
         ))}
       </div>
 
-      {error && (
-        <p className="text-destructive text-[12px]">{error}</p>
-      )}
+      {error && <p className="text-destructive text-[12px]">{error}</p>}
 
       {results.length > 0 && (
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">

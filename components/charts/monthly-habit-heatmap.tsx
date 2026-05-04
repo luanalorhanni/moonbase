@@ -81,13 +81,7 @@ type Props = {
  * the brightest swatch to whatever the user's actual peak is (different
  * from a fixed ramp because habit counts are small and bursty).
  */
-export function MonthlyHabitHeatmap({
-  todayIso,
-  habits,
-  logs,
-  year,
-  onCellClick,
-}: Props) {
+export function MonthlyHabitHeatmap({ todayIso, habits, logs, year, onCellClick }: Props) {
   const activeHabitCount = habits.filter((h) => h.isActive).length;
   const targetYear = year ?? Number(todayIso.slice(0, 4));
 
@@ -100,7 +94,7 @@ export function MonthlyHabitHeatmap({
     <div className="flex flex-col gap-2.5">
       {/* Header: stats only — legend lives below the grid */}
       <div className="flex flex-wrap items-baseline gap-3">
-        <span className="text-muted-foreground/80 font-mono text-[10.5px] tracking-[0.18em] tabular-nums uppercase">
+        <span className="text-muted-foreground/80 font-mono text-[10.5px] tracking-[0.18em] uppercase tabular-nums">
           {targetYear} · {totals.activeDays} active · {totals.totalChecks} checks
         </span>
       </div>
@@ -108,10 +102,7 @@ export function MonthlyHabitHeatmap({
       {/* Grid + axis labels */}
       <div className="flex items-start gap-1.5 overflow-x-auto pb-1">
         {/* Day-of-week labels on the left */}
-        <div
-          className="flex flex-col gap-[3px] pt-[14px]"
-          aria-hidden
-        >
+        <div className="flex flex-col gap-[3px] pt-[14px]" aria-hidden>
           {DAY_LABELS.map((label, dow) => (
             <span
               key={dow}
@@ -142,12 +133,7 @@ export function MonthlyHabitHeatmap({
             {columns.map((week, wi) => (
               <div key={wi} className="flex flex-col gap-[3px]">
                 {week.map((cell, ci) => (
-                  <HeatmapCell
-                    key={ci}
-                    cell={cell}
-                    maxDone={maxDone}
-                    onClick={onCellClick}
-                  />
+                  <HeatmapCell key={ci} cell={cell} maxDone={maxDone} onClick={onCellClick} />
                 ))}
               </div>
             ))}
@@ -201,9 +187,7 @@ function buildGrid(
   const endOffset = 6 - dayOfWeekMon(dec31);
   const lastSunday = shiftDays(dec31, endOffset);
   const totalDays =
-    (Date.UTC(...isoToYmd(lastSunday)) - Date.UTC(...isoToYmd(firstMonday))) /
-      86400000 +
-    1;
+    (Date.UTC(...isoToYmd(lastSunday)) - Date.UTC(...isoToYmd(firstMonday))) / 86400000 + 1;
   const weeks = totalDays / 7;
 
   // Bucket logs by date (set of distinct habit ids → done count).
@@ -293,8 +277,7 @@ function HeatmapCell({
   maxDone: number;
   onClick?: (iso: string) => void;
 }) {
-  const ratio =
-    cell.done === 0 ? 0 : maxDone <= 0 ? 1 : Math.min(cell.done / maxDone, 1);
+  const ratio = cell.done === 0 ? 0 : maxDone <= 0 ? 1 : Math.min(cell.done / maxDone, 1);
   const tooltip = `${cell.iso} — ${cell.done} ${cell.done === 1 ? "habit" : "habits"}${
     cell.isFuture ? " (future)" : ""
   }`;
@@ -316,7 +299,7 @@ function HeatmapCell({
         title={tooltip}
         className={cn(
           "size-[12px] shrink-0 rounded-[2px]",
-          cell.isToday && "ring-primary/70 ring-1 ring-offset-1 ring-offset-background",
+          cell.isToday && "ring-primary/70 ring-offset-background ring-1 ring-offset-1",
         )}
         style={{ backgroundColor: intensityColor(ratio) }}
       />
@@ -331,7 +314,7 @@ function HeatmapCell({
       title={tooltip}
       className={cn(
         "focus-visible:ring-ring size-[12px] shrink-0 cursor-pointer rounded-[2px] transition-transform hover:scale-150 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:outline-none",
-        cell.isToday && "ring-primary/70 ring-1 ring-offset-1 ring-offset-background",
+        cell.isToday && "ring-primary/70 ring-offset-background ring-1 ring-offset-1",
       )}
       style={{ backgroundColor: intensityColor(ratio) }}
     />

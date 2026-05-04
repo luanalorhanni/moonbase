@@ -85,11 +85,7 @@ export function SpotifyEmbed({ url }: Props) {
         </button>
       )}
 
-      <SpotifyDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        currentUrl={url}
-      />
+      <SpotifyDialog open={dialogOpen} onOpenChange={setDialogOpen} currentUrl={url} />
     </section>
   );
 }
@@ -148,8 +144,8 @@ function SpotifyDialog({
             spotify embed
           </DialogTitle>
           <DialogDescription>
-            paste a spotify URL (playlist, album, track, podcast, episode, or artist).
-            the embed is public — no login required.
+            paste a spotify URL (playlist, album, track, podcast, episode, or artist). the embed is
+            public — no login required.
           </DialogDescription>
         </DialogHeader>
 
@@ -167,7 +163,7 @@ function SpotifyDialog({
           />
           {value && !ref && (
             <p className="text-destructive text-[11.5px]">
-              couldn't parse this — check the link is from spotify.
+              couldn&apos;t parse this — check the link is from spotify.
             </p>
           )}
           {error && (
