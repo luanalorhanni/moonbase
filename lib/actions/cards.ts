@@ -28,7 +28,7 @@ export async function createCard(input: CardFormInput): Promise<CardActionResult
   if (!parsed.success) {
     return {
       ok: false,
-      error: "Verifique os campos do formulário.",
+      error: "please check the form fields.",
       fieldErrors: flattenIssues(parsed.error),
     };
   }
@@ -57,7 +57,7 @@ export async function updateCard(id: string, input: CardFormInput): Promise<Card
   if (!parsed.success) {
     return {
       ok: false,
-      error: "Verifique os campos do formulário.",
+      error: "please check the form fields.",
       fieldErrors: flattenIssues(parsed.error),
     };
   }
@@ -100,7 +100,7 @@ export async function deleteCard(id: string): Promise<CardActionResult> {
     ) {
       return {
         ok: false,
-        error: "Este cartão tem despesas ou receivables associados e não pode ser excluído.",
+        error: "this card has expenses or receivables linked to it and can't be deleted.",
       };
     }
     throw error;

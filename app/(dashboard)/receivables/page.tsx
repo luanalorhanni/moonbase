@@ -8,7 +8,7 @@ import {
 import { ReceivablesPage } from "./receivables-page";
 
 export const metadata = {
-  title: "Recebíveis — moonbase",
+  title: "Receivables — moonbase",
 };
 
 export default async function ReceivablesRoute() {

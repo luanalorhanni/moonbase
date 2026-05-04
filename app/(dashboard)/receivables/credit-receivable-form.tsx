@@ -69,7 +69,7 @@ export function CreditReceivableForm({ receivable, cards, onSuccess }: Props) {
         : await createCreditReceivable(values);
 
       if (result.ok) {
-        toast.success(receivable ? "Recebível atualizado." : "Recebível registrado.");
+        toast.success(receivable ? "receivable updated." : "receivable logged.");
         onSuccess();
         return;
       }
@@ -90,10 +90,10 @@ export function CreditReceivableForm({ receivable, cards, onSuccess }: Props) {
     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
       <FieldGroup>
         <Field>
-          <FieldLabel htmlFor="cr-description">Descrição</FieldLabel>
+          <FieldLabel htmlFor="cr-description">description</FieldLabel>
           <Input
             id="cr-description"
-            placeholder="Ex: Compra para Maria"
+            placeholder="e.g. purchase for Mary"
             disabled={isPending}
             {...form.register("description")}
           />
@@ -103,7 +103,7 @@ export function CreditReceivableForm({ receivable, cards, onSuccess }: Props) {
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="cr-card">Cartão de crédito</FieldLabel>
+          <FieldLabel htmlFor="cr-card">credit card</FieldLabel>
           <Controller
             control={form.control}
             name="cardId"
@@ -115,7 +115,7 @@ export function CreditReceivableForm({ receivable, cards, onSuccess }: Props) {
                 items={cardLabels}
               >
                 <SelectTrigger id="cr-card" className="w-full">
-                  <SelectValue placeholder="Selecione…" />
+                  <SelectValue placeholder="select…" />
                 </SelectTrigger>
                 <SelectContent>
                   {creditCards.map((card) => (
@@ -134,7 +134,7 @@ export function CreditReceivableForm({ receivable, cards, onSuccess }: Props) {
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="cr-purchase-date">Data da compra</FieldLabel>
+          <FieldLabel htmlFor="cr-purchase-date">purchase date</FieldLabel>
           <Input
             id="cr-purchase-date"
             type="date"
@@ -148,11 +148,11 @@ export function CreditReceivableForm({ receivable, cards, onSuccess }: Props) {
 
         <div className="grid grid-cols-2 gap-4">
           <Field>
-            <FieldLabel htmlFor="cr-parcels">Parcelas</FieldLabel>
+            <FieldLabel htmlFor="cr-parcels">installments</FieldLabel>
             <Input
               id="cr-parcels"
               inputMode="numeric"
-              placeholder="Ex: 3"
+              placeholder="e.g. 3"
               disabled={isPending}
               {...form.register("totalParcels")}
             />
@@ -162,11 +162,11 @@ export function CreditReceivableForm({ receivable, cards, onSuccess }: Props) {
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="cr-parcel-value">Valor por parcela</FieldLabel>
+            <FieldLabel htmlFor="cr-parcel-value">installment value</FieldLabel>
             <Input
               id="cr-parcel-value"
               inputMode="decimal"
-              placeholder="Ex: 199.90"
+              placeholder="e.g. 199.90"
               disabled={isPending}
               {...form.register("parcelValue")}
             />
@@ -176,7 +176,7 @@ export function CreditReceivableForm({ receivable, cards, onSuccess }: Props) {
           </Field>
         </div>
         <FieldDescription className="-mt-3">
-          Use ponto como separador decimal (ex: 199.90).
+          use a period as the decimal separator (e.g. 199.90).
         </FieldDescription>
 
         <div className="flex items-start gap-3 rounded-md border px-3 py-3">
@@ -192,10 +192,10 @@ export function CreditReceivableForm({ receivable, cards, onSuccess }: Props) {
               htmlFor="cr-manual-override"
               className="cursor-pointer text-sm leading-snug font-medium"
             >
-              Substituição manual
+              manual override
             </label>
             <p className="text-muted-foreground text-sm">
-              Mantém as datas de parcelamento existentes ao salvar, sem recalcular.
+              keeps the existing installment dates on save, without recalculating.
             </p>
           </div>
         </div>
@@ -203,10 +203,10 @@ export function CreditReceivableForm({ receivable, cards, onSuccess }: Props) {
 
       <div className="flex justify-end gap-2">
         <Button type="button" variant="ghost" onClick={onSuccess} disabled={isPending}>
-          Cancelar
+          cancel
         </Button>
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Salvando..." : receivable ? "Salvar" : "Registrar"}
+          {isPending ? "saving..." : receivable ? "save" : "log"}
         </Button>
       </div>
     </form>

@@ -49,17 +49,17 @@ export function JournalPage({ entries, quotes }: Props) {
   return (
     <PageShell
       title="journal"
-      subtitle="reflexões do dia"
+      subtitle="reflections of the day"
       toolbar={
         tab === "entries" ? (
           <Button size="sm" onClick={() => setEditorDate(today)}>
             <CalendarPlus aria-hidden className="size-3.5" strokeWidth={1.8} />
-            {todaysEntry ? "ver hoje" : "registrar dia"}
+            {todaysEntry ? "view today" : "log day"}
           </Button>
         ) : (
           <Button size="sm" onClick={() => setCreatingQuote(true)}>
             <Plus aria-hidden className="size-3.5" strokeWidth={1.8} />
-            nova frase
+            new quote
           </Button>
         )
       }
@@ -68,7 +68,7 @@ export function JournalPage({ entries, quotes }: Props) {
         caption="today"
         title="journal"
         accent="reflect"
-        subtitle="o que ficou de hoje"
+        subtitle="what stayed from today"
         tone="aqua"
       />
 
@@ -154,10 +154,10 @@ function EntriesView({
           strokeWidth={1}
           aria-hidden
         />
-        <p className="text-foreground text-[14px]">nada registrado ainda</p>
+        <p className="text-foreground text-[14px]">nothing logged yet</p>
         <p className="text-muted-foreground/70 max-w-sm text-[12.5px] leading-relaxed">
-          ao final do dia, anote como foi — humor, capa, reflexão. com o
-          tempo isso vira um arquivo dos seus dias.
+          at the end of the day, write down how it went — mood, cover, reflection. over
+          time it becomes an archive of your days.
         </p>
       </div>
     );
@@ -186,10 +186,10 @@ function QuotesView({
           strokeWidth={1}
           aria-hidden
         />
-        <p className="text-foreground text-[14px]">nenhuma frase guardada</p>
+        <p className="text-foreground text-[14px]">no quotes saved</p>
         <p className="text-muted-foreground/70 max-w-sm text-[12.5px] leading-relaxed">
-          guarde citações de livros, conversas e reflexões soltas pra
-          consultar depois.
+          save quotes from books, conversations, and stray reflections to
+          revisit later.
         </p>
       </div>
     );
@@ -212,7 +212,7 @@ function QuoteCard({
 }) {
   const dateLabel = (() => {
     const [y, m, d] = quote.collectedOn.split("-").map(Number);
-    return new Intl.DateTimeFormat("pt-BR", {
+    return new Intl.DateTimeFormat("en-US", {
       day: "2-digit",
       month: "short",
       year: "numeric",
@@ -236,7 +236,7 @@ function QuoteCard({
       </p>
       <div className="border-border/60 mt-auto flex items-baseline justify-between gap-2 border-t pt-2">
         <span className="text-muted-foreground/85 truncate text-[12px]">
-          {quote.author ? `— ${quote.author}` : "— anônimo"}
+          {quote.author ? `— ${quote.author}` : "— anonymous"}
           {quote.source && (
             <span className="text-muted-foreground/60 ml-1.5 font-mono text-[10px] tracking-wider">
               · {quote.source}

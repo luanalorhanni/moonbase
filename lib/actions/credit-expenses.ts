@@ -57,10 +57,10 @@ async function deriveParcelDates(
   ]);
 
   const card = cardRows[0];
-  if (!card) return { ok: false, error: "Cartão não encontrado." };
-  if (card.type !== "credit") return { ok: false, error: "Selecione um cartão de crédito." };
+  if (!card) return { ok: false, error: "card not found." };
+  if (card.type !== "credit") return { ok: false, error: "select a credit card." };
   if (card.defaultClosingDay === null) {
-    return { ok: false, error: "Configure o dia de fechamento do cartão primeiro." };
+    return { ok: false, error: "set the card's closing day first." };
   }
 
   const closings = cardClosingRows.map((cc) => ({
@@ -87,7 +87,7 @@ export async function createCreditExpense(
   if (!parsed.success) {
     return {
       ok: false,
-      error: "Verifique os campos do formulário.",
+      error: "please check the form fields.",
       fieldErrors: flattenIssues(parsed.error),
     };
   }
@@ -131,7 +131,7 @@ export async function updateCreditExpense(
   if (!parsed.success) {
     return {
       ok: false,
-      error: "Verifique os campos do formulário.",
+      error: "please check the form fields.",
       fieldErrors: flattenIssues(parsed.error),
     };
   }

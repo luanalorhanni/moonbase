@@ -310,13 +310,13 @@ export function HomePage({ settings }: { settings: UserSettingsRow | null }) {
           <SpotifyEmbed url={settings?.homeSpotifyUrl ?? null} />
         </div>
         <SectionDivider />
-        <SectionGrid title="routines" caption="rotinas e rituais" cards={ROUTINE_CARDS} delay={150} />
+        <SectionGrid title="routines" caption="routines and rituals" cards={ROUTINE_CARDS} delay={150} />
         <SectionDivider />
-        <SectionGrid title="finance control" caption="visão geral" cards={FINANCE_CARDS} delay={250} />
+        <SectionGrid title="finance control" caption="overview" cards={FINANCE_CARDS} delay={250} />
         <SectionDivider />
-        <SectionGrid title="finance register" caption="entradas e saídas" cards={REGISTER_CARDS} delay={350} />
+        <SectionGrid title="finance register" caption="ins and outs" cards={REGISTER_CARDS} delay={350} />
         <SectionDivider />
-        <SectionGrid title="config" caption="ajustes do sistema" cards={CONFIG_CARDS} delay={450} compact />
+        <SectionGrid title="config" caption="system settings" cards={CONFIG_CARDS} delay={450} compact />
       </div>
 
       <CoverPickerDialog open={coverPickerOpen} onOpenChange={setCoverPickerOpen} />

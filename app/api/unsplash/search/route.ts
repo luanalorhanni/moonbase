@@ -42,7 +42,7 @@ export async function GET(request: Request) {
   const accessKey = process.env.UNSPLASH_ACCESS_KEY;
   if (!accessKey) {
     return NextResponse.json(
-      { error: "UNSPLASH_ACCESS_KEY não configurada no servidor." },
+      { error: "UNSPLASH_ACCESS_KEY not configured on the server." },
       { status: 503 },
     );
   }
@@ -77,14 +77,14 @@ export async function GET(request: Request) {
     });
   } catch (err) {
     return NextResponse.json(
-      { error: `Unsplash inacessível: ${err instanceof Error ? err.message : "erro"}` },
+      { error: `Unsplash unreachable: ${err instanceof Error ? err.message : "error"}` },
       { status: 502 },
     );
   }
 
   if (!upstream.ok) {
     return NextResponse.json(
-      { error: `Unsplash retornou ${upstream.status}` },
+      { error: `Unsplash returned ${upstream.status}` },
       { status: upstream.status },
     );
   }

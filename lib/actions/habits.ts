@@ -42,7 +42,7 @@ export async function createHabit(input: HabitFormInput): Promise<HabitActionRes
   if (!parsed.success) {
     return {
       ok: false,
-      error: "Verifique os campos do formulário.",
+      error: "please check the form fields.",
       fieldErrors: flattenIssues(parsed.error),
     };
   }
@@ -61,7 +61,7 @@ export async function updateHabit(
   if (!parsed.success) {
     return {
       ok: false,
-      error: "Verifique os campos do formulário.",
+      error: "please check the form fields.",
       fieldErrors: flattenIssues(parsed.error),
     };
   }
@@ -93,7 +93,7 @@ export async function createHabitCategory(
   if (!parsed.success) {
     return {
       ok: false,
-      error: "Verifique os campos do formulário.",
+      error: "please check the form fields.",
       fieldErrors: flattenIssues(parsed.error),
     };
   }
@@ -116,7 +116,7 @@ export async function updateHabitCategory(
   if (!parsed.success) {
     return {
       ok: false,
-      error: "Verifique os campos do formulário.",
+      error: "please check the form fields.",
       fieldErrors: flattenIssues(parsed.error),
     };
   }
@@ -160,7 +160,7 @@ export async function setHabitLog(
 ): Promise<HabitActionResult> {
   const user = await requireUser();
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateIso)) {
-    return { ok: false, error: "data inválida." };
+    return { ok: false, error: "invalid date." };
   }
 
   if (done) {

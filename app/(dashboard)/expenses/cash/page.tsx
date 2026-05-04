@@ -6,7 +6,7 @@ import { listLiquidSavings } from "@/lib/queries/investments";
 import { CashExpensesList } from "./cash-expenses-list";
 
 export const metadata = {
-  title: "Despesas à vista — moonbase",
+  title: "Cash expenses — moonbase",
 };
 
 export default async function CashExpensesPage() {

@@ -250,7 +250,7 @@ async function googleFetch(
 ): Promise<Response> {
   const session = await getValidAccessToken(userId);
   if (!session) {
-    throw new Error("Não conectado ao Google Calendar.");
+    throw new Error("not connected to google calendar.");
   }
   const res = await buildRequest(session.accessToken);
   if (res.status !== 401) return res;
@@ -474,11 +474,11 @@ export async function createEvent(
   input: CreateEventInput,
 ): Promise<{ ok: true; htmlLink: string } | { ok: false; error: string }> {
   const session = await getValidAccessToken(userId);
-  if (!session) return { ok: false, error: "Não conectado ao Google Calendar." };
+  if (!session) return { ok: false, error: "not connected to google calendar." };
   if (!canWriteEvents(session.scope)) {
     return {
       ok: false,
-      error: "Sessão atual sem permissão de escrita — clique em reconectar pra atualizar os escopos.",
+      error: "current session has no write permission — click reconnect to update scopes.",
     };
   }
 
@@ -488,13 +488,13 @@ export async function createEvent(
   let end: { dateTime?: string; date?: string; timeZone?: string };
   if (input.isAllDay) {
     if (!input.startDate || !input.endDate) {
-      return { ok: false, error: "Datas de início e fim são obrigatórias." };
+      return { ok: false, error: "start and end dates are required." };
     }
     start = { date: input.startDate };
     end = { date: input.endDate };
   } else {
     if (!input.startDateTime || !input.endDateTime) {
-      return { ok: false, error: "Horários de início e fim são obrigatórios." };
+      return { ok: false, error: "start and end times are required." };
     }
     const tz = input.timezone ?? "UTC";
     start = { dateTime: input.startDateTime, timeZone: tz };
@@ -521,7 +521,7 @@ export async function createEvent(
   );
   if (!res.ok) {
     const text = await res.text();
-    return { ok: false, error: `Google rejeitou a criação (${res.status}): ${text}` };
+    return { ok: false, error: `google rejected the create (${res.status}): ${text}` };
   }
   const data = (await res.json()) as { htmlLink?: string };
   return { ok: true, htmlLink: data.htmlLink ?? "" };
@@ -562,11 +562,11 @@ export async function updateEvent(
   input: UpdateEventInput,
 ): Promise<{ ok: true; htmlLink: string } | { ok: false; error: string }> {
   const session = await getValidAccessToken(userId);
-  if (!session) return { ok: false, error: "Não conectado ao Google Calendar." };
+  if (!session) return { ok: false, error: "not connected to google calendar." };
   if (!canWriteEvents(session.scope)) {
     return {
       ok: false,
-      error: "Sessão sem permissão de escrita — clique em reconectar.",
+      error: "session has no write permission — click reconnect.",
     };
   }
 
@@ -574,13 +574,13 @@ export async function updateEvent(
   let end: { dateTime?: string; date?: string; timeZone?: string };
   if (input.isAllDay) {
     if (!input.startDate || !input.endDate) {
-      return { ok: false, error: "Datas de início e fim são obrigatórias." };
+      return { ok: false, error: "start and end dates are required." };
     }
     start = { date: input.startDate };
     end = { date: input.endDate };
   } else {
     if (!input.startDateTime || !input.endDateTime) {
-      return { ok: false, error: "Horários de início e fim são obrigatórios." };
+      return { ok: false, error: "start and end times are required." };
     }
     const tz = input.timezone ?? "UTC";
     start = { dateTime: input.startDateTime, timeZone: tz };
@@ -621,7 +621,7 @@ export async function updateEvent(
   );
   if (!res.ok) {
     const text = await res.text();
-    return { ok: false, error: `Google rejeitou a atualização (${res.status}): ${text}` };
+    return { ok: false, error: `google rejected the update (${res.status}): ${text}` };
   }
   const data = (await res.json()) as { htmlLink?: string };
   return { ok: true, htmlLink: data.htmlLink ?? "" };
@@ -633,11 +633,11 @@ export async function deleteEvent(
   eventId: string,
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const session = await getValidAccessToken(userId);
-  if (!session) return { ok: false, error: "Não conectado ao Google Calendar." };
+  if (!session) return { ok: false, error: "not connected to google calendar." };
   if (!canWriteEvents(session.scope)) {
     return {
       ok: false,
-      error: "Sessão sem permissão de escrita — clique em reconectar.",
+      error: "session has no write permission — click reconnect.",
     };
   }
   const res = await googleFetch(userId, (token) =>
@@ -652,7 +652,7 @@ export async function deleteEvent(
   // Google returns 204 No Content on success, or 410 Gone if already deleted.
   if (!res.ok && res.status !== 410) {
     const text = await res.text();
-    return { ok: false, error: `Google rejeitou a exclusão (${res.status}): ${text}` };
+    return { ok: false, error: `google rejected the delete (${res.status}): ${text}` };
   }
   return { ok: true };
 }
@@ -669,11 +669,11 @@ export async function moveEvent(
   toCalendarId: string,
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const session = await getValidAccessToken(userId);
-  if (!session) return { ok: false, error: "Não conectado ao Google Calendar." };
+  if (!session) return { ok: false, error: "not connected to google calendar." };
   if (!canWriteEvents(session.scope)) {
     return {
       ok: false,
-      error: "Sessão sem permissão de escrita — clique em reconectar.",
+      error: "session has no write permission — click reconnect.",
     };
   }
   const params = new URLSearchParams({ destination: toCalendarId });
@@ -688,7 +688,7 @@ export async function moveEvent(
   );
   if (!res.ok) {
     const text = await res.text();
-    return { ok: false, error: `Google rejeitou a movimentação (${res.status}): ${text}` };
+    return { ok: false, error: `google rejected the move (${res.status}): ${text}` };
   }
   return { ok: true };
 }

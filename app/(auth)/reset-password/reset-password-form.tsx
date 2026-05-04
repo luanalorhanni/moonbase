@@ -23,11 +23,11 @@ export function ResetPasswordForm() {
     setError(null);
 
     if (password.length < MIN_LEN) {
-      setError(`a senha precisa ter pelo menos ${MIN_LEN} caracteres.`);
+      setError(`password must be at least ${MIN_LEN} characters.`);
       return;
     }
     if (password !== confirm) {
-      setError("as duas senhas não conferem.");
+      setError("passwords don't match.");
       return;
     }
 
@@ -47,7 +47,7 @@ export function ResetPasswordForm() {
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
       <FieldGroup className="gap-4">
         <Field>
-          <FieldLabel htmlFor="reset-password">nova senha</FieldLabel>
+          <FieldLabel htmlFor="reset-password">new password</FieldLabel>
           <Input
             id="reset-password"
             type="password"
@@ -61,7 +61,7 @@ export function ResetPasswordForm() {
           />
         </Field>
         <Field>
-          <FieldLabel htmlFor="reset-confirm">confirmar senha</FieldLabel>
+          <FieldLabel htmlFor="reset-confirm">confirm password</FieldLabel>
           <Input
             id="reset-confirm"
             type="password"
@@ -77,7 +77,7 @@ export function ResetPasswordForm() {
       </FieldGroup>
       <Button type="submit" disabled={isPending} className="h-10">
         <Save aria-hidden className="size-3.5" strokeWidth={1.7} />
-        {isPending ? "salvando…" : "salvar senha"}
+        {isPending ? "saving…" : "save password"}
       </Button>
     </form>
   );

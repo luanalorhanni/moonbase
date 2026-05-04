@@ -41,7 +41,7 @@ export function SnapshotBadge({ reference, isPastMonth, snapshot }: Props) {
 
   if (snapshot) {
     const balance = (Number(snapshot.totalIncomes) - Number(snapshot.totalExpenses)).toFixed(2);
-    const tip = `snapshot histórico salvo · inc ${formatCurrency(
+    const tip = `snapshot saved · inc ${formatCurrency(
       snapshot.totalIncomes,
     )} · exp ${formatCurrency(snapshot.totalExpenses)} · save ${formatCurrency(balance)}`;
     return (
@@ -59,7 +59,7 @@ export function SnapshotBadge({ reference, isPastMonth, snapshot }: Props) {
     startTransition(async () => {
       const result = await upsertMonthlySnapshot(reference);
       if (result.ok) {
-        toast.success("snapshot salvo.");
+        toast.success("snapshot saved.");
         router.refresh();
       } else {
         toast.error(result.error);
@@ -72,8 +72,8 @@ export function SnapshotBadge({ reference, isPastMonth, snapshot }: Props) {
       type="button"
       onClick={handleSave}
       disabled={isPending}
-      title="este mês ainda não tem snapshot — clique pra salvar um"
-      aria-label="salvar snapshot deste mês"
+      title="this month has no snapshot yet — click to save one"
+      aria-label="save snapshot of this month"
       className={cn(
         "text-muted-foreground/60 hover:text-foreground hover:bg-muted inline-flex size-6 shrink-0 items-center justify-center rounded-md transition-colors",
         isPending && "cursor-wait",

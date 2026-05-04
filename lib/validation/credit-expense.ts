@@ -3,16 +3,16 @@ import { z } from "zod";
 const amountPattern = /^\d+(\.\d{1,2})?$/;
 
 export const creditExpenseFormSchema = z.object({
-  description: z.string().trim().min(1, "Informe a descrição"),
-  cardId: z.string().uuid("Selecione um cartão de crédito"),
-  subcategoryId: z.string().uuid("Selecione uma subcategoria"),
-  purchaseDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Data inválida"),
+  description: z.string().trim().min(1, "description is required"),
+  cardId: z.string().uuid("select a credit card"),
+  subcategoryId: z.string().uuid("select a subcategory"),
+  purchaseDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "invalid date"),
   totalParcels: z
     .string()
-    .regex(/^[1-9]\d*$/, "Mínimo 1 parcela")
-    .refine((v) => parseInt(v, 10) <= 360, "Máximo 360 parcelas"),
+    .regex(/^[1-9]\d*$/, "min 1 installment")
+    .refine((v) => parseInt(v, 10) <= 360, "max 360 installments"),
   parcelValue: z.string().refine((v) => amountPattern.test(v.trim()), {
-    message: "Use o formato 1234.56 (ponto como separador decimal)",
+    message: "use 1234.56 format (period as decimal)",
   }),
   manualOverride: z.boolean(),
 });

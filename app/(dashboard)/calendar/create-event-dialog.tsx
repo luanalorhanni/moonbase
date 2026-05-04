@@ -124,7 +124,7 @@ export function CreateEventDialog({ open, onOpenChange, calendars, defaultDate }
     startTransition(async () => {
       const result = await createGoogleCalendarEvent(payload);
       if (result.ok) {
-        toast.success("evento criado.");
+        toast.success("event created.");
         router.refresh();
         onOpenChange(false);
         // Reset for next open
@@ -146,12 +146,12 @@ export function CreateEventDialog({ open, onOpenChange, calendars, defaultDate }
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <CalendarPlus aria-hidden className="size-4" strokeWidth={1.6} />
-              novo evento
+              new event
             </DialogTitle>
           </DialogHeader>
           <p className="text-muted-foreground py-4 text-[13px]">
-            você não tem calendários com permissão de escrita. peça ao dono pra te dar
-            acesso de "writer" ou crie um calendário próprio no google.
+            you don't have any calendars with write permission. ask the owner for
+            "writer" access or create your own calendar in google.
           </p>
         </DialogContent>
       </Dialog>
@@ -164,19 +164,19 @@ export function CreateEventDialog({ open, onOpenChange, calendars, defaultDate }
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CalendarPlus aria-hidden className="size-4" strokeWidth={1.6} />
-            novo evento
+            new event
           </DialogTitle>
           <DialogDescription>
-            criado direto no seu google calendar — aparece em todos os clientes.
+            created directly in your google calendar — shows up in every client.
           </DialogDescription>
         </DialogHeader>
 
         <FieldGroup>
           <Field>
-            <FieldLabel htmlFor="ev-summary">título</FieldLabel>
+            <FieldLabel htmlFor="ev-summary">title</FieldLabel>
             <Input
               id="ev-summary"
-              placeholder="ex: reunião com a equipe"
+              placeholder="e.g. team meeting"
               value={summary}
               onChange={(e) => setSummary(e.target.value)}
               autoFocus
@@ -185,7 +185,7 @@ export function CreateEventDialog({ open, onOpenChange, calendars, defaultDate }
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="ev-calendar">calendário</FieldLabel>
+            <FieldLabel htmlFor="ev-calendar">calendar</FieldLabel>
             <Select
               value={calendarId}
               onValueChange={(v) => setCalendarId(v ?? "")}
@@ -224,13 +224,13 @@ export function CreateEventDialog({ open, onOpenChange, calendars, defaultDate }
                 disabled={isPending}
                 className="border-input size-4 rounded border accent-current"
               />
-              <span className="text-foreground text-[13px] font-medium">o dia inteiro</span>
+              <span className="text-foreground text-[13px] font-medium">all day</span>
             </label>
           </Field>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Field>
-              <FieldLabel htmlFor="ev-start-date">início</FieldLabel>
+              <FieldLabel htmlFor="ev-start-date">start</FieldLabel>
               <div className="flex items-center gap-2">
                 <Input
                   id="ev-start-date"
@@ -252,7 +252,7 @@ export function CreateEventDialog({ open, onOpenChange, calendars, defaultDate }
               </div>
             </Field>
             <Field>
-              <FieldLabel htmlFor="ev-end-date">fim</FieldLabel>
+              <FieldLabel htmlFor="ev-end-date">end</FieldLabel>
               <div className="flex items-center gap-2">
                 <Input
                   id="ev-end-date"
@@ -276,10 +276,10 @@ export function CreateEventDialog({ open, onOpenChange, calendars, defaultDate }
           </div>
 
           <Field>
-            <FieldLabel htmlFor="ev-location">local</FieldLabel>
+            <FieldLabel htmlFor="ev-location">location</FieldLabel>
             <Input
               id="ev-location"
-              placeholder="opcional"
+              placeholder="optional"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               disabled={isPending}
@@ -287,16 +287,16 @@ export function CreateEventDialog({ open, onOpenChange, calendars, defaultDate }
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="ev-description">descrição</FieldLabel>
+            <FieldLabel htmlFor="ev-description">description</FieldLabel>
             <Input
               id="ev-description"
-              placeholder="opcional"
+              placeholder="optional"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               disabled={isPending}
             />
             <FieldDescription>
-              fuso horário detectado: {browserTimezone()}
+              detected timezone: {browserTimezone()}
             </FieldDescription>
           </Field>
 
@@ -312,7 +312,7 @@ export function CreateEventDialog({ open, onOpenChange, calendars, defaultDate }
             onClick={() => onOpenChange(false)}
             disabled={isPending}
           >
-            cancelar
+            cancel
           </Button>
           <Button type="button" onClick={handleSave} disabled={isPending || !summary.trim()}>
             {isPending ? (
@@ -320,7 +320,7 @@ export function CreateEventDialog({ open, onOpenChange, calendars, defaultDate }
             ) : (
               <CalendarPlus className="size-3.5" strokeWidth={1.8} aria-hidden />
             )}
-            criar evento
+            create event
           </Button>
         </DialogFooter>
       </DialogContent>

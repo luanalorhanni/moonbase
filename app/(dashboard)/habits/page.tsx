@@ -3,7 +3,7 @@ import { listHabitCategories, listHabitLogsBetween, listHabits } from "@/lib/que
 import { HabitsPage } from "./habits-page";
 
 export const metadata = {
-  title: "Hábitos — moonbase",
+  title: "Habits — moonbase",
 };
 
 function todayIso(): string {
