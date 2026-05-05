@@ -197,7 +197,12 @@ export function EntryViewDialog({ entry, open, onOpenChange, onEdit }: Props) {
               <Trash2 aria-hidden className="size-3.5" />
               delete
             </Button>
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} className="px-4">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => onOpenChange(false)}
+              className="px-4"
+            >
               close
             </Button>
             <Button type="button" onClick={onEdit} className="px-5">
