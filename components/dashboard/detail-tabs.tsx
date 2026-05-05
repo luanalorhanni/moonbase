@@ -270,7 +270,7 @@ export function DetailTabs({ lists, totals }: { lists: DetailLists; totals: Reco
 
   return (
     <div className="border-border flex flex-col border-t">
-      <div className="border-border bg-muted/20 flex shrink-0 items-stretch border-b">
+      <div className="border-border bg-muted/20 flex shrink-0 items-stretch overflow-x-auto border-b [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {TABS.map((t) => {
           const isActive = t.key === active;
           return (
@@ -280,7 +280,7 @@ export function DetailTabs({ lists, totals }: { lists: DetailLists; totals: Reco
               onClick={() => setActive(t.key)}
               aria-current={isActive ? "true" : undefined}
               className={cn(
-                "border-border relative flex items-baseline gap-2 border-r px-5 py-3 text-[13px] transition-colors",
+                "border-border relative flex shrink-0 items-baseline gap-2 border-r px-4 py-3 text-[13px] transition-colors sm:px-5",
                 isActive
                   ? "text-foreground bg-background"
                   : "text-muted-foreground hover:text-foreground hover:bg-background/60",
