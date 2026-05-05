@@ -82,6 +82,21 @@ function formatDate(dateStr: string): string {
     .toLowerCase();
 }
 
+function timeAgo(value: Date | string): string {
+  const date = typeof value === "string" ? new Date(value) : value;
+  const s = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (s < 60) return "just now";
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.floor(h / 24);
+  if (d < 30) return `${d}d ago`;
+  const mo = Math.floor(d / 30);
+  if (mo < 12) return `${mo}mo ago`;
+  return `${Math.floor(mo / 12)}y ago`;
+}
+
 type Props = {
   initialExpenses: CashExpenseWithDetails[];
   cards: CardRow[];
@@ -301,19 +316,24 @@ export function CashExpensesList({ initialExpenses, cards, subcategories, liquid
                     : null;
                   return (
                     <TableRow key={expense.id}>
-                      <TableCell className="py-3 text-[13px] font-medium">
-                        <span className="flex items-center gap-2">
-                          <span className="truncate">{expense.description}</span>
-                          {cofrinho && (
-                            <span
-                              className="border-border bg-primary/[0.06] text-primary inline-flex shrink-0 items-center gap-1 rounded-md border px-1.5 py-0.5 font-mono text-[10px] tracking-wider uppercase"
-                              title={`do cofrinho: ${cofrinho.title}`}
-                            >
-                              <PiggyBank aria-hidden className="size-2.5" strokeWidth={1.8} />
-                              cofrinho
-                            </span>
-                          )}
-                        </span>
+                      <TableCell className="py-3">
+                        <div className="flex flex-col gap-0.5">
+                          <span className="flex items-center gap-2 text-[13px] font-medium">
+                            <span className="truncate">{expense.description}</span>
+                            {cofrinho && (
+                              <span
+                                className="border-border bg-primary/[0.06] text-primary inline-flex shrink-0 items-center gap-1 rounded-md border px-1.5 py-0.5 font-mono text-[10px] tracking-wider uppercase"
+                                title={`do cofrinho: ${cofrinho.title}`}
+                              >
+                                <PiggyBank aria-hidden className="size-2.5" strokeWidth={1.8} />
+                                cofrinho
+                              </span>
+                            )}
+                          </span>
+                          <span className="text-muted-foreground text-[11px]">
+                            {timeAgo(expense.createdAt)}
+                          </span>
+                        </div>
                       </TableCell>
                       <TableCell className="py-3 text-[12px]">
                         <span className="flex items-center gap-2">
