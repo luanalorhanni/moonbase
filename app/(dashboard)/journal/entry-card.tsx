@@ -84,7 +84,7 @@ export function EntryCard({ entry, onClick }: { entry: JournalEntryRow; onClick:
           </span>
         </div>
         {entry.title && (
-          <p className="text-foreground/90 line-clamp-1 text-[13px] font-medium leading-snug">
+          <p className="text-foreground/90 line-clamp-1 text-[13px] leading-snug font-medium">
             {entry.title}
           </p>
         )}
