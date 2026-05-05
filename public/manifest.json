@@ -1,7 +1,7 @@
 {
   "name": "moonbase",
   "short_name": "moonbase",
-  "description": "Personal command center — finance, habits, calendar.",
+  "description": "personal control center.",
   "start_url": "/",
   "id": "/",
   "scope": "/",
