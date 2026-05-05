@@ -253,6 +253,26 @@
       "opsz" 144;
     letter-spacing: -0.025em;
   }
+
+  /* ── scrollbars: thin, palette-matched ─────────────────────────────── */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-strong) transparent;
+  }
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border-radius: 99px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--muted-foreground);
+  }
 }
 
 /* ──────────────────────────────────────────────────────────────────────── */
