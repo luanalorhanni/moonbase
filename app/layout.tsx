@@ -31,7 +31,7 @@ const jetMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "moonbase",
-  description: "personal finance monitoring.",
+  description: "personal control center.",
   manifest: "/manifest.json",
   applicationName: "moonbase",
   appleWebApp: {
