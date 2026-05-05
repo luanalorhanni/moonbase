@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   Area,
   CartesianGrid,
@@ -89,6 +90,14 @@ export function TrendChart({
    *  is the centerpiece. */
   tall?: boolean;
 }) {
+  const [narrow, setNarrow] = useState(false);
+  useEffect(() => {
+    const check = () => setNarrow(window.innerWidth < 640);
+    check();
+    window.addEventListener("resize", check, { passive: true });
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
   const active: Set<Series> = series
     ? new Set(series)
     : new Set<Series>([
@@ -96,16 +105,18 @@ export function TrendChart({
         ...((showIncomeExpense ? (["incomes", "expenses"] as const) : []) as Series[]),
         ...((showNet ? (["net"] as const) : []) as Series[]),
       ]);
-  const height = tall ? 320 : showPointLabels ? 280 : 220;
+  const showLabels = showPointLabels && !narrow;
+  const yAxisWidth = narrow ? 68 : 88;
+  const height = tall ? (narrow ? 240 : 320) : showPointLabels ? 280 : 220;
   return (
     <ResponsiveContainer width="100%" height={height}>
       <ComposedChart
         data={data}
         margin={{
-          top: showPointLabels ? 32 : 24,
-          right: 24,
+          top: showLabels ? 32 : 24,
+          right: narrow ? 8 : 24,
           bottom: 8,
-          left: showYAxis ? 8 : 8,
+          left: 8,
         }}
       >
         <defs>
@@ -151,7 +162,7 @@ export function TrendChart({
           <YAxis
             tickLine={false}
             axisLine={false}
-            width={88}
+            width={yAxisWidth}
             tickFormatter={(v: number) => formatTick(v)}
             tick={{
               fontSize: 10,
@@ -197,13 +208,13 @@ export function TrendChart({
             strokeWidth={1.5}
             fill="url(#trend-fill-cumulative)"
             dot={
-              showPointLabels
+              showLabels
                 ? { r: 2.5, fill: COLORS.cumulative, stroke: "var(--background)", strokeWidth: 1 }
                 : false
             }
             activeDot={{ r: 4, fill: COLORS.cumulative, stroke: "none" }}
           >
-            {showPointLabels && (
+            {showLabels && (
               <LabelList
                 dataKey="cumulative"
                 position="top"
@@ -228,7 +239,7 @@ export function TrendChart({
             dot={{ r: 2.5, fill: COLORS.incomes, stroke: "var(--background)", strokeWidth: 1 }}
             activeDot={{ r: 4, fill: COLORS.incomes, stroke: "none" }}
           >
-            {showPointLabels && (
+            {showLabels && (
               <LabelList
                 dataKey="incomes"
                 position="top"
@@ -253,7 +264,7 @@ export function TrendChart({
             dot={{ r: 2.5, fill: COLORS.expenses, stroke: "var(--background)", strokeWidth: 1 }}
             activeDot={{ r: 4, fill: COLORS.expenses, stroke: "none" }}
           >
-            {showPointLabels && (
+            {showLabels && (
               <LabelList
                 dataKey="expenses"
                 position="bottom"
@@ -278,7 +289,7 @@ export function TrendChart({
             dot={{ r: 2.5, fill: COLORS.net, stroke: "var(--background)", strokeWidth: 1 }}
             activeDot={{ r: 4, fill: COLORS.net, stroke: "none" }}
           >
-            {showPointLabels && (
+            {showLabels && (
               <LabelList
                 dataKey="net"
                 position="top"

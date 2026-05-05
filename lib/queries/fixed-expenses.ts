@@ -50,5 +50,5 @@ export const listFixedExpenses = cachedQuery(
       )
       .innerJoin(schema.categories, eq(schema.subcategories.categoryId, schema.categories.id))
       .where(eq(schema.fixedExpenses.userId, userId))
-      .orderBy(desc(schema.fixedExpenses.isActive), desc(schema.fixedExpenses.startDate)),
+      .orderBy(desc(schema.fixedExpenses.createdAt)),
 );

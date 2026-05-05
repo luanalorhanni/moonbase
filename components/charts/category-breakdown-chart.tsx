@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronDown, Plus } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 import { CategoryIcon } from "@/components/ui/category-icon";
@@ -30,16 +30,18 @@ type TickProps = {
   y?: number;
   payload?: { value: string };
   iconMap?: Map<string, { icon?: string | null; color?: string | null }>;
+  axisWidth?: number;
 };
 
-function CategoryTick({ x = 0, y = 0, payload, iconMap }: TickProps) {
+function CategoryTick({ x = 0, y = 0, payload, iconMap, axisWidth = 150 }: TickProps) {
   const label = payload?.value ?? "";
   const meta = iconMap?.get(label);
   const hasIcon = Boolean(meta?.icon);
+  const foWidth = axisWidth - 8;
   return (
     <g transform={`translate(${x},${y})`}>
       {hasIcon ? (
-        <foreignObject x={-150} y={-10} width={142} height={20}>
+        <foreignObject x={-axisWidth} y={-10} width={foWidth} height={20}>
           <div className="text-foreground flex items-center justify-end gap-1.5 pr-1 text-[11px] leading-5">
             <CategoryIcon icon={meta?.icon} color={meta?.color ?? undefined} size={12} />
             <span className="truncate">{label}</span>
@@ -73,6 +75,13 @@ export function CategoryBreakdownChart({
   visibleCount?: number;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const [narrow, setNarrow] = useState(false);
+  useEffect(() => {
+    const check = () => setNarrow(window.innerWidth < 480);
+    check();
+    window.addEventListener("resize", check, { passive: true });
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   if (data.length === 0) {
     return (
@@ -81,6 +90,9 @@ export function CategoryBreakdownChart({
       </div>
     );
   }
+
+  const axisWidth = narrow ? 108 : 150;
+  const rightMargin = narrow ? 56 : 76;
 
   const sorted = [...data].sort((a, b) => b.total - a.total);
   const visible = expanded ? sorted : sorted.slice(0, visibleCount);
@@ -95,7 +107,7 @@ export function CategoryBreakdownChart({
         <BarChart
           data={visible}
           layout="vertical"
-          margin={{ top: 4, right: 76, bottom: 4, left: 0 }}
+          margin={{ top: 4, right: rightMargin, bottom: 4, left: 0 }}
           barCategoryGap={6}
         >
           <defs>
@@ -110,9 +122,9 @@ export function CategoryBreakdownChart({
             dataKey="label"
             tickLine={false}
             axisLine={false}
-            width={150}
+            width={axisWidth}
             interval={0}
-            tick={<CategoryTick iconMap={iconMap} />}
+            tick={<CategoryTick iconMap={iconMap} axisWidth={axisWidth} />}
           />
           <Tooltip
             formatter={(v) => [formatBRL(Number(v)), "spent"]}

@@ -219,6 +219,7 @@ export async function toggleCreditParcelPaid(
 
   invalidate(TAGS.creditReceivableParcelsPaid);
   revalidatePath("/receivables");
+  revalidatePath("/month", "layout");
   return { ok: true };
 }
 
@@ -270,5 +271,6 @@ export async function setMonthParcelsPaid(
 
   invalidate(TAGS.creditReceivableParcelsPaid);
   revalidatePath("/receivables");
+  revalidatePath("/month", "layout");
   return { ok: true };
 }
