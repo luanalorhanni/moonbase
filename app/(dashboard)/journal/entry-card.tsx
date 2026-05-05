@@ -83,6 +83,11 @@ export function EntryCard({ entry, onClick }: { entry: JournalEntryRow; onClick:
             {isToday ? "today" : weekday}
           </span>
         </div>
+        {entry.title && (
+          <p className="text-foreground/90 line-clamp-1 text-[13px] font-medium leading-snug">
+            {entry.title}
+          </p>
+        )}
         {mood && MoodIcon && (
           <span
             title={mood.label}

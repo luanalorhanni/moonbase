@@ -30,8 +30,10 @@ import { listIncomes, type IncomeRow } from "@/lib/queries/incomes";
 import {
   listCashReceivables,
   listCreditReceivables,
+  listPaidCreditParcels,
   type CashReceivableRow,
   type CreditReceivableWithCard,
+  type PaidParcelRow,
 } from "@/lib/queries/receivables";
 import { listSnapshots, type SnapshotRow } from "@/lib/queries/snapshots";
 
@@ -43,6 +45,7 @@ export type MonthData = {
   incomes: IncomeRow[];
   cashReceivables: CashReceivableRow[];
   creditReceivables: CreditReceivableWithCard[];
+  paidCreditParcels: PaidParcelRow[];
 };
 
 export type MonthSummary = MonthAggregate & {
@@ -91,20 +94,29 @@ export type FullDataset = {
   incomes: IncomeRow[];
   cashReceivables: CashReceivableRow[];
   creditReceivables: CreditReceivableWithCard[];
+  paidCreditParcels: PaidParcelRow[];
 };
 
 export const loadFullDataset = cache(_loadFullDataset);
 
 async function _loadFullDataset(): Promise<FullDataset> {
-  const [cashExpenses, creditExpenses, fixedExpenses, incomes, cashReceivables, creditReceivables] =
-    await Promise.all([
-      listCashExpenses(),
-      listCreditExpenses(),
-      listFixedExpenses(),
-      listIncomes(),
-      listCashReceivables(),
-      listCreditReceivables(),
-    ]);
+  const [
+    cashExpenses,
+    creditExpenses,
+    fixedExpenses,
+    incomes,
+    cashReceivables,
+    creditReceivables,
+    paidCreditParcels,
+  ] = await Promise.all([
+    listCashExpenses(),
+    listCreditExpenses(),
+    listFixedExpenses(),
+    listIncomes(),
+    listCashReceivables(),
+    listCreditReceivables(),
+    listPaidCreditParcels(),
+  ]);
 
   return {
     cashExpenses,
@@ -113,6 +125,7 @@ async function _loadFullDataset(): Promise<FullDataset> {
     incomes,
     cashReceivables,
     creditReceivables,
+    paidCreditParcels,
   };
 }
 
@@ -263,6 +276,7 @@ async function _loadMonth(reference: MonthRef): Promise<MonthSummary> {
       creditReceivables: dataset.creditReceivables.filter((r) =>
         parcelSpansMonth(r.firstParcelMonth, r.lastParcelMonth, reference),
       ),
+      paidCreditParcels: dataset.paidCreditParcels,
     },
   };
 }

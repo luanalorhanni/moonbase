@@ -51,6 +51,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { deleteFixedIncome, deleteLiquidSavings } from "@/lib/actions/investments";
+import type { CardRow } from "@/lib/queries/cards";
 import type { InvestmentUpdateRow } from "@/lib/queries/investment-updates";
 import type { FixedIncomeRow, LiquidSavingsRow } from "@/lib/queries/investments";
 import { cn } from "@/lib/utils";
@@ -78,6 +79,7 @@ type Props = {
   liquidSavings: LiquidSavingsRow[];
   fixedIncome: FixedIncomeRow[];
   updates: InvestmentUpdateRow[];
+  cards: CardRow[];
 };
 
 type UpdatesDialogState =
@@ -99,6 +101,8 @@ type UnifiedRow = {
   kind: Kind;
   title: string;
   bank: string;
+  cardName: string | null;
+  cardColor: string | null;
   appliedAmount: number;
   balance: number; // current balance (`latestYield` field — naming legacy)
   gain: number;
@@ -121,16 +125,32 @@ function formatDate(dateStr: string | null): string {
     .toLowerCase();
 }
 
-function unifiedFromRows(liquid: LiquidSavingsRow[], fixed: FixedIncomeRow[]): UnifiedRow[] {
+function matchCard(bank: string, cards: CardRow[]): { name: string; color: string } | null {
+  const norm = (s: string) => s.toLowerCase().trim();
+  const b = norm(bank);
+  const card = cards.find(
+    (c) => (c.bank && norm(c.bank) === b) || norm(c.name) === b,
+  );
+  return card ? { name: card.name, color: card.color } : null;
+}
+
+function unifiedFromRows(
+  liquid: LiquidSavingsRow[],
+  fixed: FixedIncomeRow[],
+  cards: CardRow[],
+): UnifiedRow[] {
   const fromLiquid: UnifiedRow[] = liquid.map((i) => {
     const applied = Number(i.appliedAmount);
     const balance = Number(i.latestYield);
     const gain = balance - applied;
+    const matched = matchCard(i.bank, cards);
     return {
       id: `l-${i.id}`,
       kind: "liquid",
       title: i.title,
       bank: i.bank,
+      cardName: matched?.name ?? null,
+      cardColor: matched?.color ?? null,
       appliedAmount: applied,
       balance,
       gain,
@@ -145,11 +165,14 @@ function unifiedFromRows(liquid: LiquidSavingsRow[], fixed: FixedIncomeRow[]): U
     const applied = Number(i.appliedAmount);
     const balance = Number(i.latestYield);
     const gain = balance - applied;
+    const matched = matchCard(i.bank, cards);
     return {
       id: `f-${i.id}`,
       kind: "fixed",
       title: i.title,
       bank: i.bank,
+      cardName: matched?.name ?? null,
+      cardColor: matched?.color ?? null,
       appliedAmount: applied,
       balance,
       gain,
@@ -167,7 +190,7 @@ function unifiedFromRows(liquid: LiquidSavingsRow[], fixed: FixedIncomeRow[]): U
 /*  Page                                                                   */
 /* ────────────────────────────────────────────────────────────────────── */
 
-export function InvestmentsPage({ liquidSavings, fixedIncome, updates }: Props) {
+export function InvestmentsPage({ liquidSavings, fixedIncome, updates, cards }: Props) {
   const router = useRouter();
   const [liquidDialog, setLiquidDialog] = useState<LiquidDialog>({ kind: "closed" });
   const [fixedDialog, setFixedDialog] = useState<FixedDialog>({ kind: "closed" });
@@ -178,8 +201,8 @@ export function InvestmentsPage({ liquidSavings, fixedIncome, updates }: Props) 
   const [filter, setFilter] = useState<Filter>("active");
 
   const allRows = useMemo(
-    () => unifiedFromRows(liquidSavings, fixedIncome),
-    [liquidSavings, fixedIncome],
+    () => unifiedFromRows(liquidSavings, fixedIncome, cards),
+    [liquidSavings, fixedIncome, cards],
   );
 
   const visibleRows = useMemo(() => {
@@ -341,7 +364,14 @@ export function InvestmentsPage({ liquidSavings, fixedIncome, updates }: Props) 
       />
 
       {/* ── KPI strip ─────────────────────────────────────────────── */}
-      <div className="border-border grid shrink-0 grid-cols-1 border-b sm:grid-cols-2 lg:grid-cols-5">
+      <div
+        className={cn(
+          "border-border grid shrink-0 grid-cols-2 border-b md:grid-cols-5",
+          "[&>*]:border-border [&>*]:border-r [&>*]:border-b",
+          "[&>*:nth-child(even)]:border-r-0",
+          "md:[&>*]:border-b-0 md:[&>*:last-child]:border-r-0 md:[&>*:nth-child(even)]:border-r",
+        )}
+      >
         <Kpi label="total balance" value={summary.totalBalance} accent="primary" highlight />
         <Kpi
           label="total gain"
@@ -482,8 +512,8 @@ export function InvestmentsPage({ liquidSavings, fixedIncome, updates }: Props) 
                     </div>
                   </div>
                 </TableCell>
-                <TableCell className="text-muted-foreground py-3 text-[12.5px]">
-                  {row.bank}
+                <TableCell className="py-3">
+                  <BankChip name={row.bank} cardName={row.cardName} cardColor={row.cardColor} />
                 </TableCell>
                 <TableCell className="numeric text-muted-foreground py-3 text-right text-[12.5px] tabular-nums">
                   {formatBRL(row.appliedAmount)}
@@ -694,40 +724,38 @@ function Kpi({
   return (
     <div
       className={cn(
-        "border-border flex flex-col gap-2 border-b px-6 py-5 sm:border-r sm:border-b-0 lg:last:border-r-0",
+        "flex min-w-0 flex-col gap-1 overflow-hidden px-3 py-3 lg:px-5 lg:py-4",
         highlight && "bg-primary/[0.05]",
       )}
     >
-      <span className="text-muted-foreground flex items-center gap-1.5 font-mono text-[11px] tracking-[0.2em]">
+      <span className="text-muted-foreground flex items-center gap-1.5 truncate font-mono text-[10px] tracking-[0.16em]">
         {icon}
         {label}
       </span>
-      <div className="flex items-baseline gap-2">
-        <span
-          className={cn(
-            "numeric text-[24px] leading-none font-semibold tracking-tight tabular-nums",
-            accent === "primary" && "text-primary",
-            accent === "success" && "text-success",
-            accent === "destructive" && "text-destructive",
-            accent === "muted" && "text-foreground",
+      <span
+        className={cn(
+          "numeric block truncate text-[14px] leading-tight font-semibold tracking-tight tabular-nums lg:text-[19px]",
+          accent === "primary" && "text-primary",
+          accent === "success" && "text-success",
+          accent === "destructive" && "text-destructive",
+          accent === "muted" && "text-foreground",
+        )}
+      >
+        {formatBRL(value)}
+      </span>
+      {showDelta && (
+        <span className={cn("inline-flex items-center gap-0.5 font-mono text-[10px]", deltaClass)}>
+          {deltaPositive ? (
+            <ArrowUpRight aria-hidden className="size-2.5 shrink-0" strokeWidth={2} />
+          ) : (
+            <ArrowDownRight aria-hidden className="size-2.5 shrink-0" strokeWidth={2} />
           )}
-        >
-          {formatBRL(value)}
+          <span className="numeric tabular-nums">{Math.abs(delta!).toFixed(1)}%</span>
         </span>
-        {showDelta && (
-          <span className={cn("inline-flex items-baseline gap-0.5 text-[12px]", deltaClass)}>
-            {deltaPositive ? (
-              <ArrowUpRight aria-hidden className="size-3 self-center" strokeWidth={2} />
-            ) : (
-              <ArrowDownRight aria-hidden className="size-3 self-center" strokeWidth={2} />
-            )}
-            <span className="numeric">{Math.abs(delta!).toFixed(1)}%</span>
-          </span>
-        )}
-        {hint && !showDelta && (
-          <span className="text-muted-foreground font-mono text-[11px] tracking-wider">{hint}</span>
-        )}
-      </div>
+      )}
+      {hint && !showDelta && (
+        <span className="text-muted-foreground font-mono text-[10px] tracking-wider">{hint}</span>
+      )}
     </div>
   );
 }
@@ -753,6 +781,34 @@ function KindChip({ kind }: { kind: Kind }) {
     >
       <Landmark aria-hidden className="size-2.5" strokeWidth={1.7} />
       <span>fix</span>
+    </span>
+  );
+}
+
+function BankChip({
+  name,
+  cardName,
+  cardColor,
+}: {
+  name: string;
+  cardName: string | null;
+  cardColor: string | null;
+}) {
+  return (
+    <span
+      className="border-border bg-card/60 inline-flex items-center gap-1.5 rounded-md border px-1.5 py-0.5 font-mono text-[11px] tracking-wide"
+      style={
+        cardColor
+          ? { borderColor: `color-mix(in oklab, ${cardColor} 40%, var(--border))` }
+          : undefined
+      }
+    >
+      <span
+        aria-hidden
+        className="block size-1.5 shrink-0 rounded-full"
+        style={{ backgroundColor: cardColor ?? "var(--muted-foreground)" }}
+      />
+      <span className="text-foreground/80 truncate max-w-[100px]">{cardName ?? name}</span>
     </span>
   );
 }

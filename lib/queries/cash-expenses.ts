@@ -49,5 +49,5 @@ export const listCashExpenses = cachedQuery(
       )
       .innerJoin(schema.categories, eq(schema.subcategories.categoryId, schema.categories.id))
       .where(eq(schema.cashExpenses.userId, userId))
-      .orderBy(desc(schema.cashExpenses.date), desc(schema.cashExpenses.createdAt)),
+      .orderBy(desc(schema.cashExpenses.createdAt)),
 );
