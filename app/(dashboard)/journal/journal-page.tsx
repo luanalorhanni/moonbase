@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 
 import { EntryCard } from "./entry-card";
 import { EntryFormDialog } from "./entry-form-dialog";
+import { EntryViewDialog } from "./entry-view-dialog";
 import { QuoteFormDialog } from "./quote-form-dialog";
 
 type Props = {
@@ -26,10 +27,10 @@ function todayIso(): string {
 
 export function JournalPage({ entries, quotes }: Props) {
   const [tab, setTab] = useState<"entries" | "quotes">("entries");
-  // Single entry dialog driven by an "open date". Picking a card or
-  // hitting "registrar hoje" both just set this to the chosen date —
-  // the dialog itself decides between create/edit by looking up the
-  // existing entry (if any) for that date.
+  // Existing entries open in view mode first; the view's "edit" button
+  // transitions to the editor. New entries (no existing record) skip
+  // straight to the editor.
+  const [viewingEntry, setViewingEntry] = useState<JournalEntryRow | null>(null);
   const [editorDate, setEditorDate] = useState<string | null>(null);
   const [editingQuote, setEditingQuote] = useState<JournalQuoteRow | null>(null);
   const [creatingQuote, setCreatingQuote] = useState(false);
@@ -46,7 +47,13 @@ export function JournalPage({ entries, quotes }: Props) {
       subtitle="reflections of the day"
       toolbar={
         tab === "entries" ? (
-          <Button size="sm" onClick={() => setEditorDate(today)}>
+          <Button
+            size="sm"
+            onClick={() => {
+              if (todaysEntry) setViewingEntry(todaysEntry);
+              else setEditorDate(today);
+            }}
+          >
             <CalendarPlus aria-hidden className="size-3.5" strokeWidth={1.8} />
             {todaysEntry ? "view today" : "log day"}
           </Button>
@@ -98,13 +105,27 @@ export function JournalPage({ entries, quotes }: Props) {
         </div>
 
         {tab === "entries" ? (
-          <EntriesView entries={entries} onPick={(e) => setEditorDate(e.entryDate)} />
+          <EntriesView entries={entries} onPick={(e) => setViewingEntry(e)} />
         ) : (
           <QuotesView quotes={quotes} onPick={setEditingQuote} />
         )}
       </div>
 
-      {/* Single entry dialog — its `initialDate` drives the form. */}
+      {/* View dialog — read-only, opens first when clicking an existing card. */}
+      <EntryViewDialog
+        entry={viewingEntry}
+        open={viewingEntry !== null}
+        onOpenChange={(open) => {
+          if (!open) setViewingEntry(null);
+        }}
+        onEdit={() => {
+          const date = viewingEntry?.entryDate ?? today;
+          setViewingEntry(null);
+          setEditorDate(date);
+        }}
+      />
+
+      {/* Editor dialog — opens for new entries or when "edit" is pressed in the view. */}
       <EntryFormDialog
         open={editorDate !== null}
         onOpenChange={(open) => {

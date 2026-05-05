@@ -419,6 +419,8 @@ export const journalEntries = pgTable(
     /** List of gratitude items captured for the day. Null/empty array
      *  when the user skipped the gratitude prompt. */
     gratitude: text("gratitude").array(),
+    /** Short title / descriptor for the day (e.g. "04 de maio, ameno"). Null when omitted. */
+    title: text("title"),
     /** Markdown body. Null when the user only logged a mood/cover. */
     content: text("content"),
     coverUrl: text("cover_url"),
