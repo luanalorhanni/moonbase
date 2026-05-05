@@ -6,7 +6,6 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { CategoryIcon } from "@/components/ui/category-icon";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
@@ -18,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SubcategoryCombobox } from "@/components/ui/subcategory-combobox";
 import { createFixedExpense, updateFixedExpense } from "@/lib/actions/fixed-expenses";
 import type { CardRow } from "@/lib/queries/cards";
 import type { SubcategoryWithCategory } from "@/lib/queries/categories";
@@ -38,17 +38,6 @@ type Props = {
 
 function today(): string {
   return new Date().toISOString().slice(0, 10);
-}
-
-function groupByCategory(subcategories: SubcategoryWithCategory[]) {
-  const groups = new Map<string, { icon: string | null; items: SubcategoryWithCategory[] }>();
-  for (const sub of subcategories) {
-    if (!groups.has(sub.categoryName)) {
-      groups.set(sub.categoryName, { icon: sub.categoryIcon, items: [] });
-    }
-    groups.get(sub.categoryName)!.items.push(sub);
-  }
-  return groups;
 }
 
 export function FixedExpenseForm({ expense, cards, subcategories, onSuccess }: Props) {
@@ -81,8 +70,6 @@ export function FixedExpenseForm({ expense, cards, subcategories, onSuccess }: P
         },
   });
 
-  const grouped = groupByCategory(subcategories);
-  const subcategoryLabels = Object.fromEntries(subcategories.map((s) => [s.id, s.name]));
   const cardLabels = Object.fromEntries(
     cards.map((c) => [c.id, c.bank ? `${c.name} — ${c.bank}` : c.name]),
   );
@@ -133,31 +120,13 @@ export function FixedExpenseForm({ expense, cards, subcategories, onSuccess }: P
             control={form.control}
             name="subcategoryId"
             render={({ field }) => (
-              <Select
+              <SubcategoryCombobox
+                id="fe-subcategory"
+                subcategories={subcategories}
                 value={field.value}
-                onValueChange={field.onChange}
+                onChange={field.onChange}
                 disabled={isPending}
-                items={subcategoryLabels}
-              >
-                <SelectTrigger id="fe-subcategory" className="w-full">
-                  <SelectValue placeholder="select…" />
-                </SelectTrigger>
-                <SelectContent>
-                  {[...grouped.entries()].map(([categoryName, { icon, items }]) => (
-                    <SelectGroup key={categoryName}>
-                      <SelectLabel className="flex items-center gap-1.5">
-                        {icon && <CategoryIcon icon={icon} size={12} />}
-                        {categoryName}
-                      </SelectLabel>
-                      {items.map((sub) => (
-                        <SelectItem key={sub.id} value={sub.id}>
-                          {sub.name}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  ))}
-                </SelectContent>
-              </Select>
+              />
             )}
           />
           {form.formState.errors.subcategoryId ? (

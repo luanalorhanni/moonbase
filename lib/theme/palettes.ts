@@ -173,6 +173,132 @@ export const PALETTES: Palette[] = [
       },
     },
   },
+  {
+    id: "ocean",
+    name: "ocean",
+    description: "deep teal + cyan — cool, focused, aquatic",
+    tokens: {
+      light: {
+        primary: "oklch(0.48 0.12 215)",
+        accent: "oklch(0.72 0.1 195)",
+        ring: "oklch(0.58 0.12 210)",
+        tintHue: 210,
+        tintChroma: 0.025,
+      },
+      dark: {
+        primary: "oklch(0.80 0.12 215)",
+        accent: "oklch(0.68 0.09 185)",
+        ring: "oklch(0.80 0.12 215)",
+        tintHue: 210,
+        tintChroma: 0.042,
+      },
+    },
+  },
+  {
+    id: "cherry",
+    name: "cherry",
+    description: "deep cherry + warm coral — vivid, energetic",
+    tokens: {
+      light: {
+        primary: "oklch(0.52 0.18 15)",
+        accent: "oklch(0.72 0.12 32)",
+        ring: "oklch(0.60 0.18 18)",
+        tintHue: 18,
+        tintChroma: 0.03,
+      },
+      dark: {
+        primary: "oklch(0.75 0.16 15)",
+        accent: "oklch(0.68 0.1 32)",
+        ring: "oklch(0.75 0.16 15)",
+        tintHue: 15,
+        tintChroma: 0.05,
+      },
+    },
+  },
+  {
+    id: "sand",
+    name: "sand",
+    description: "terracotta + desert gold — warm, mediterranean",
+    tokens: {
+      light: {
+        primary: "oklch(0.54 0.1 45)",
+        accent: "oklch(0.76 0.12 68)",
+        ring: "oklch(0.64 0.11 55)",
+        tintHue: 55,
+        tintChroma: 0.03,
+      },
+      dark: {
+        primary: "oklch(0.78 0.1 45)",
+        accent: "oklch(0.72 0.1 68)",
+        ring: "oklch(0.78 0.1 45)",
+        tintHue: 55,
+        tintChroma: 0.045,
+      },
+    },
+  },
+  {
+    id: "mint",
+    name: "mint",
+    description: "fresh mint + aqua — clean, crisp, light",
+    tokens: {
+      light: {
+        primary: "oklch(0.50 0.12 165)",
+        accent: "oklch(0.70 0.10 188)",
+        ring: "oklch(0.60 0.12 172)",
+        tintHue: 172,
+        tintChroma: 0.025,
+      },
+      dark: {
+        primary: "oklch(0.78 0.12 165)",
+        accent: "oklch(0.68 0.09 188)",
+        ring: "oklch(0.78 0.12 165)",
+        tintHue: 172,
+        tintChroma: 0.04,
+      },
+    },
+  },
+  {
+    id: "sky",
+    name: "sky",
+    description: "powder blue + soft lavender — airy, open, serene",
+    tokens: {
+      light: {
+        primary: "oklch(0.54 0.10 248)",
+        accent: "oklch(0.70 0.08 282)",
+        ring: "oklch(0.62 0.09 260)",
+        tintHue: 255,
+        tintChroma: 0.022,
+      },
+      dark: {
+        primary: "oklch(0.82 0.10 248)",
+        accent: "oklch(0.70 0.07 282)",
+        ring: "oklch(0.82 0.10 248)",
+        tintHue: 255,
+        tintChroma: 0.038,
+      },
+    },
+  },
+  {
+    id: "peach",
+    name: "peach",
+    description: "warm peach + apricot — soft, inviting, light-mode special",
+    tokens: {
+      light: {
+        primary: "oklch(0.60 0.13 32)",
+        accent: "oklch(0.78 0.11 52)",
+        ring: "oklch(0.68 0.13 38)",
+        tintHue: 38,
+        tintChroma: 0.032,
+      },
+      dark: {
+        primary: "oklch(0.80 0.12 32)",
+        accent: "oklch(0.72 0.09 52)",
+        ring: "oklch(0.80 0.12 32)",
+        tintHue: 38,
+        tintChroma: 0.048,
+      },
+    },
+  },
 ];
 
 export const DEFAULT_PALETTE_ID = "lunar";
