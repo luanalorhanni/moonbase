@@ -226,22 +226,40 @@ export async function MonthDashboard({ reference }: { reference: MonthRef }) {
         cardName: null,
         cardColor: null,
         method: PT_METHOD[r.loanType] ?? r.loanType,
+        loanDate: r.loanDate,
+        loanType: r.loanType,
+        expectedPaymentMonth: r.expectedPaymentMonth,
         amount: r.amount,
         status: r.isPaid ? ("paid" as const) : ("pending" as const),
         paidOn: r.actualPaymentDate,
       })),
-      ...summary.data.creditReceivables.map((r) => ({
-        id: `cr-${r.id}`,
-        date: r.purchaseDate,
-        description: r.description,
-        kind: "credit" as const,
-        cardName: r.cardName,
-        cardColor: r.cardColor,
-        method: r.totalParcels > 1 ? `${r.totalParcels}×` : "single",
-        amount: r.parcelValue,
-        status: "pending" as const,
-        paidOn: null,
-      })),
+      ...summary.data.creditReceivables.map((r) => {
+        const firstIdx = r.firstParcelMonth ? monthIndex(r.firstParcelMonth.slice(0, 7)) : refIndex;
+        const parcelNumber = Math.max(1, refIndex - firstIdx + 1);
+        const remainingParcels = Math.max(0, r.totalParcels - parcelNumber);
+        const totalValue = (Number(r.parcelValue) * r.totalParcels).toFixed(2);
+        const paidEntry = summary.data.paidCreditParcels.find(
+          (p) => p.receivableId === r.id && p.parcelNumber === parcelNumber,
+        );
+        const isPaid = paidEntry != null;
+        return {
+          id: `cr-${r.id}`,
+          date: r.purchaseDate,
+          description: r.description,
+          kind: "credit" as const,
+          cardName: r.cardName,
+          cardColor: r.cardColor,
+          method: r.totalParcels > 1 ? `${r.totalParcels}×` : "single",
+          parcelNumber,
+          totalParcels: r.totalParcels,
+          remainingParcels,
+          parcelValue: r.parcelValue,
+          totalValue,
+          amount: r.parcelValue,
+          status: isPaid ? ("paid" as const) : ("pending" as const),
+          paidOn: paidEntry ? new Date(paidEntry.paidAt).toISOString().slice(0, 10) : null,
+        };
+      }),
     ].sort((a, b) => (a.date < b.date ? 1 : -1)),
   };
 
@@ -278,8 +296,8 @@ export async function MonthDashboard({ reference }: { reference: MonthRef }) {
       </div>
 
       {/* ── manuscript title ───────────────────────────────────────── */}
-      <div className="border-border bg-background/60 flex shrink-0 items-center justify-between gap-4 border-b px-6 py-5">
-        <div className="flex items-center gap-4">
+      <div className="border-border bg-background/60 flex shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b px-4 py-4 sm:px-6 sm:py-5">
+        <div className="flex min-w-0 items-center gap-3 sm:gap-4">
           <MoonForMonth reference={reference} />
           <SnapshotBadge
             reference={reference}
@@ -293,11 +311,11 @@ export async function MonthDashboard({ reference }: { reference: MonthRef }) {
                 : null
             }
           />
-          <div className="flex items-baseline gap-3">
-            <h2 className="font-display text-foreground text-[40px] leading-none font-light tracking-[-0.02em] capitalize italic md:text-[52px]">
+          <div className="flex min-w-0 items-baseline gap-2 sm:gap-3">
+            <h2 className="font-display text-foreground truncate text-[32px] leading-none font-light tracking-[-0.02em] capitalize italic sm:text-[40px] md:text-[52px]">
               {formatMonthLong(reference).split(" ")[0]}
             </h2>
-            <span className="font-display text-muted-foreground/70 text-[26px] leading-none font-light tracking-tight tabular-nums md:text-[34px]">
+            <span className="font-display text-muted-foreground/70 shrink-0 text-[20px] leading-none font-light tracking-tight tabular-nums sm:text-[26px] md:text-[34px]">
               {reference.slice(0, 4)}
             </span>
           </div>
@@ -308,8 +326,20 @@ export async function MonthDashboard({ reference }: { reference: MonthRef }) {
         </span>
       </div>
 
-      {/* ── kpi strip ───────────────────────────────────────────────── */}
-      <div className="border-border grid shrink-0 grid-cols-2 border-b md:grid-cols-5">
+      {/* ── kpi strip ─────────────────────────────────────────────────
+           Mobile: 2-col grid, row-separating border-b on cells, even
+           items lose border-r (they're on the right edge of each row).
+           md+: flat 5-col row, border-b removed from cells, all items
+           get border-r except the last.
+      ──────────────────────────────────────────────────────────────── */}
+      <div
+        className={cn(
+          "border-border grid shrink-0 grid-cols-2 border-b md:grid-cols-5",
+          "[&>*]:border-border [&>*]:border-r [&>*]:border-b",
+          "[&>*:nth-child(even)]:border-r-0",
+          "md:[&>*]:border-b-0 md:[&>*:last-child]:border-r-0 md:[&>*:nth-child(even)]:border-r",
+        )}
+      >
         <Kpi
           label="balance"
           value={summary.balance}
@@ -628,35 +658,38 @@ function Kpi({
   return (
     <div
       className={cn(
-        "border-border flex flex-col gap-2 border-r px-6 py-5 last:border-r-0",
+        // min-w-0 + overflow-hidden prevent any child from blowing out the cell
+        "flex min-w-0 flex-col gap-1 overflow-hidden px-3 py-3 lg:px-5 lg:py-4",
         highlight && "bg-primary/[0.05]",
       )}
     >
-      <span className="text-muted-foreground font-mono text-[11px] tracking-[0.2em]">{label}</span>
-      <div className="flex items-baseline gap-2">
-        <span
-          className={cn(
-            "numeric text-[24px] leading-none font-semibold tracking-tight",
-            accent === "primary" && "text-primary",
-            accent === "success" && "text-success",
-            accent === "destructive" && "text-destructive",
-            accent === "muted" && "text-foreground",
-            num < 0 && accent !== "destructive" && "text-destructive",
-          )}
-        >
-          {formatCurrency(value)}
-        </span>
-        {showDelta && (
-          <span className={cn("inline-flex items-baseline gap-0.5 text-[12px]", deltaClass)}>
-            {deltaPositive ? (
-              <ArrowUpRight className="size-3 self-center" strokeWidth={2} />
-            ) : (
-              <ArrowDownRight className="size-3 self-center" strokeWidth={2} />
-            )}
-            <span className="numeric">{Math.abs(delta!).toFixed(1)}%</span>
-          </span>
+      <span className="text-muted-foreground truncate font-mono text-[10px] tracking-[0.16em]">
+        {label}
+      </span>
+      {/* Value and delta are stacked vertically so the delta never pushes
+          the value outside the cell on narrow screens. */}
+      <span
+        className={cn(
+          "numeric block truncate text-[14px] leading-tight font-semibold tracking-tight lg:text-[19px]",
+          accent === "primary" && "text-primary",
+          accent === "success" && "text-success",
+          accent === "destructive" && "text-destructive",
+          accent === "muted" && "text-foreground",
+          num < 0 && accent !== "destructive" && "text-destructive",
         )}
-      </div>
+      >
+        {formatCurrency(value)}
+      </span>
+      {showDelta && (
+        <span className={cn("inline-flex items-center gap-0.5 font-mono text-[10px]", deltaClass)}>
+          {deltaPositive ? (
+            <ArrowUpRight className="size-2.5 shrink-0" strokeWidth={2} />
+          ) : (
+            <ArrowDownRight className="size-2.5 shrink-0" strokeWidth={2} />
+          )}
+          <span className="numeric tabular-nums">{Math.abs(delta!).toFixed(1)}%</span>
+        </span>
+      )}
     </div>
   );
 }
