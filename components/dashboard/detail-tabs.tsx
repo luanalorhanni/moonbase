@@ -67,9 +67,19 @@ export type ReceivableDetailRow = {
   date: string;
   description: string;
   kind: "cash" | "credit";
+  // credit-only
   cardName: string | null;
   cardColor: string | null;
-  method: string;
+  parcelNumber?: number;
+  totalParcels?: number;
+  remainingParcels?: number;
+  parcelValue?: string;
+  totalValue?: string;
+  // cash-only
+  loanDate?: string;
+  loanType?: string;
+  expectedPaymentMonth?: string;
+  // shared
   amount: string;
   status: "pending" | "paid";
   paidOn: string | null;
@@ -104,6 +114,14 @@ function formatDate(yyyyMmDd: string): string {
     day: "2-digit",
   })
     .format(new Date(y, m - 1, d))
+    .toLowerCase();
+}
+
+function formatMonth(yyyyMm: string): string {
+  const parts = yyyyMm.slice(0, 7).split("-").map(Number);
+  const [y, m] = parts;
+  return new Intl.DateTimeFormat("en-US", { month: "short", year: "numeric" })
+    .format(new Date(y, m - 1, 1))
     .toLowerCase();
 }
 
@@ -487,59 +505,179 @@ function IncomeTable({ rows, empty }: { rows: IncomeDetailRow[]; empty: string }
 }
 
 function ReceivableTable({ rows, empty }: { rows: ReceivableDetailRow[]; empty: string }) {
-  const threshold = useMemo(() => highlightThreshold(rows.map((r) => Number(r.amount))), [rows]);
+  const cash = useMemo(() => rows.filter((r) => r.kind === "cash"), [rows]);
+  const credit = useMemo(() => rows.filter((r) => r.kind === "credit"), [rows]);
+  const cashThreshold = useMemo(
+    () => highlightThreshold(cash.map((r) => Number(r.amount))),
+    [cash],
+  );
+  const creditThreshold = useMemo(
+    () => highlightThreshold(credit.map((r) => Number(r.parcelValue ?? r.amount))),
+    [credit],
+  );
+
   if (rows.length === 0) return <Empty hint={empty} />;
+
   return (
-    <table className="w-full border-collapse">
-      <thead>
-        <tr>
-          <th className={cn(TH, "w-[88px]")}>date</th>
-          <th className={TH}>description</th>
-          <th className={cn(TH, "w-[80px]")}>kind</th>
-          <th className={TH}>source</th>
-          <th className={cn(TH, "w-[110px]")}>status</th>
-          <th className={cn(TH, "w-[140px] text-right")}>amount</th>
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((r) => (
-          <tr
-            key={r.id}
-            className={cn(
-              "border-border hover:bg-muted/30 border-b transition-colors",
-              r.status === "paid" && "opacity-60",
-            )}
-          >
-            <td
-              className={cn(TD, "text-muted-foreground/80 font-mono text-[11.5px] tracking-wider")}
-            >
-              {formatDate(r.date)}
-            </td>
-            <td className={cn(TD, "text-foreground font-medium")}>{r.description}</td>
-            <td className={cn(TD, "text-muted-foreground text-[12px]")}>{r.kind}</td>
-            <td className={TD}>
-              {r.cardName ? (
-                <CardCell name={r.cardName} color={r.cardColor ?? "#9ca3af"} />
-              ) : (
-                <span className="text-muted-foreground text-[12px]">{r.method}</span>
-              )}
-            </td>
-            <td className={TD}>
-              {r.status === "paid" ? (
-                <span className="text-success text-[12px]">
-                  paid{r.paidOn ? ` · ${formatDate(r.paidOn)}` : ""}
-                </span>
-              ) : (
-                <span className="text-foreground/70 text-[12px]">pending</span>
-              )}
-            </td>
-            <td className={cn(TD, "text-right")}>
-              <AmountCell value={r.amount} isLarge={Number(r.amount) >= threshold} />
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <div className="flex flex-col">
+      {credit.length > 0 && (
+        <>
+          {cash.length > 0 && (
+            <div className="border-border bg-muted/10 border-b px-4 py-1.5">
+              <span className="text-muted-foreground/60 font-mono text-[10px] tracking-[0.2em]">
+                credit receivables
+              </span>
+            </div>
+          )}
+          <table className="w-full border-collapse">
+            <thead>
+              <tr>
+                <th className={cn(TH, "w-[88px]")}>purchased</th>
+                <th className={TH}>description</th>
+                <th className={TH}>card</th>
+                <th className={cn(TH, "w-[200px]")}>installment</th>
+                <th className={cn(TH, "w-[130px]")}>status</th>
+                <th className={cn(TH, "w-[110px] text-right")}>this parcel</th>
+                <th className={cn(TH, "w-[110px] text-right")}>total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {credit.map((r) => (
+                <tr
+                  key={r.id}
+                  className={cn(
+                    "border-border hover:bg-muted/30 border-b transition-colors",
+                    r.status === "paid" && "opacity-60",
+                  )}
+                >
+                  <td
+                    className={cn(
+                      TD,
+                      "text-muted-foreground/80 font-mono text-[11.5px] tracking-wider",
+                    )}
+                  >
+                    {formatDate(r.date)}
+                  </td>
+                  <td className={cn(TD, "text-foreground font-medium")}>{r.description}</td>
+                  <td className={TD}>
+                    {r.cardName ? (
+                      <CardCell name={r.cardName} color={r.cardColor ?? "#9ca3af"} />
+                    ) : (
+                      <span className="text-muted-foreground text-[12px]">—</span>
+                    )}
+                  </td>
+                  <td className={TD}>
+                    <ParcelProgress
+                      current={r.parcelNumber ?? 1}
+                      total={r.totalParcels ?? 1}
+                      remaining={r.remainingParcels ?? 0}
+                    />
+                  </td>
+                  <td className={TD}>
+                    {r.status === "paid" ? (
+                      <span className="text-success flex items-center gap-1.5 text-[12px]">
+                        <span className="bg-success/70 size-1.5 shrink-0 rounded-full" />
+                        paid{r.paidOn ? ` · ${formatDate(r.paidOn)}` : ""}
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground flex items-center gap-1.5 text-[12px]">
+                        <span className="border-muted-foreground/50 size-1.5 shrink-0 rounded-full border" />
+                        pending
+                      </span>
+                    )}
+                  </td>
+                  <td className={cn(TD, "text-right")}>
+                    <AmountCell
+                      value={r.parcelValue ?? r.amount}
+                      isLarge={Number(r.parcelValue ?? r.amount) >= creditThreshold}
+                    />
+                  </td>
+                  <td
+                    className={cn(
+                      TD,
+                      "text-muted-foreground/80 numeric text-right text-[12px] tabular-nums",
+                    )}
+                  >
+                    {r.totalValue ? formatCurrency(r.totalValue) : "—"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </>
+      )}
+
+      {cash.length > 0 && (
+        <>
+          {credit.length > 0 && (
+            <div className="border-border bg-muted/10 border-y px-4 py-1.5">
+              <span className="text-muted-foreground/60 font-mono text-[10px] tracking-[0.2em]">
+                cash receivables
+              </span>
+            </div>
+          )}
+          <table className="w-full border-collapse">
+            <thead>
+              <tr>
+                <th className={cn(TH, "w-[88px]")}>loan date</th>
+                <th className={TH}>description</th>
+                <th className={cn(TH, "w-[80px]")}>method</th>
+                <th className={cn(TH, "w-[120px]")}>expected</th>
+                <th className={cn(TH, "w-[140px]")}>status</th>
+                <th className={cn(TH, "w-[140px] text-right")}>amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {cash.map((r) => (
+                <tr
+                  key={r.id}
+                  className={cn(
+                    "border-border hover:bg-muted/30 border-b transition-colors",
+                    r.status === "paid" && "opacity-60",
+                  )}
+                >
+                  <td
+                    className={cn(
+                      TD,
+                      "text-muted-foreground/80 font-mono text-[11.5px] tracking-wider",
+                    )}
+                  >
+                    {r.loanDate ? formatDate(r.loanDate) : formatDate(r.date)}
+                  </td>
+                  <td className={cn(TD, "text-foreground font-medium")}>{r.description}</td>
+                  <td className={cn(TD, "text-muted-foreground text-[12px]")}>
+                    {r.loanType ?? "—"}
+                  </td>
+                  <td className={cn(TD, "text-muted-foreground/80 font-mono text-[11.5px]")}>
+                    {r.expectedPaymentMonth ? formatMonth(r.expectedPaymentMonth) : "—"}
+                  </td>
+                  <td className={TD}>
+                    {r.status === "paid" ? (
+                      <span className="text-success flex items-center gap-1.5 text-[12px]">
+                        <span className="bg-success/70 size-1.5 shrink-0 rounded-full" />
+                        paid{r.paidOn ? ` · ${formatDate(r.paidOn)}` : ""}
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground flex items-center gap-1.5 text-[12px]">
+                        <span className="border-muted-foreground/50 size-1.5 shrink-0 rounded-full border" />
+                        pending
+                      </span>
+                    )}
+                  </td>
+                  <td className={cn(TD, "text-right")}>
+                    <AmountCell
+                      value={r.amount}
+                      isLarge={Number(r.amount) >= cashThreshold}
+                      emphasized
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </>
+      )}
+    </div>
   );
 }
 
