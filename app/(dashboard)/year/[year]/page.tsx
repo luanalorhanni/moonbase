@@ -151,9 +151,9 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
           <PixelComet size={14} />
         </div>
 
-        <div className="border-border flex flex-col gap-4 border-b px-6 py-7 md:flex-row md:items-end md:justify-between md:py-9">
+        <div className="border-border flex flex-col gap-4 border-b px-4 py-5 sm:px-6 sm:py-7 md:flex-row md:items-end md:justify-between md:py-9">
           {/* left: hero number */}
-          <div className="flex items-end gap-4 md:gap-6">
+          <div className="flex items-end gap-3 md:gap-6">
             <Link
               href={`/year/${summary.year - 1}`}
               aria-label={`previous year (${summary.year - 1})`}
@@ -162,17 +162,19 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
               <ChevronLeft className="size-4" strokeWidth={1.6} />
             </Link>
             <div className="flex flex-col gap-1">
-              <span className="text-muted-foreground/80 flex items-center gap-2 font-mono text-[10.5px] tracking-[0.32em] uppercase">
+              <span className="text-muted-foreground/80 flex items-center gap-2 font-mono text-[10px] tracking-[0.28em] uppercase sm:text-[10.5px] sm:tracking-[0.32em]">
                 <PixelStarSmall size={5} className="text-primary" />
                 annual ledger
               </span>
               <h1 className="font-display text-foreground flex items-baseline gap-1 leading-none tracking-[-0.04em]">
-                <span className="text-[72px] font-light italic md:text-[112px]">{headPair}</span>
-                <span className="text-primary/85 text-[72px] font-medium italic md:text-[112px]">
+                <span className="text-[52px] font-light italic sm:text-[72px] md:text-[112px]">
+                  {headPair}
+                </span>
+                <span className="text-primary/85 text-[52px] font-medium italic sm:text-[72px] md:text-[112px]">
                   {tailPair}
                 </span>
               </h1>
-              <span className="text-muted-foreground/70 mt-1 font-mono text-[10.5px] tracking-[0.18em] uppercase">
+              <span className="text-muted-foreground/70 mt-1 font-mono text-[10px] tracking-[0.14em] uppercase sm:text-[10.5px] sm:tracking-[0.18em]">
                 jan {summary.year} → dec {summary.year}
               </span>
             </div>
@@ -187,19 +189,19 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
 
           {/* right: net delta panel */}
           <div className="flex flex-col items-start md:items-end">
-            <span className="text-muted-foreground/70 font-mono text-[10.5px] tracking-[0.22em] uppercase">
+            <span className="text-muted-foreground/70 font-mono text-[10px] tracking-[0.22em] uppercase sm:text-[10.5px]">
               net for the year
             </span>
             <span
               className={cn(
-                "numeric mt-1 inline-flex items-baseline gap-1.5 text-[20px] font-semibold tabular-nums md:text-[24px]",
+                "numeric mt-1 inline-flex items-center gap-1.5 text-[18px] font-semibold tabular-nums sm:text-[20px] md:text-[24px]",
                 yearDelta < 0 ? "text-destructive" : "text-success",
               )}
             >
               {yearDelta >= 0 ? (
-                <ArrowUpRight aria-hidden className="size-4 self-center" strokeWidth={2} />
+                <ArrowUpRight aria-hidden className="size-4 shrink-0" strokeWidth={2} />
               ) : (
-                <ArrowDownRight aria-hidden className="size-4 self-center" strokeWidth={2} />
+                <ArrowDownRight aria-hidden className="size-4 shrink-0" strokeWidth={2} />
               )}
               {formatCurrency(Math.abs(yearDelta))}
             </span>
@@ -275,29 +277,29 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
       {/* ── month-by-month table ────────────────────────────────────── */}
       <div className="flex shrink-0 flex-col">
         <PanelHeader title="month by month" subtitle="incomes · expenses · balance · vs prev" />
-        <div>
-          <table className="w-full">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[420px]">
             <thead className="bg-muted/30 text-muted-foreground sticky top-0 z-10 backdrop-blur">
               <tr className="border-border border-b">
-                <th className="px-5 py-2 text-left font-mono text-[10.5px] font-normal tracking-[0.16em] uppercase">
+                <th className="px-4 py-2 text-left font-mono text-[10.5px] font-normal tracking-[0.16em] uppercase">
                   month
                 </th>
                 <th className="px-3 py-2 text-right font-mono text-[10.5px] font-normal tracking-[0.16em] uppercase">
                   incomes
                 </th>
-                <th className="px-3 py-2 text-right font-mono text-[10.5px] font-normal tracking-[0.16em] uppercase">
+                <th className="hidden px-3 py-2 text-right font-mono text-[10.5px] font-normal tracking-[0.16em] uppercase sm:table-cell">
                   vs prev
                 </th>
                 <th className="px-3 py-2 text-right font-mono text-[10.5px] font-normal tracking-[0.16em] uppercase">
                   expenses
                 </th>
-                <th className="px-3 py-2 text-right font-mono text-[10.5px] font-normal tracking-[0.16em] uppercase">
+                <th className="hidden px-3 py-2 text-right font-mono text-[10.5px] font-normal tracking-[0.16em] uppercase sm:table-cell">
                   vs prev
                 </th>
                 <th className="px-3 py-2 text-right font-mono text-[10.5px] font-normal tracking-[0.16em] uppercase">
                   balance
                 </th>
-                <th className="w-10 px-3 py-2" />
+                <th className="w-8 px-2 py-2" />
               </tr>
             </thead>
             <tbody className="divide-border divide-y">
@@ -305,7 +307,7 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
                 const balanceNum = Number(m.balance);
                 return (
                   <tr key={m.reference} className="hover:bg-muted/40 group transition-colors">
-                    <td className="px-5 py-3">
+                    <td className="px-4 py-3">
                       <Link
                         href={`/month/${m.reference}`}
                         className="block"
@@ -324,7 +326,7 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
                     <td className="px-3 py-3 text-right">
                       <span
                         className={cn(
-                          "numeric text-[12.5px] tabular-nums",
+                          "numeric text-[12px] tabular-nums",
                           m.isEmpty || Number(m.totalIncomes) === 0
                             ? "text-muted-foreground/40"
                             : "text-foreground",
@@ -333,7 +335,7 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
                         {formatCurrency(m.totalIncomes)}
                       </span>
                     </td>
-                    <td className="px-3 py-3 text-right">
+                    <td className="hidden px-3 py-3 text-right sm:table-cell">
                       <DeltaCell
                         delta={m.incomeDelta}
                         tone="positive"
@@ -343,7 +345,7 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
                     <td className="px-3 py-3 text-right">
                       <span
                         className={cn(
-                          "numeric text-[12.5px] tabular-nums",
+                          "numeric text-[12px] tabular-nums",
                           m.isEmpty || Number(m.totalExpenses) === 0
                             ? "text-muted-foreground/40"
                             : "text-foreground",
@@ -352,7 +354,7 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
                         {formatCurrency(m.totalExpenses)}
                       </span>
                     </td>
-                    <td className="px-3 py-3 text-right">
+                    <td className="hidden px-3 py-3 text-right sm:table-cell">
                       <DeltaCell
                         delta={m.expenseDelta}
                         tone="inverted"
@@ -362,7 +364,7 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
                     <td className="px-3 py-3 text-right">
                       <span
                         className={cn(
-                          "numeric text-[13px] font-semibold tabular-nums",
+                          "numeric text-[12.5px] font-semibold tabular-nums",
                           balanceNum < 0 && "text-destructive/90",
                           balanceNum > 0 && "text-foreground",
                           m.isEmpty && "text-muted-foreground/40",
@@ -371,7 +373,7 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
                         {formatCurrency(m.balance)}
                       </span>
                     </td>
-                    <td className="px-3 py-3 text-right">
+                    <td className="px-2 py-3 text-right">
                       <Link
                         href={`/month/${m.reference}`}
                         className="text-muted-foreground/50 hover:text-foreground inline-flex"
@@ -490,30 +492,30 @@ function YearKpi({
   return (
     <div
       className={cn(
-        "border-border flex flex-col gap-1 border-r px-6 py-4 last:border-r-0",
+        "border-border flex min-w-0 flex-col gap-0.5 overflow-hidden border-r px-2 py-3 sm:px-3 sm:py-4 lg:px-5 lg:py-4 last:border-r-0",
         highlight && "bg-primary/[0.04]",
         groupStart && "border-t",
       )}
     >
-      <span className="text-muted-foreground font-mono text-[11px] tracking-[0.18em]">{label}</span>
-      <div className="flex items-baseline gap-2">
-        <span
-          className={cn(
-            "numeric text-[22px] font-semibold tracking-tight tabular-nums",
-            accent === "success" && "text-success",
-            accent === "muted" && "text-foreground",
-            accent === "primary" && "text-primary",
-            accent === "destructive" && "text-destructive",
-          )}
-        >
-          {formatCurrency(value)}
-        </span>
-        {hint && (
-          <span className="text-muted-foreground/70 font-mono text-[10px] tracking-wider">
-            {hint}
-          </span>
+      <span className="text-muted-foreground truncate font-mono text-[9.5px] tracking-[0.12em] sm:text-[10.5px] sm:tracking-[0.16em]">
+        {label}
+      </span>
+      <span
+        className={cn(
+          "numeric block truncate text-[13px] font-semibold tracking-tight tabular-nums sm:text-[15px] lg:text-[20px]",
+          accent === "success" && "text-success",
+          accent === "muted" && "text-foreground",
+          accent === "primary" && "text-primary",
+          accent === "destructive" && "text-destructive",
         )}
-      </div>
+      >
+        {formatCurrency(value)}
+      </span>
+      {hint && (
+        <span className="text-muted-foreground/70 truncate font-mono text-[8px] tracking-wide sm:text-[9.5px]">
+          {hint}
+        </span>
+      )}
     </div>
   );
 }
