@@ -90,6 +90,7 @@ export function EntryFormDialog({ open, onOpenChange, entries, initialDate }: Pr
   const currentEntry = entriesByDate.get(date) ?? null;
   const isEditing = !!currentEntry;
 
+  const [title, setTitle] = useState<string>("");
   const [mood, setMood] = useState<MoodLevel | null>(null);
   const [gratitude, setGratitude] = useState<string[]>([]);
   const [content, setContent] = useState<string>("");
@@ -110,6 +111,7 @@ export function EntryFormDialog({ open, onOpenChange, entries, initialDate }: Pr
   // existing entry, or clearing the form for a blank day).
   useEffect(() => {
     if (!open) return;
+    setTitle(currentEntry?.title ?? "");
     setMood((currentEntry?.mood as MoodLevel | null | undefined) ?? null);
     setGratitude(currentEntry?.gratitude ?? []);
     setContent(currentEntry?.content ?? "");
@@ -126,6 +128,7 @@ export function EntryFormDialog({ open, onOpenChange, entries, initialDate }: Pr
     startSaveTransition(async () => {
       const result = await saveJournalEntry({
         entryDate: date,
+        title: title || null,
         mood,
         gratitude,
         content,
@@ -217,6 +220,21 @@ export function EntryFormDialog({ open, onOpenChange, entries, initialDate }: Pr
             </Field>
 
             <CoverPicker value={cover} onChange={setCover} disabled={isSaving} />
+
+            <Field>
+              <FieldLabel htmlFor="entry-title">title</FieldLabel>
+              <Input
+                id="entry-title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                disabled={isSaving}
+                placeholder="e.g. 04 de maio, ameno"
+                maxLength={120}
+              />
+              <span className="text-muted-foreground/70 text-[11.5px]">
+                a short phrase that captures the feel of the day. optional.
+              </span>
+            </Field>
 
             <Field>
               <FieldLabel>how was the day?</FieldLabel>

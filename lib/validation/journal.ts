@@ -21,6 +21,7 @@ export const journalEntrySchema = z
       const cleaned = v.map((s) => s.trim()).filter((s) => s.length > 0);
       return cleaned.length > 0 ? cleaned : null;
     }),
+    title: trimmedNullable,
     content: trimmedNullable,
     coverUrl: trimmedNullable,
     coverThumbUrl: trimmedNullable,

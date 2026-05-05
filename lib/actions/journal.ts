@@ -34,6 +34,7 @@ export async function saveJournalEntry(input: JournalEntryInput): Promise<Action
       .values({
         userId: user.id,
         entryDate: e.entryDate,
+        title: e.title,
         mood: e.mood,
         gratitude: e.gratitude,
         content: e.content,
@@ -47,6 +48,7 @@ export async function saveJournalEntry(input: JournalEntryInput): Promise<Action
       .onConflictDoUpdate({
         target: [schema.journalEntries.userId, schema.journalEntries.entryDate],
         set: {
+          title: e.title,
           mood: e.mood,
           gratitude: e.gratitude,
           content: e.content,
