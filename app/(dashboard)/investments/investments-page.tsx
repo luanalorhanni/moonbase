@@ -128,9 +128,7 @@ function formatDate(dateStr: string | null): string {
 function matchCard(bank: string, cards: CardRow[]): { name: string; color: string } | null {
   const norm = (s: string) => s.toLowerCase().trim();
   const b = norm(bank);
-  const card = cards.find(
-    (c) => (c.bank && norm(c.bank) === b) || norm(c.name) === b,
-  );
+  const card = cards.find((c) => (c.bank && norm(c.bank) === b) || norm(c.name) === b);
   return card ? { name: card.name, color: card.color } : null;
 }
 
@@ -808,7 +806,7 @@ function BankChip({
         className="block size-1.5 shrink-0 rounded-full"
         style={{ backgroundColor: cardColor ?? "var(--muted-foreground)" }}
       />
-      <span className="text-foreground/80 truncate max-w-[100px]">{cardName ?? name}</span>
+      <span className="text-foreground/80 max-w-[100px] truncate">{cardName ?? name}</span>
     </span>
   );
 }
