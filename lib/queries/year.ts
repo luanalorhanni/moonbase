@@ -3,7 +3,7 @@ import "server-only";
 import { cache } from "react";
 
 import { aggregateYear, type MonthAggregate } from "@/lib/finance/aggregate";
-import { sumNumeric } from "@/lib/finance/month";
+import { isInMonth, parcelSpansMonth, sumNumeric } from "@/lib/finance/month";
 
 import { loadFullDataset, toAggregateInputs } from "./month";
 import { listSnapshots } from "./snapshots";
@@ -43,6 +43,21 @@ async function _loadYear(year: number): Promise<YearSummary> {
   const overlaid = months.map((m) => {
     const snap = snapByMonth.get(m.reference);
     if (!snap) return m;
+
+    // Mirror loadMonth: snapshot only wins when the month has no raw
+    // transactions (cash / credit / incomes). If the user has recorded
+    // anything in detail, the live aggregate is the source of truth —
+    // otherwise past months with long-running installments or snapshots
+    // would show stale numbers that disagree with the month view.
+    const hasRawData =
+      dataset.cashExpenses.some((e) => isInMonth(e.date, m.reference)) ||
+      dataset.creditExpenses.some((e) =>
+        parcelSpansMonth(e.firstParcelMonth, e.lastParcelMonth, m.reference),
+      ) ||
+      dataset.incomes.some((i) => isInMonth(i.date, m.reference));
+
+    if (hasRawData) return m;
+
     const incomes = snap.totalIncomes;
     const expenses = snap.totalExpenses;
     const balance = (Number(incomes) - Number(expenses)).toFixed(2);
