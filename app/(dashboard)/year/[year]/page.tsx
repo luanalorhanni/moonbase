@@ -492,7 +492,7 @@ function YearKpi({
   return (
     <div
       className={cn(
-        "border-border flex min-w-0 flex-col gap-0.5 overflow-hidden border-r px-2 py-3 sm:px-3 sm:py-4 lg:px-5 lg:py-4 last:border-r-0",
+        "border-border flex min-w-0 flex-col gap-0.5 overflow-hidden border-r px-2 py-3 last:border-r-0 sm:px-3 sm:py-4 lg:px-5 lg:py-4",
         highlight && "bg-primary/[0.04]",
         groupStart && "border-t",
       )}
