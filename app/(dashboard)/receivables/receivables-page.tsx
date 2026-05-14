@@ -312,8 +312,8 @@ export function ReceivablesPage({ cashReceivables, creditReceivables, paidParcel
         tone="mauve"
       />
 
-      {/* kpi strip — matches /home dashboard style */}
-      <div className="border-border grid shrink-0 grid-cols-1 border-b sm:grid-cols-3">
+      {/* kpi strip */}
+      <div className="border-border grid shrink-0 grid-cols-1 gap-2 border-b p-2.5 sm:grid-cols-3 sm:gap-2.5 sm:px-4 sm:py-3">
         <Kpi label="this month parcels" value={thisMonthCreditTotal} accent="primary" highlight />
         <Kpi
           label="upcoming parcels"
@@ -514,8 +514,10 @@ function Kpi({
   return (
     <div
       className={cn(
-        "border-border flex flex-col gap-2 border-b px-6 py-5 sm:border-r sm:border-b-0 sm:last:border-r-0",
-        highlight && "bg-primary/[0.05]",
+        "flex flex-col gap-2 overflow-hidden rounded-xl border px-4 py-4 sm:px-5 sm:py-4",
+        highlight
+          ? "border-primary/20 from-primary/[0.13] to-primary/[0.04] bg-gradient-to-br"
+          : "border-primary/[0.08] from-primary/[0.07] to-primary/[0.01] bg-gradient-to-br",
       )}
     >
       <span className="text-muted-foreground font-mono text-[11px] tracking-[0.2em]">{label}</span>

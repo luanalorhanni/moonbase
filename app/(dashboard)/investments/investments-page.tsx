@@ -362,14 +362,7 @@ export function InvestmentsPage({ liquidSavings, fixedIncome, updates, cards }: 
       />
 
       {/* ── KPI strip ─────────────────────────────────────────────── */}
-      <div
-        className={cn(
-          "border-border grid shrink-0 grid-cols-2 border-b md:grid-cols-5",
-          "[&>*]:border-border [&>*]:border-r [&>*]:border-b",
-          "[&>*:nth-child(even)]:border-r-0",
-          "md:[&>*]:border-b-0 md:[&>*:last-child]:border-r-0 md:[&>*:nth-child(even)]:border-r",
-        )}
-      >
+      <div className="border-border grid shrink-0 grid-cols-2 gap-2 border-b p-2.5 md:grid-cols-5 md:gap-2.5 md:px-4 md:py-3">
         <Kpi label="total balance" value={summary.totalBalance} accent="primary" highlight />
         <Kpi
           label="total gain"
@@ -722,8 +715,10 @@ function Kpi({
   return (
     <div
       className={cn(
-        "flex min-w-0 flex-col gap-1 overflow-hidden px-3 py-3 lg:px-5 lg:py-4",
-        highlight && "bg-primary/[0.05]",
+        "flex min-w-0 flex-col gap-1 overflow-hidden rounded-xl border px-3 py-3 lg:px-4 lg:py-3.5",
+        highlight
+          ? "border-primary/20 from-primary/[0.13] to-primary/[0.04] bg-gradient-to-br"
+          : "border-primary/[0.08] from-primary/[0.07] to-primary/[0.01] bg-gradient-to-br",
       )}
     >
       <span className="text-muted-foreground flex items-center gap-1.5 truncate font-mono text-[10px] tracking-[0.16em]">

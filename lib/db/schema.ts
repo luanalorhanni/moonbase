@@ -449,3 +449,50 @@ export const journalQuotes = pgTable("journal_quotes", {
   collectedOn: date("collected_on").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
+
+/* ─── monthly budgets (spending goals) ─────────────────────────────── */
+
+/**
+ * Optional spending caps per month. One row per (user, month). All
+ * limit columns are nullable — the user sets only the goals they care about.
+ */
+export const monthlyBudgets = pgTable(
+  "monthly_budgets",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id").notNull(),
+    /** First day of the month, yyyy-mm-01. */
+    referenceMonth: date("reference_month").notNull(),
+    maxCredit: numeric("max_credit", { precision: 12, scale: 2 }),
+    maxCash: numeric("max_cash", { precision: 12, scale: 2 }),
+    maxTotal: numeric("max_total", { precision: 12, scale: 2 }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (t) => [unique("monthly_budgets_user_month_unique").on(t.userId, t.referenceMonth)],
+);
+
+/**
+ * Per-category spending cap for a given month. One row per
+ * (user, month, category). Cascades on category delete.
+ */
+export const monthlyCategoryBudgets = pgTable(
+  "monthly_category_budgets",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id").notNull(),
+    referenceMonth: date("reference_month").notNull(),
+    categoryId: uuid("category_id")
+      .notNull()
+      .references(() => categories.id, { onDelete: "cascade" }),
+    maxAmount: numeric("max_amount", { precision: 12, scale: 2 }).notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => [
+    unique("monthly_category_budgets_user_month_cat_unique").on(
+      t.userId,
+      t.referenceMonth,
+      t.categoryId,
+    ),
+  ],
+);

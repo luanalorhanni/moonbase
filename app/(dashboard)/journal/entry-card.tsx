@@ -57,7 +57,7 @@ export function EntryCard({ entry, onClick }: { entry: JournalEntryRow; onClick:
     >
       <div
         className={cn(
-          "bg-muted relative aspect-[16/10] w-full overflow-hidden",
+          "bg-muted relative aspect-[16/7] w-full overflow-hidden",
           !entry.coverUrl && "from-muted to-muted/40 bg-gradient-to-br",
         )}
       >
@@ -72,57 +72,57 @@ export function EntryCard({ entry, onClick }: { entry: JournalEntryRow; onClick:
           />
         ) : (
           <div className="text-muted-foreground/40 flex size-full items-center justify-center">
-            <CalendarRange aria-hidden className="size-8" strokeWidth={1.2} />
+            <CalendarRange aria-hidden className="size-6" strokeWidth={1.2} />
           </div>
         )}
       </div>
-      <div className="flex flex-col gap-2 px-4 py-3">
+      <div className="flex flex-col gap-1.5 px-3 py-2.5">
         <div className="flex items-baseline justify-between gap-2">
-          <span className="text-foreground text-[13.5px] font-medium tracking-tight">{date}</span>
-          <span className="text-muted-foreground/70 font-mono text-[10px] tracking-[0.14em] uppercase">
+          <span className="text-foreground text-[12.5px] font-medium tracking-tight">{date}</span>
+          <span className="text-muted-foreground/70 font-mono text-[9.5px] tracking-[0.14em] uppercase">
             {isToday ? "today" : weekday}
           </span>
         </div>
         {entry.title && (
-          <p className="text-foreground/90 line-clamp-1 text-[13px] leading-snug font-medium">
+          <p className="text-foreground/90 line-clamp-1 text-[12px] leading-snug font-medium">
             {entry.title}
           </p>
         )}
         {mood && MoodIcon && (
           <span
             title={mood.label}
-            className="border-border bg-muted/30 inline-flex w-fit items-center gap-1.5 rounded-full border px-2 py-0.5"
+            className="border-border bg-muted/30 inline-flex w-fit items-center gap-1 rounded-full border px-1.5 py-px"
           >
-            <MoodIcon aria-hidden strokeWidth={1.6} className={cn("size-3", mood.color)} />
-            <span className={cn("font-mono text-[10px] tracking-[0.14em] uppercase", mood.color)}>
+            <MoodIcon aria-hidden strokeWidth={1.6} className={cn("size-2.5", mood.color)} />
+            <span className={cn("font-mono text-[9.5px] tracking-[0.12em] uppercase", mood.color)}>
               {mood.label}
             </span>
           </span>
         )}
         {entry.gratitude && entry.gratitude.length > 0 && (
-          <ul className="flex flex-col gap-1">
-            {entry.gratitude.slice(0, 3).map((item, idx) => (
+          <ul className="flex flex-col gap-0.5">
+            {entry.gratitude.slice(0, 2).map((item, idx) => (
               <li
                 key={idx}
-                className="text-foreground/80 flex items-start gap-1.5 text-[12px] leading-snug"
+                className="text-foreground/80 flex items-start gap-1.5 text-[11.5px] leading-snug"
               >
                 <Heart
                   aria-hidden
-                  className="text-accent fill-accent mt-[3px] size-2.5 shrink-0"
+                  className="text-accent fill-accent mt-[3px] size-2 shrink-0"
                   strokeWidth={1.5}
                 />
                 <span className="line-clamp-1">{item}</span>
               </li>
             ))}
-            {entry.gratitude.length > 3 && (
-              <li className="text-muted-foreground/60 ml-4 font-mono text-[10px] tracking-wider">
-                +{entry.gratitude.length - 3} mais
+            {entry.gratitude.length > 2 && (
+              <li className="text-muted-foreground/60 ml-3.5 font-mono text-[9.5px] tracking-wider">
+                +{entry.gratitude.length - 2} mais
               </li>
             )}
           </ul>
         )}
         {previewText && (
-          <p className="text-muted-foreground line-clamp-2 text-[12.5px] leading-relaxed">
+          <p className="text-muted-foreground line-clamp-1 text-[12px] leading-relaxed">
             {previewText}
           </p>
         )}
