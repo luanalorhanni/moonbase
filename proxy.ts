@@ -14,7 +14,7 @@ import { type NextRequest, NextResponse } from "next/server";
  */
 const PUBLIC_PATHS = ["/login", "/forgot-password", "/reset-password"];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // Recovery / magic-link safety net: if Supabase redirected the user
   // back to ANY path (e.g. just "/" because the exact callback URL
   // wasn't whitelisted) but the URL still carries the one-time `code`,
