@@ -88,16 +88,12 @@ export default function MonthLoading() {
       {/* detail tabs placeholder */}
       <div className="border-border flex shrink-0 gap-0 border-b px-3 pt-2">
         {Array.from({ length: 5 }).map((_, i) => (
-          <Bar key={i} className="mx-1 h-8 w-24 rounded-b-none rounded-t-md" />
+          <Bar key={i} className="mx-1 h-8 w-24 rounded-t-md rounded-b-none" />
         ))}
       </div>
       <div className="min-h-0 flex-1 space-y-2 px-4 py-4">
         {Array.from({ length: 8 }).map((_, i) => (
-          <Bar
-            key={i}
-            className="h-10 w-full"
-            style={{ animationDelay: `${i * 45}ms` }}
-          />
+          <Bar key={i} className="h-10 w-full" style={{ animationDelay: `${i * 45}ms` }} />
         ))}
       </div>
     </div>
