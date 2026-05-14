@@ -33,6 +33,7 @@ export const TAGS = {
   snapshots: "snapshots",
   journalEntries: "journal-entries",
   journalQuotes: "journal-quotes",
+  monthlyBudgets: "monthly-budgets",
 } as const;
 
 export type Tag = (typeof TAGS)[keyof typeof TAGS];
