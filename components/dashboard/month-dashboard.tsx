@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { CategoryBreakdownChart } from "@/components/charts/category-breakdown-chart";
 import { DetailTabs, type DetailLists } from "@/components/dashboard/detail-tabs";
+import { MonthBudgetDialog } from "@/components/dashboard/month-budget-dialog";
 import { SnapshotBadge } from "@/components/dashboard/snapshot-badge";
 import {
   PixelMoonCrescent,
@@ -18,6 +19,8 @@ import {
 } from "@/lib/finance/month";
 import { listLiquidSavings } from "@/lib/queries/investments";
 import { loadMonth } from "@/lib/queries/month";
+import { loadMonthBudget } from "@/lib/queries/monthly-budgets";
+import { listCategories } from "@/lib/queries/categories";
 import { cn, formatCurrency } from "@/lib/utils";
 
 const PT_INCOME_TYPE: Record<string, string> = {
@@ -36,7 +39,12 @@ const PT_METHOD: Record<string, string> = {
 };
 
 export async function MonthDashboard({ reference }: { reference: MonthRef }) {
-  const [summary, liquidSavings] = await Promise.all([loadMonth(reference), listLiquidSavings()]);
+  const [summary, liquidSavings, monthBudget, allCategories] = await Promise.all([
+    loadMonth(reference),
+    listLiquidSavings(),
+    loadMonthBudget(reference),
+    listCategories(),
+  ]);
   const totalLiquidSavings = liquidSavings
     .filter((i) => i.isActive)
     .reduce((acc, i) => acc + Number(i.latestYield), 0)
@@ -206,8 +214,9 @@ export async function MonthDashboard({ reference }: { reference: MonthRef }) {
         subcategory: e.subcategoryName,
         dueDay: e.dueDay,
         amount: e.monthlyAmount,
+        startDate: e.startDate,
       }))
-      .sort((a, b) => Number(b.amount) - Number(a.amount)),
+      .sort((a, b) => (a.startDate < b.startDate ? 1 : -1)),
     incomes: summary.data.incomes
       .map((i) => ({
         id: i.id,
@@ -267,10 +276,42 @@ export async function MonthDashboard({ reference }: { reference: MonthRef }) {
   const prev = shiftMonth(reference, -1);
   const next = shiftMonth(reference, 1);
 
+  // Budget thresholds — compare actuals to goals
+  const budgetTone = (actual: number, max: string | null | undefined) => {
+    if (!max) return undefined;
+    const pct = actual / Number(max);
+    if (pct >= 1) return "destructive" as const;
+    if (pct >= 0.8) return "warning" as const;
+    return undefined;
+  };
+
+  const totalActual = paymentMethodTotal;
+  const creditActual = Number(summary.totalCreditExpenses) + fixedCreditTotal;
+  const cashActual = cashByMethod.pix + cashByMethod.debit + cashByMethod.cash + fixedCashTotal;
+
+  const totalTone = budgetTone(totalActual, monthBudget.budget?.maxTotal);
+  const creditTone = budgetTone(creditActual, monthBudget.budget?.maxCredit);
+  const cashTone = budgetTone(cashActual, monthBudget.budget?.maxCash);
+
+  // Per-category budget map keyed by category id
+  const catBudgetMap = new Map(
+    monthBudget.categoryBudgets.map((b) => [b.categoryId, Number(b.maxAmount)]),
+  );
+
   return (
     <div className="enter flex flex-col">
       {/* ── top bar ─────────────────────────────────────────────────── */}
-      <div className="border-border bg-background/95 supports-backdrop-blur:bg-background/70 flex shrink-0 items-center justify-end gap-4 border-b px-5 py-3 backdrop-blur">
+      <div className="border-border bg-background/95 supports-backdrop-blur:bg-background/70 flex shrink-0 items-center justify-between gap-4 border-b px-5 py-3 backdrop-blur">
+        <MonthBudgetDialog
+          reference={reference}
+          budget={monthBudget}
+          categories={allCategories.map((c) => ({
+            id: c.id,
+            name: c.name,
+            icon: c.icon,
+            color: c.color,
+          }))}
+        />
         <div className="flex items-center gap-2">
           <span className="text-muted-foreground/70 mr-2 font-mono text-[11px] tracking-[0.16em]">
             {formatMonthShort(reference)}
@@ -326,20 +367,8 @@ export async function MonthDashboard({ reference }: { reference: MonthRef }) {
         </span>
       </div>
 
-      {/* ── kpi strip ─────────────────────────────────────────────────
-           Mobile: 2-col grid, row-separating border-b on cells, even
-           items lose border-r (they're on the right edge of each row).
-           md+: flat 5-col row, border-b removed from cells, all items
-           get border-r except the last.
-      ──────────────────────────────────────────────────────────────── */}
-      <div
-        className={cn(
-          "border-border grid shrink-0 grid-cols-2 border-b md:grid-cols-5",
-          "[&>*]:border-border [&>*]:border-r [&>*]:border-b",
-          "[&>*:nth-child(even)]:border-r-0",
-          "md:[&>*]:border-b-0 md:[&>*:last-child]:border-r-0 md:[&>*:nth-child(even)]:border-r",
-        )}
-      >
+      {/* ── kpi strip ──────────────────────────────────────────────── */}
+      <div className="border-border grid shrink-0 grid-cols-2 gap-2 border-b p-2.5 md:grid-cols-5 md:gap-2.5 md:px-4 md:py-3">
         <Kpi
           label="balance"
           value={summary.balance}
@@ -351,7 +380,8 @@ export async function MonthDashboard({ reference }: { reference: MonthRef }) {
           value={summary.totalExpenses}
           delta={expenseDelta}
           deltaTone="inverted"
-          accent="muted"
+          accent={totalTone ?? "muted"}
+          budgetMax={monthBudget.budget?.maxTotal ?? undefined}
         />
         <Kpi
           label="last month save"
@@ -397,6 +427,8 @@ export async function MonthDashboard({ reference }: { reference: MonthRef }) {
                     total={
                       cashByMethod.pix + cashByMethod.debit + cashByMethod.cash + fixedCashTotal
                     }
+                    budgetTone={cashTone}
+                    budgetMax={monthBudget.budget?.maxCash ?? undefined}
                   />
                   <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
                     <Tile label="pix" value={cashByMethod.pix} />
@@ -411,6 +443,8 @@ export async function MonthDashboard({ reference }: { reference: MonthRef }) {
                   <GroupHeader
                     label="credit"
                     total={Number(summary.totalCreditExpenses) + fixedCreditTotal}
+                    budgetTone={creditTone}
+                    budgetMax={monthBudget.budget?.maxCredit ?? undefined}
                   />
                   {creditByCard.length === 0 ? (
                     <p className="text-muted-foreground py-2 text-[12px]">
@@ -453,6 +487,9 @@ export async function MonthDashboard({ reference }: { reference: MonthRef }) {
               <div className="max-h-[300px] overflow-auto px-2 py-2">
                 <CategoryBreakdownChart data={categoryChartData} />
               </div>
+              {catBudgetMap.size > 0 && (
+                <CategoryBudgetBars categories={categoryChartData} budgets={catBudgetMap} />
+              )}
             </div>
           </div>
 
@@ -531,13 +568,37 @@ function MoonForMonth({ reference }: { reference: string }) {
   );
 }
 
-function GroupHeader({ label, total }: { label: string; total: number }) {
+function GroupHeader({
+  label,
+  total,
+  budgetTone,
+  budgetMax,
+}: {
+  label: string;
+  total: number;
+  budgetTone?: "warning" | "destructive";
+  budgetMax?: string;
+}) {
   return (
     <div className="flex items-baseline justify-between">
       <span className="text-foreground/85 text-[13px] font-medium tracking-tight">{label}</span>
-      <span className="numeric text-primary text-[14px] font-medium tabular-nums">
-        {formatCurrency(String(total))}
-      </span>
+      <div className="flex items-baseline gap-2">
+        {budgetMax && (
+          <span className="text-muted-foreground/60 numeric font-mono text-[10px] tabular-nums">
+            / {formatCurrency(budgetMax)}
+          </span>
+        )}
+        <span
+          className={cn(
+            "numeric text-[14px] font-medium tabular-nums",
+            budgetTone === "destructive" && "text-destructive",
+            budgetTone === "warning" && "text-warning",
+            !budgetTone && "text-primary",
+          )}
+        >
+          {formatCurrency(String(total))}
+        </span>
+      </div>
     </div>
   );
 }
@@ -607,6 +668,73 @@ function Tile({
   );
 }
 
+function CategoryBudgetBars({
+  categories,
+  budgets,
+}: {
+  categories: {
+    key: string;
+    label: string;
+    total: number;
+    icon?: string | null;
+    color?: string | null;
+  }[];
+  budgets: Map<string, number>;
+}) {
+  const rows = categories
+    .filter((c) => budgets.has(c.key))
+    .map((c) => {
+      const max = budgets.get(c.key)!;
+      const pct = c.total / max;
+      return { ...c, max, pct };
+    });
+
+  if (rows.length === 0) return null;
+
+  return (
+    <div className="border-border border-t px-3 py-3">
+      <p className="text-muted-foreground/60 mb-2 font-mono text-[9.5px] tracking-[0.14em] uppercase">
+        category goals
+      </p>
+      <div className="flex flex-col gap-2">
+        {rows.map((r) => (
+          <div key={r.key} className="flex items-center gap-2">
+            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+              <div className="flex items-center justify-between gap-1">
+                <span className="text-foreground/80 truncate text-[11px]">{r.label}</span>
+                <span
+                  className={cn(
+                    "numeric shrink-0 font-mono text-[10px] tabular-nums",
+                    r.pct >= 1
+                      ? "text-destructive"
+                      : r.pct >= 0.8
+                        ? "text-warning"
+                        : "text-muted-foreground",
+                  )}
+                >
+                  {formatCurrency(String(r.total))}{" "}
+                  <span className="text-muted-foreground/50">
+                    / {formatCurrency(String(r.max))}
+                  </span>
+                </span>
+              </div>
+              <div className="bg-muted/60 relative h-1 overflow-hidden rounded-full">
+                <div
+                  className={cn(
+                    "h-full rounded-full transition-all",
+                    r.pct >= 1 ? "bg-destructive" : r.pct >= 0.8 ? "bg-warning" : "bg-primary",
+                  )}
+                  style={{ width: `${Math.min(r.pct * 100, 100)}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function pctDelta(prev: string, curr: string): number {
   const p = Number(prev);
   const c = Number(curr);
@@ -641,13 +769,16 @@ function Kpi({
   deltaTone = "positive",
   accent = "muted",
   highlight,
+  budgetMax,
 }: {
   label: string;
   value: string;
   delta?: number;
   deltaTone?: "positive" | "inverted";
-  accent?: "muted" | "primary" | "success" | "destructive";
+  accent?: "muted" | "primary" | "success" | "destructive" | "warning";
   highlight?: boolean;
+  /** When set, show budget progress and override accent at 80%/100% thresholds. */
+  budgetMax?: string;
 }) {
   const num = Number(value);
   const showDelta = delta !== undefined && Number.isFinite(delta) && delta !== 0;
@@ -655,31 +786,58 @@ function Kpi({
   const isGood = deltaTone === "positive" ? deltaPositive : !deltaPositive;
   const deltaClass = !showDelta ? "" : isGood ? "text-success" : "text-destructive";
 
+  const budgetPct = budgetMax ? num / Number(budgetMax) : null;
+
   return (
     <div
       className={cn(
-        // min-w-0 + overflow-hidden prevent any child from blowing out the cell
-        "flex min-w-0 flex-col gap-1 overflow-hidden px-3 py-3 lg:px-5 lg:py-4",
-        highlight && "bg-primary/[0.05]",
+        "flex min-w-0 flex-col gap-1 overflow-hidden rounded-xl border px-3 py-3 lg:px-4 lg:py-3.5",
+        highlight
+          ? "border-primary/20 from-primary/[0.13] to-primary/[0.04] bg-gradient-to-br"
+          : "border-primary/[0.08] from-primary/[0.07] to-primary/[0.01] bg-gradient-to-br",
       )}
     >
       <span className="text-muted-foreground truncate font-mono text-[10px] tracking-[0.16em]">
         {label}
       </span>
-      {/* Value and delta are stacked vertically so the delta never pushes
-          the value outside the cell on narrow screens. */}
       <span
         className={cn(
           "numeric block truncate text-[14px] leading-tight font-semibold tracking-tight lg:text-[19px]",
           accent === "primary" && "text-primary",
           accent === "success" && "text-success",
           accent === "destructive" && "text-destructive",
+          accent === "warning" && "text-warning",
           accent === "muted" && "text-foreground",
           num < 0 && accent !== "destructive" && "text-destructive",
         )}
       >
         {formatCurrency(value)}
       </span>
+      {budgetMax && budgetPct !== null && (
+        <div className="mt-0.5 flex items-center gap-1.5">
+          <div className="bg-muted/60 relative h-1 flex-1 overflow-hidden rounded-full">
+            <div
+              className={cn(
+                "h-full rounded-full transition-all",
+                budgetPct >= 1 ? "bg-destructive" : budgetPct >= 0.8 ? "bg-warning" : "bg-primary",
+              )}
+              style={{ width: `${Math.min(budgetPct * 100, 100)}%` }}
+            />
+          </div>
+          <span
+            className={cn(
+              "numeric shrink-0 font-mono text-[9px] tabular-nums",
+              budgetPct >= 1
+                ? "text-destructive"
+                : budgetPct >= 0.8
+                  ? "text-warning"
+                  : "text-muted-foreground/70",
+            )}
+          >
+            {Math.round(budgetPct * 100)}%
+          </span>
+        </div>
+      )}
       {showDelta && (
         <span className={cn("inline-flex items-center gap-0.5 font-mono text-[10px]", deltaClass)}>
           {deltaPositive ? (
