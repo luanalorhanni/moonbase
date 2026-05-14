@@ -213,11 +213,9 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
       </div>
 
       {/* ── kpi strip ───────────────────────────────────────────────── */}
-      {/* Two rows of three. Top: the year ledger (incomes / expenses /
-          balance). Bottom: the savings story (year save / avg / invested),
-          marked with `groupStart` so the second row sits under a hairline
-          rule that visually separates the two. */}
-      <div className="border-border grid shrink-0 grid-cols-3 border-b">
+      {/* Two rows of three. Top: the year ledger. Bottom: savings story.
+          groupStart marks the second row with a visual separation. */}
+      <div className="border-border grid shrink-0 grid-cols-3 gap-2 border-b p-2.5 sm:gap-2.5 sm:px-4 sm:py-3">
         <YearKpi label="incomes" value={summary.totalIncomes} accent="success" />
         <YearKpi label="expenses" value={summary.totalExpenses} accent="muted" />
         <YearKpi
@@ -492,9 +490,11 @@ function YearKpi({
   return (
     <div
       className={cn(
-        "border-border flex min-w-0 flex-col gap-0.5 overflow-hidden border-r px-2 py-3 last:border-r-0 sm:px-3 sm:py-4 lg:px-5 lg:py-4",
-        highlight && "bg-primary/[0.04]",
-        groupStart && "border-t",
+        "flex min-w-0 flex-col gap-0.5 overflow-hidden rounded-xl border px-2.5 py-2.5 sm:px-3 sm:py-3 lg:px-4 lg:py-3.5",
+        highlight
+          ? "border-primary/20 from-primary/[0.13] to-primary/[0.04] bg-gradient-to-br"
+          : "border-primary/[0.08] from-primary/[0.07] to-primary/[0.01] bg-gradient-to-br",
+        groupStart && "mt-0.5",
       )}
     >
       <span className="text-muted-foreground truncate font-mono text-[9.5px] tracking-[0.12em] sm:text-[10.5px] sm:tracking-[0.16em]">
