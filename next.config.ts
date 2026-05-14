@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: ["127.0.0.1", "192.168.100.102"],
   experimental: {
     /**
      * Client-side router cache. With single-user data and tag-based

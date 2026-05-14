@@ -160,6 +160,7 @@ export function ColumnSearch({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => {
+              e.stopPropagation();
               if (e.key === "Escape") setOpen(false);
             }}
             className="placeholder:text-muted-foreground/60 h-full flex-1 bg-transparent text-[13px] outline-none"
