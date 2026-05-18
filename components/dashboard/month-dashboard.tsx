@@ -75,6 +75,34 @@ export async function MonthDashboard({ reference }: { reference: MonthRef }) {
   const totalCategorized = categoryChartData.reduce((acc, c) => acc + c.total, 0);
   const topCategory = categoryChartData[0];
 
+  // Subcategory breakdown per category — computed from raw expense rows so
+  // each (category, subcategory) pair is summed across cash + credit + fixed.
+  const subcategoryBreakdown = (() => {
+    const acc = new Map<string, Map<string, number>>();
+    const add = (cat: string, sub: string, amount: number) => {
+      let m = acc.get(cat);
+      if (!m) {
+        m = new Map();
+        acc.set(cat, m);
+      }
+      m.set(sub, (m.get(sub) ?? 0) + amount);
+    };
+    for (const e of summary.data.cashExpenses)
+      add(e.categoryName, e.subcategoryName, Number(e.amount));
+    for (const e of summary.data.creditExpenses)
+      add(e.categoryName, e.subcategoryName, Number(e.parcelValue));
+    for (const e of summary.data.fixedExpenses)
+      add(e.categoryName, e.subcategoryName, Number(e.monthlyAmount));
+    return new Map(
+      Array.from(acc.entries()).map(([cat, subs]) => [
+        cat,
+        Array.from(subs.entries())
+          .map(([label, total]) => ({ label, total }))
+          .sort((a, b) => b.total - a.total),
+      ]),
+    );
+  })();
+
   // Totals by payment method (cash + credit + fixed combined)
   const cashByMethod: Record<"pix" | "debit" | "cash", number> = {
     pix: 0,
@@ -500,7 +528,10 @@ export async function MonthDashboard({ reference }: { reference: MonthRef }) {
                 }
               />
               <div className="max-h-[300px] overflow-auto px-2 py-2">
-                <CategoryBreakdownChart data={categoryChartData} />
+                <CategoryBreakdownChart
+                  data={categoryChartData}
+                  subcategoryBreakdown={subcategoryBreakdown}
+                />
               </div>
               {catBudgetMap.size > 0 && (
                 <CategoryBudgetBars categories={categoryChartData} budgets={catBudgetMap} />
