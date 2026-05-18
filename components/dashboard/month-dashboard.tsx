@@ -75,6 +75,34 @@ export async function MonthDashboard({ reference }: { reference: MonthRef }) {
   const totalCategorized = categoryChartData.reduce((acc, c) => acc + c.total, 0);
   const topCategory = categoryChartData[0];
 
+  // Subcategory breakdown per category — computed from raw expense rows so
+  // each (category, subcategory) pair is summed across cash + credit + fixed.
+  const subcategoryBreakdown = (() => {
+    const acc = new Map<string, Map<string, number>>();
+    const add = (cat: string, sub: string, amount: number) => {
+      let m = acc.get(cat);
+      if (!m) {
+        m = new Map();
+        acc.set(cat, m);
+      }
+      m.set(sub, (m.get(sub) ?? 0) + amount);
+    };
+    for (const e of summary.data.cashExpenses)
+      add(e.categoryName, e.subcategoryName, Number(e.amount));
+    for (const e of summary.data.creditExpenses)
+      add(e.categoryName, e.subcategoryName, Number(e.parcelValue));
+    for (const e of summary.data.fixedExpenses)
+      add(e.categoryName, e.subcategoryName, Number(e.monthlyAmount));
+    return new Map(
+      Array.from(acc.entries()).map(([cat, subs]) => [
+        cat,
+        Array.from(subs.entries())
+          .map(([label, total]) => ({ label, total }))
+          .sort((a, b) => b.total - a.total),
+      ]),
+    );
+  })();
+
   // Totals by payment method (cash + credit + fixed combined)
   const cashByMethod: Record<"pix" | "debit" | "cash", number> = {
     pix: 0,
@@ -161,23 +189,36 @@ export async function MonthDashboard({ reference }: { reference: MonthRef }) {
   }
   const refIndex = monthIndex(reference);
 
+  // Sort helper: primary date DESC, secondary createdAt DESC.
+  // Must run before .map() so createdAt is still available.
+  // createdAt may arrive as a Date object or an ISO string depending on the query path.
+  function byDateThenCreatedAt<T extends { createdAt: Date | string }>(
+    dateKey: (item: T) => string,
+  ): (a: T, b: T) => number {
+    return (a, b) => {
+      const da = dateKey(a);
+      const db = dateKey(b);
+      if (da !== db) return da > db ? -1 : 1;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    };
+  }
+
   const detailLists: DetailLists = {
-    cash: summary.data.cashExpenses
-      .map((e) => ({
-        id: e.id,
-        date: e.date,
-        description: e.description,
-        cardName: e.cardName,
-        cardColor: e.cardColor,
-        method: e.method,
-        category: e.categoryName,
-        categoryIcon: e.categoryIcon,
-        categoryColor: e.categoryColor,
-        subcategory: e.subcategoryName,
-        amount: e.amount,
-      }))
-      .sort((a, b) => (a.date < b.date ? 1 : -1)),
-    credit: summary.data.creditExpenses
+    cash: [...summary.data.cashExpenses].sort(byDateThenCreatedAt((e) => e.date)).map((e) => ({
+      id: e.id,
+      date: e.date,
+      description: e.description,
+      cardName: e.cardName,
+      cardColor: e.cardColor,
+      method: e.method,
+      category: e.categoryName,
+      categoryIcon: e.categoryIcon,
+      categoryColor: e.categoryColor,
+      subcategory: e.subcategoryName,
+      amount: e.amount,
+    })),
+    credit: [...summary.data.creditExpenses]
+      .sort(byDateThenCreatedAt((e) => e.purchaseDate))
       .map((e) => {
         const firstIdx = e.firstParcelMonth ? monthIndex(e.firstParcelMonth.slice(0, 7)) : refIndex;
         const parcelNumber = Math.max(1, refIndex - firstIdx + 1);
@@ -199,9 +240,9 @@ export async function MonthDashboard({ reference }: { reference: MonthRef }) {
           parcelValue: e.parcelValue,
           totalValue: total,
         };
-      })
-      .sort((a, b) => (a.purchaseDate < b.purchaseDate ? 1 : -1)),
-    fixed: summary.data.fixedExpenses
+      }),
+    fixed: [...summary.data.fixedExpenses]
+      .sort(byDateThenCreatedAt((e) => e.startDate))
       .map((e) => ({
         id: e.id,
         description: e.description,
@@ -215,61 +256,64 @@ export async function MonthDashboard({ reference }: { reference: MonthRef }) {
         dueDay: e.dueDay,
         amount: e.monthlyAmount,
         startDate: e.startDate,
-      }))
-      .sort((a, b) => (a.startDate < b.startDate ? 1 : -1)),
-    incomes: summary.data.incomes
-      .map((i) => ({
-        id: i.id,
-        date: i.date,
-        description: i.description,
-        type: PT_INCOME_TYPE[i.type] ?? i.type,
-        amount: i.amount,
-      }))
-      .sort((a, b) => (a.date < b.date ? 1 : -1)),
-    receivables: [
-      ...summary.data.cashReceivables.map((r) => ({
-        id: `c-${r.id}`,
-        date: r.expectedPaymentMonth,
-        description: r.description,
-        kind: "cash" as const,
-        cardName: null,
-        cardColor: null,
-        method: PT_METHOD[r.loanType] ?? r.loanType,
-        loanDate: r.loanDate,
-        loanType: r.loanType,
-        expectedPaymentMonth: r.expectedPaymentMonth,
-        amount: r.amount,
-        status: r.isPaid ? ("paid" as const) : ("pending" as const),
-        paidOn: r.actualPaymentDate,
       })),
-      ...summary.data.creditReceivables.map((r) => {
-        const firstIdx = r.firstParcelMonth ? monthIndex(r.firstParcelMonth.slice(0, 7)) : refIndex;
-        const parcelNumber = Math.max(1, refIndex - firstIdx + 1);
-        const remainingParcels = Math.max(0, r.totalParcels - parcelNumber);
-        const totalValue = (Number(r.parcelValue) * r.totalParcels).toFixed(2);
-        const paidEntry = summary.data.paidCreditParcels.find(
-          (p) => p.receivableId === r.id && p.parcelNumber === parcelNumber,
-        );
-        const isPaid = paidEntry != null;
-        return {
-          id: `cr-${r.id}`,
-          date: r.purchaseDate,
+    incomes: [...summary.data.incomes].sort(byDateThenCreatedAt((i) => i.date)).map((i) => ({
+      id: i.id,
+      date: i.date,
+      description: i.description,
+      type: PT_INCOME_TYPE[i.type] ?? i.type,
+      amount: i.amount,
+    })),
+    receivables: [
+      ...summary.data.cashReceivables
+        .sort(byDateThenCreatedAt((r) => r.expectedPaymentMonth))
+        .map((r) => ({
+          id: `c-${r.id}`,
+          date: r.expectedPaymentMonth,
           description: r.description,
-          kind: "credit" as const,
-          cardName: r.cardName,
-          cardColor: r.cardColor,
-          method: r.totalParcels > 1 ? `${r.totalParcels}×` : "single",
-          parcelNumber,
-          totalParcels: r.totalParcels,
-          remainingParcels,
-          parcelValue: r.parcelValue,
-          totalValue,
-          amount: r.parcelValue,
-          status: isPaid ? ("paid" as const) : ("pending" as const),
-          paidOn: paidEntry ? new Date(paidEntry.paidAt).toISOString().slice(0, 10) : null,
-        };
-      }),
-    ].sort((a, b) => (a.date < b.date ? 1 : -1)),
+          kind: "cash" as const,
+          cardName: null,
+          cardColor: null,
+          method: PT_METHOD[r.loanType] ?? r.loanType,
+          loanDate: r.loanDate,
+          loanType: r.loanType,
+          expectedPaymentMonth: r.expectedPaymentMonth,
+          amount: r.amount,
+          status: r.isPaid ? ("paid" as const) : ("pending" as const),
+          paidOn: r.actualPaymentDate,
+        })),
+      ...summary.data.creditReceivables
+        .sort(byDateThenCreatedAt((r) => r.purchaseDate))
+        .map((r) => {
+          const firstIdx = r.firstParcelMonth
+            ? monthIndex(r.firstParcelMonth.slice(0, 7))
+            : refIndex;
+          const parcelNumber = Math.max(1, refIndex - firstIdx + 1);
+          const remainingParcels = Math.max(0, r.totalParcels - parcelNumber);
+          const totalValue = (Number(r.parcelValue) * r.totalParcels).toFixed(2);
+          const paidEntry = summary.data.paidCreditParcels.find(
+            (p) => p.receivableId === r.id && p.parcelNumber === parcelNumber,
+          );
+          const isPaid = paidEntry != null;
+          return {
+            id: `cr-${r.id}`,
+            date: r.purchaseDate,
+            description: r.description,
+            kind: "credit" as const,
+            cardName: r.cardName,
+            cardColor: r.cardColor,
+            method: r.totalParcels > 1 ? `${r.totalParcels}×` : "single",
+            parcelNumber,
+            totalParcels: r.totalParcels,
+            remainingParcels,
+            parcelValue: r.parcelValue,
+            totalValue,
+            amount: r.parcelValue,
+            status: isPaid ? ("paid" as const) : ("pending" as const),
+            paidOn: paidEntry ? new Date(paidEntry.paidAt).toISOString().slice(0, 10) : null,
+          };
+        }),
+    ].sort((a, b) => (a.date !== b.date ? (a.date > b.date ? -1 : 1) : 0)),
   };
 
   const balanceNum = Number(summary.balance);
@@ -485,7 +529,10 @@ export async function MonthDashboard({ reference }: { reference: MonthRef }) {
                 }
               />
               <div className="max-h-[300px] overflow-auto px-2 py-2">
-                <CategoryBreakdownChart data={categoryChartData} />
+                <CategoryBreakdownChart
+                  data={categoryChartData}
+                  subcategoryBreakdown={subcategoryBreakdown}
+                />
               </div>
               {catBudgetMap.size > 0 && (
                 <CategoryBudgetBars categories={categoryChartData} budgets={catBudgetMap} />

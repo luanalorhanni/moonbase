@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth/session";
 import { TAGS, invalidate } from "@/lib/cache/tags";
 import { db, schema } from "@/lib/db";
+import { todayBrazil } from "@/lib/utils";
 import {
   cashReceivableFormSchema,
   normaliseCashReceivableForm,
@@ -91,9 +92,7 @@ export async function updateCashReceivable(
 
 export async function markCashReceivableAsPaid(id: string): Promise<CashReceivableActionResult> {
   const user = await requireUser();
-  const today = new Date();
-  const pad = (n: number) => String(n).padStart(2, "0");
-  const todayStr = `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`;
+  const todayStr = todayBrazil();
 
   await db
     .update(schema.cashReceivables)
