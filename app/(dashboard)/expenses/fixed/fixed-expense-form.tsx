@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { SubcategoryCombobox } from "@/components/ui/subcategory-combobox";
 import { createFixedExpense, updateFixedExpense } from "@/lib/actions/fixed-expenses";
+import { todayBrazil } from "@/lib/utils";
 import type { CardRow } from "@/lib/queries/cards";
 import type { SubcategoryWithCategory } from "@/lib/queries/categories";
 import type { FixedExpenseWithDetails } from "@/lib/queries/fixed-expenses";
@@ -36,9 +37,7 @@ type Props = {
   onSuccess: () => void;
 };
 
-function today(): string {
-  return new Date().toISOString().slice(0, 10);
-}
+const today = todayBrazil;
 
 export function FixedExpenseForm({ expense, cards, subcategories, onSuccess }: Props) {
   const [isPending, startTransition] = useTransition();

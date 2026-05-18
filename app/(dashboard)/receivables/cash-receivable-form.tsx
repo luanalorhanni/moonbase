@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { createCashReceivable, updateCashReceivable } from "@/lib/actions/cash-receivables";
+import { todayBrazil } from "@/lib/utils";
 import type { CashReceivableRow } from "@/lib/queries/receivables";
 import {
   cashReceivableFormSchema,
@@ -29,15 +30,10 @@ type Props = {
   onSuccess: () => void;
 };
 
-function today(): string {
-  return new Date().toISOString().slice(0, 10);
-}
+const today = todayBrazil;
 
 function currentMonth(): string {
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  return `${y}-${m}`;
+  return todayBrazil().slice(0, 7);
 }
 
 export function CashReceivableForm({ receivable, onSuccess }: Props) {

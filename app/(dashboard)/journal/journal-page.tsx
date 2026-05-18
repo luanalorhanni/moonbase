@@ -4,7 +4,9 @@ import { BookOpen, CalendarPlus, NotebookPen, Plus, Quote as QuoteIcon } from "l
 import { useMemo, useState } from "react";
 
 import { EditorialHero } from "@/components/dashboard/editorial-hero";
+import { LogReminder } from "@/components/dashboard/log-reminder";
 import { PageShell } from "@/components/dashboard/page-shell";
+import { MoodTrendChart } from "@/components/journal/mood-trend-chart";
 import { Button } from "@/components/ui/button";
 import { moodFor } from "@/lib/journal/mood";
 import type { JournalEntryRow, JournalQuoteRow } from "@/lib/queries/journal";
@@ -105,7 +107,12 @@ export function JournalPage({ entries, quotes }: Props) {
         </div>
 
         {tab === "entries" ? (
-          <EntriesView entries={entries} onPick={(e) => setViewingEntry(e)} />
+          <EntriesView
+            entries={entries}
+            todayIso={today}
+            onPick={(e) => setViewingEntry(e)}
+            onLogToday={() => setEditorDate(today)}
+          />
         ) : (
           <QuotesView quotes={quotes} onPick={setEditingQuote} />
         )}
@@ -153,10 +160,14 @@ export function JournalPage({ entries, quotes }: Props) {
 
 function EntriesView({
   entries,
+  todayIso,
   onPick,
+  onLogToday,
 }: {
   entries: JournalEntryRow[];
+  todayIso: string;
   onPick: (e: JournalEntryRow) => void;
+  onLogToday: () => void;
 }) {
   if (entries.length === 0) {
     return (
@@ -170,11 +181,24 @@ function EntriesView({
       </div>
     );
   }
+  // Entries are ordered DESC by date — the first one is the most recent.
+  const lastDate = entries[0]?.entryDate ?? null;
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-      {entries.map((entry) => (
-        <EntryCard key={entry.id} entry={entry} onClick={() => onPick(entry)} />
-      ))}
+    <div className="flex flex-col gap-5">
+      <LogReminder
+        lastDate={lastDate}
+        todayIso={todayIso}
+        todayCopy="você ainda não registrou o dia de hoje."
+        gapCopy={(n) => `último registro há ${n} dias.`}
+        actionLabel="registrar"
+        onAction={onLogToday}
+      />
+      <MoodTrendChart entries={entries} />
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+        {entries.map((entry) => (
+          <EntryCard key={entry.id} entry={entry} onClick={() => onPick(entry)} />
+        ))}
+      </div>
     </div>
   );
 }

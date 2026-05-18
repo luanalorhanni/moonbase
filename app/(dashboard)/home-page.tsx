@@ -209,7 +209,7 @@ export function HomePage({ settings }: { settings: UserSettingsRow | null }) {
   return (
     <div className="enter flex h-full min-h-0 flex-col overflow-auto">
       {/* ── HERO ───────────────────────────────────────────────────── */}
-      <section className="relative isolate flex shrink-0 flex-col justify-end overflow-hidden bg-[#0b0d18]">
+      <section className="relative isolate flex shrink-0 flex-col justify-end overflow-hidden bg-slate-300 dark:bg-[#0b0d18]">
         {/* Cover background — kept softly translucent so the dark base
             and the shooting-star layer above it can read through. */}
         <div aria-hidden className="absolute inset-0 -z-10">
@@ -229,8 +229,10 @@ export function HomePage({ settings }: { settings: UserSettingsRow | null }) {
               }}
             />
           )}
-          {/* Dark overlay sits above the cover, beneath the stars/content */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/55 to-black/65" />
+          {/* Theme-aware overlay sits above the cover, beneath the stars/content.
+              Light: whitish-gray fade. Dark: deep blue-black (background tone) so it
+              doesn't read as a flat pure-black block against the dark theme. */}
+          <div className="dark:from-background/90 dark:via-background/55 dark:to-background/65 absolute inset-0 bg-gradient-to-t from-slate-700/70 via-slate-500/35 to-slate-400/35" />
         </div>
 
         {/* Hero starfield — twinkles + 4 staggered shooting stars */}
