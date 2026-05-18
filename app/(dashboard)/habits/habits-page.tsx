@@ -8,6 +8,7 @@ import { toast } from "sonner";
 
 import { MonthlyHabitHeatmap } from "@/components/charts/monthly-habit-heatmap";
 import { WeeklyHabitsChart } from "@/components/charts/weekly-habits-chart";
+import { LogReminder } from "@/components/dashboard/log-reminder";
 import { PageShell } from "@/components/dashboard/page-shell";
 import { PixelStarSmall } from "@/components/decorative/pixel-icons";
 import {
@@ -118,6 +119,15 @@ export function HabitsPage({ habits, categories, recentLogs, todayIso }: Props) 
       else map.set(log.habitId, new Set([log.date]));
     }
     return map;
+  }, [recentLogs]);
+
+  // Most recent date with any habit logged. Drives the reminder banner.
+  const lastLogDate = useMemo(() => {
+    let latest: string | null = null;
+    for (const log of recentLogs) {
+      if (!latest || log.date > latest) latest = log.date;
+    }
+    return latest;
   }, [recentLogs]);
 
   function isDoneToday(habitId: string): boolean {
@@ -291,6 +301,18 @@ export function HabitsPage({ habits, categories, recentLogs, todayIso }: Props) 
             </div>
           </div>
         </section>
+      )}
+
+      {/* ── reminder banner ────────────────────────────────────────── */}
+      {habits.length > 0 && (
+        <div className="border-border shrink-0 border-b px-5 py-3">
+          <LogReminder
+            lastDate={lastLogDate}
+            todayIso={todayIso}
+            todayCopy="você ainda não marcou nenhum hábito hoje."
+            gapCopy={(n) => `último hábito marcado há ${n} dias.`}
+          />
+        </div>
       )}
 
       {/* ── KPI strip ──────────────────────────────────────────────── */}
