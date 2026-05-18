@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth/session";
 import { TAGS, invalidate } from "@/lib/cache/tags";
 import { db, schema } from "@/lib/db";
+import { todayBrazil } from "@/lib/utils";
 import {
   cashExpenseFormSchema,
   normaliseCashExpenseForm,
@@ -26,13 +27,7 @@ function flattenIssues(error: import("zod").ZodError) {
   return fieldErrors;
 }
 
-function todayStr(): string {
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
+const todayStr = todayBrazil;
 
 type TxLike = Parameters<Parameters<typeof db.transaction>[0]>[0];
 

@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { SubcategoryCombobox } from "@/components/ui/subcategory-combobox";
 import { createCashExpense, updateCashExpense } from "@/lib/actions/cash-expenses";
+import { todayBrazil } from "@/lib/utils";
 import type { CardRow } from "@/lib/queries/cards";
 import type { CashExpenseRow } from "@/lib/queries/cash-expenses";
 import type { SubcategoryWithCategory } from "@/lib/queries/categories";
@@ -38,9 +39,7 @@ type Props = {
   onSuccess: () => void;
 };
 
-function today(): string {
-  return new Date().toISOString().slice(0, 10);
-}
+const today = todayBrazil;
 
 export function CashExpenseForm({
   expense,

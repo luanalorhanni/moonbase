@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { createLiquidSavings, updateLiquidSavings } from "@/lib/actions/investments";
+import { todayBrazil } from "@/lib/utils";
 import type { LiquidSavingsRow } from "@/lib/queries/investments";
 import { liquidSavingsFormSchema, type LiquidSavingsFormInput } from "@/lib/validation/investment";
 
@@ -17,9 +18,7 @@ type Props = {
   onSuccess: () => void;
 };
 
-function today(): string {
-  return new Date().toISOString().slice(0, 10);
-}
+const today = todayBrazil;
 
 export function LiquidSavingsForm({ item, onSuccess }: Props) {
   const [isPending, startTransition] = useTransition();

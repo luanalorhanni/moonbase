@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { createFixedIncome, updateFixedIncome } from "@/lib/actions/investments";
+import { todayBrazil } from "@/lib/utils";
 import type { FixedIncomeRow } from "@/lib/queries/investments";
 import { fixedIncomeFormSchema, type FixedIncomeFormInput } from "@/lib/validation/investment";
 
@@ -17,9 +18,7 @@ type Props = {
   onSuccess: () => void;
 };
 
-function today(): string {
-  return new Date().toISOString().slice(0, 10);
-}
+const today = todayBrazil;
 
 export function FixedIncomeForm({ item, onSuccess }: Props) {
   const [isPending, startTransition] = useTransition();

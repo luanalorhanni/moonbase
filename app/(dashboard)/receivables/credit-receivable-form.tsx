@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { createCreditReceivable, updateCreditReceivable } from "@/lib/actions/credit-receivables";
+import { todayBrazil } from "@/lib/utils";
 import type { CardRow } from "@/lib/queries/cards";
 import type { CreditReceivableWithCard } from "@/lib/queries/receivables";
 import {
@@ -29,9 +30,7 @@ type Props = {
   onSuccess: () => void;
 };
 
-function today(): string {
-  return new Date().toISOString().slice(0, 10);
-}
+const today = todayBrazil;
 
 export function CreditReceivableForm({ receivable, cards, onSuccess }: Props) {
   const [isPending, startTransition] = useTransition();
