@@ -49,7 +49,12 @@ export function toMonthRef(yyyyMmDd: string | null): MonthRef | null {
   return yyyyMmDd.slice(0, 7);
 }
 
-export function currentMonthRef(now: Date = new Date()): MonthRef {
+export function currentMonthRef(now?: Date): MonthRef {
+  if (!now) {
+    return new Intl.DateTimeFormat("sv-SE", { timeZone: "America/Sao_Paulo" })
+      .format(new Date())
+      .slice(0, 7) as MonthRef;
+  }
   const y = now.getFullYear();
   const m = String(now.getMonth() + 1).padStart(2, "0");
   return `${y}-${m}`;

@@ -52,7 +52,16 @@ export function buildMonthlySnapshot(inputs: SnapshotInputs): SnapshotPayload {
 }
 
 /** Returns the month immediately preceding `now`, e.g. on 2026-04-12 → "2026-03". */
-export function previousMonthRef(now: Date = new Date()): MonthRef {
+export function previousMonthRef(now?: Date): MonthRef {
+  if (!now) {
+    const dateStr = new Intl.DateTimeFormat("sv-SE", { timeZone: "America/Sao_Paulo" }).format(
+      new Date(),
+    );
+    const [y, m] = dateStr.split("-").map(Number);
+    const prevYear = m === 1 ? y - 1 : y;
+    const prevMonth = m === 1 ? 12 : m - 1;
+    return `${prevYear}-${String(prevMonth).padStart(2, "0")}`;
+  }
   const y = now.getFullYear();
   const m = now.getMonth(); // 0-based; previous month is m-1, but for January wrap
   const prevYear = m === 0 ? y - 1 : y;
