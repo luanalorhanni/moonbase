@@ -191,14 +191,15 @@ export async function MonthDashboard({ reference }: { reference: MonthRef }) {
 
   // Sort helper: primary date DESC, secondary createdAt DESC.
   // Must run before .map() so createdAt is still available.
-  function byDateThenCreatedAt<T extends { createdAt: Date }>(
+  // createdAt may arrive as a Date object or an ISO string depending on the query path.
+  function byDateThenCreatedAt<T extends { createdAt: Date | string }>(
     dateKey: (item: T) => string,
   ): (a: T, b: T) => number {
     return (a, b) => {
       const da = dateKey(a);
       const db = dateKey(b);
       if (da !== db) return da > db ? -1 : 1;
-      return b.createdAt.getTime() - a.createdAt.getTime();
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     };
   }
 
