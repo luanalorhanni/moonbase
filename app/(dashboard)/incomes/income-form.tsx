@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { createIncome, updateIncome } from "@/lib/actions/incomes";
+import { todayBrazil } from "@/lib/utils";
 import type { IncomeRow } from "@/lib/queries/incomes";
 import {
   INCOME_TYPE_LABEL,
@@ -29,9 +30,7 @@ type Props = {
   onSuccess: () => void;
 };
 
-function today(): string {
-  return new Date().toISOString().slice(0, 10);
-}
+const today = todayBrazil;
 
 export function IncomeForm({ income, onSuccess }: Props) {
   const [isPending, startTransition] = useTransition();
