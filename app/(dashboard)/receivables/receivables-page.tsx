@@ -8,6 +8,7 @@ import {
   ChevronUp,
   CircleCheck,
   CreditCard,
+  Download,
   HandCoins,
   MoreHorizontal,
   Plus,
@@ -108,6 +109,55 @@ function formatAmount(value: string | number): string {
   return new Intl.NumberFormat("en-US", { style: "currency", currency: "BRL" }).format(
     typeof value === "string" ? Number(value) : value,
   );
+}
+
+/** Brazilian-format currency (R$ 417,47) — used in CSVs shared with payers. */
+function formatAmountBR(value: string | number): string {
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
+    typeof value === "string" ? Number(value) : value,
+  );
+}
+
+/** dd/mm/yyyy — readable date for non-technical recipients. */
+function formatDateBR(dateStr: string): string {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  return `${String(d).padStart(2, "0")}/${String(m).padStart(2, "0")}/${y}`;
+}
+
+/** Pt-BR month name + year ("junho 2026") for CSV "mês de cobrança" column. */
+function formatMonthBR(yyyymm: string): string {
+  const [y, m] = yyyymm.split("-").map(Number);
+  return new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric" })
+    .format(new Date(y, m - 1, 1))
+    .toLowerCase();
+}
+
+/**
+ * Quote a CSV cell when it contains the delimiter, a quote, or a line break.
+ * We use ';' as the delimiter (Brazilian Excel convention) so BRL values
+ * with comma decimals stay readable without forced quoting.
+ */
+function csvCell(value: string): string {
+  if (/[";\n\r]/.test(value)) return `"${value.replace(/"/g, '""')}"`;
+  return value;
+}
+
+/**
+ * Build a CSV string from headers + rows and trigger a download. Includes a
+ * UTF-8 BOM so Excel opens accented characters correctly.
+ */
+function downloadCsv(filename: string, headers: string[], rows: string[][]) {
+  const lines = [headers, ...rows].map((r) => r.map(csvCell).join(";"));
+  const csv = "﻿" + lines.join("\r\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 function currentYearMonth(): string {
@@ -783,6 +833,26 @@ function MonthGroup({
     parcelNumber: p.parcelNumber,
   }));
 
+  function handleExportCsv() {
+    const headers = [
+      "descrição",
+      "parcela",
+      "valor",
+      "mês de cobrança",
+      "data da compra",
+      "cartão",
+    ];
+    const rows = parcels.map((p) => [
+      p.description,
+      `${p.parcelNumber} de ${p.totalParcels}`,
+      formatAmountBR(p.parcelValue),
+      formatMonthBR(p.month),
+      formatDateBR(p.purchaseDate),
+      p.cardName,
+    ]);
+    downloadCsv(`receivables-${month}.csv`, headers, rows);
+  }
+
   return (
     <section
       className={cn(
@@ -846,6 +916,17 @@ function MonthGroup({
               </span>
             )}
           </div>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleExportCsv}
+            title="export this month's parcels as CSV"
+            className="text-muted-foreground hover:text-primary hover:bg-primary/10 h-7 shrink-0 px-2 text-[11.5px]"
+          >
+            <Download aria-hidden className="size-3" />
+            csv
+          </Button>
 
           {allPaid ? (
             <Button

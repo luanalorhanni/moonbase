@@ -228,6 +228,7 @@ export async function MonthDashboard({ reference }: { reference: MonthRef }) {
           id: e.id,
           purchaseDate: e.purchaseDate,
           description: e.description,
+          cardId: e.cardId,
           cardName: e.cardName,
           cardColor: e.cardColor,
           category: e.categoryName,
