@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 
+import { ColumnFilter, FilterOption } from "@/components/dashboard/column-filters";
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { cn, formatCurrency } from "@/lib/utils";
 
@@ -27,6 +28,7 @@ export type CreditDetailRow = {
   id: string;
   purchaseDate: string;
   description: string;
+  cardId: string;
   cardName: string;
   cardColor: string;
   category: string;
@@ -364,18 +366,54 @@ function CashTable({ rows, empty }: { rows: CashDetailRow[]; empty: string }) {
 }
 
 function CreditTable({ rows, empty }: { rows: CreditDetailRow[]; empty: string }) {
+  const [cardFilter, setCardFilter] = useState<string | null>(null);
+
+  // Unique cards present in the unfiltered list — drives the dropdown.
+  const cardOptions = useMemo(() => {
+    const seen = new Map<string, { id: string; name: string; color: string }>();
+    for (const r of rows) {
+      if (!seen.has(r.cardId)) {
+        seen.set(r.cardId, { id: r.cardId, name: r.cardName, color: r.cardColor });
+      }
+    }
+    return Array.from(seen.values()).sort((a, b) => a.name.localeCompare(b.name));
+  }, [rows]);
+
+  const filtered = useMemo(
+    () => (cardFilter ? rows.filter((r) => r.cardId === cardFilter) : rows),
+    [rows, cardFilter],
+  );
+
   const threshold = useMemo(
-    () => highlightThreshold(rows.map((r) => Number(r.parcelValue))),
-    [rows],
+    () => highlightThreshold(filtered.map((r) => Number(r.parcelValue))),
+    [filtered],
   );
   if (rows.length === 0) return <Empty hint={empty} />;
+  const activeCard = cardFilter ? cardOptions.find((c) => c.id === cardFilter) : null;
   return (
     <table className="w-full border-collapse">
       <thead>
         <tr>
           <th className={cn(TH, "w-[88px]")}>purchased</th>
           <th className={TH}>description</th>
-          <th className={TH}>card</th>
+          <th className={TH}>
+            <ColumnFilter
+              label="card"
+              active={cardFilter !== null}
+              activeChip={activeCard ? { label: activeCard.name, color: activeCard.color } : null}
+              onClear={() => setCardFilter(null)}
+            >
+              {cardOptions.map((c) => (
+                <FilterOption
+                  key={c.id}
+                  label={c.name}
+                  color={c.color}
+                  active={cardFilter === c.id}
+                  onClick={() => setCardFilter(cardFilter === c.id ? null : c.id)}
+                />
+              ))}
+            </ColumnFilter>
+          </th>
           <th className={TH}>category</th>
           <th className={cn(TH, "w-[200px]")}>installment</th>
           <th className={cn(TH, "w-[110px] text-right")}>this parcel</th>
@@ -383,7 +421,14 @@ function CreditTable({ rows, empty }: { rows: CreditDetailRow[]; empty: string }
         </tr>
       </thead>
       <tbody>
-        {rows.map((r) => (
+        {filtered.length === 0 ? (
+          <tr>
+            <td colSpan={7} className="text-muted-foreground py-10 text-center text-[12px]">
+              no installments for this card — clear the filter to see all.
+            </td>
+          </tr>
+        ) : null}
+        {filtered.map((r) => (
           <tr key={r.id} className="border-border hover:bg-muted/30 border-b transition-colors">
             <td
               className={cn(TD, "text-muted-foreground/80 font-mono text-[11.5px] tracking-wider")}
