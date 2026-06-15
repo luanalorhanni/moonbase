@@ -23,6 +23,7 @@ import { todayBrazil } from "@/lib/utils";
 import type { CardRow } from "@/lib/queries/cards";
 import type { SubcategoryWithCategory } from "@/lib/queries/categories";
 import type { FixedExpenseWithDetails } from "@/lib/queries/fixed-expenses";
+import { toFormAmount } from "@/lib/validation/amount";
 import {
   fixedExpenseFormSchema,
   PAYMENT_METHOD_LABEL,
@@ -50,7 +51,7 @@ export function FixedExpenseForm({ expense, cards, subcategories, onSuccess }: P
           cardId: expense.cardId,
           subcategoryId: expense.subcategoryId,
           paymentMethod: expense.paymentMethod,
-          monthlyAmount: expense.monthlyAmount,
+          monthlyAmount: toFormAmount(expense.monthlyAmount),
           dueDay: expense.dueDay !== null ? String(expense.dueDay) : "",
           startDate: expense.startDate,
           endDate: expense.endDate ?? "",
@@ -199,7 +200,7 @@ export function FixedExpenseForm({ expense, cards, subcategories, onSuccess }: P
             <Input
               id="fe-amount"
               inputMode="decimal"
-              placeholder="e.g. 29.90"
+              placeholder="ex. 29,90"
               disabled={isPending}
               {...form.register("monthlyAmount")}
             />
