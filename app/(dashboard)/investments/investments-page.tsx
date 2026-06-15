@@ -114,7 +114,7 @@ type UnifiedRow = {
 };
 
 function formatBRL(value: number): string {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "BRL" }).format(value);
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
 }
 
 function formatDate(dateStr: string | null): string {

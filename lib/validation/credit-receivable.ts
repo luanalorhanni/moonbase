@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const amountPattern = /^\d+(\.\d{1,2})?$/;
+import { AMOUNT_ERROR_MESSAGE, isValidAmountInput, toApiAmount } from "./amount";
 
 export const creditReceivableFormSchema = z.object({
   description: z.string().trim().min(1, "description is required"),
@@ -10,8 +10,8 @@ export const creditReceivableFormSchema = z.object({
     .string()
     .regex(/^[1-9]\d*$/, "min 1 installment")
     .refine((v) => parseInt(v, 10) <= 360, "max 360 installments"),
-  parcelValue: z.string().refine((v) => amountPattern.test(v.trim()), {
-    message: "use 1234.56 format (period as decimal)",
+  parcelValue: z.string().refine((v) => isValidAmountInput(v), {
+    message: AMOUNT_ERROR_MESSAGE,
   }),
   manualOverride: z.boolean(),
 });
@@ -35,7 +35,7 @@ export function normaliseCreditReceivableForm(
     cardId: input.cardId,
     purchaseDate: input.purchaseDate,
     totalParcels: parseInt(input.totalParcels, 10),
-    parcelValue: input.parcelValue.trim(),
+    parcelValue: toApiAmount(input.parcelValue),
     manualOverride: input.manualOverride,
   };
 }
