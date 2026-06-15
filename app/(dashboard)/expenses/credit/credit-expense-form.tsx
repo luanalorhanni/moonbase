@@ -23,6 +23,7 @@ import { todayBrazil } from "@/lib/utils";
 import type { CardRow } from "@/lib/queries/cards";
 import type { SubcategoryWithCategory } from "@/lib/queries/categories";
 import type { CreditExpenseWithDetails } from "@/lib/queries/credit-expenses";
+import { toFormAmount } from "@/lib/validation/amount";
 import {
   creditExpenseFormSchema,
   type CreditExpenseFormInput,
@@ -54,7 +55,7 @@ export function CreditExpenseForm({ expense, cards, subcategories, onSuccess }: 
           subcategoryId: expense.subcategoryId,
           purchaseDate: expense.purchaseDate,
           totalParcels: String(expense.totalParcels),
-          parcelValue: expense.parcelValue,
+          parcelValue: toFormAmount(expense.parcelValue),
           manualOverride: expense.manualOverride,
         }
       : {
@@ -192,7 +193,7 @@ export function CreditExpenseForm({ expense, cards, subcategories, onSuccess }: 
             <Input
               id="ce-parcel-value"
               inputMode="decimal"
-              placeholder="e.g. 199.90"
+              placeholder="ex. 199,90"
               disabled={isPending}
               {...form.register("parcelValue")}
             />
@@ -202,7 +203,7 @@ export function CreditExpenseForm({ expense, cards, subcategories, onSuccess }: 
           </Field>
         </div>
         <FieldDescription className="-mt-3">
-          use a period as the decimal separator (e.g. 199.90).
+          use vírgula como separador decimal (ex. 199,90).
         </FieldDescription>
 
         <div className="flex items-start gap-3 rounded-md border px-3 py-3">
