@@ -70,7 +70,7 @@ type DialogState =
   | { kind: "edit"; expense: CashExpenseWithDetails };
 
 function formatAmount(value: string): string {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "BRL" }).format(
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
     Number(value),
   );
 }

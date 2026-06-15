@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { AMOUNT_ERROR_MESSAGE, isValidAmountInput, toApiAmount } from "./amount";
+
 export const LOAN_TYPES = ["pix", "debit", "cash"] as const;
 export type LoanType = (typeof LOAN_TYPES)[number];
 
@@ -9,13 +11,11 @@ export const LOAN_TYPE_LABEL: Record<LoanType, string> = {
   cash: "cash",
 };
 
-const amountPattern = /^\d+(\.\d{1,2})?$/;
-
 export const cashReceivableFormSchema = z.object({
   description: z.string().trim().min(1, "description is required"),
   loanType: z.enum(LOAN_TYPES),
-  amount: z.string().refine((v) => amountPattern.test(v.trim()), {
-    message: "use 1234.56 format (period as decimal)",
+  amount: z.string().refine((v) => isValidAmountInput(v), {
+    message: AMOUNT_ERROR_MESSAGE,
   }),
   loanDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "invalid date"),
   expectedPaymentMonth: z.string().regex(/^\d{4}-\d{2}$/, "invalid month (yyyy-mm)"),
@@ -43,7 +43,7 @@ export function normaliseCashReceivableForm(
   return {
     description: input.description.trim(),
     loanType: input.loanType,
-    amount: input.amount.trim(),
+    amount: toApiAmount(input.amount),
     loanDate: input.loanDate,
     expectedPaymentMonth: `${input.expectedPaymentMonth}-01`,
     isPaid: input.isPaid,

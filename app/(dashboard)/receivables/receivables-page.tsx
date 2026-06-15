@@ -106,7 +106,7 @@ function formatDate(dateStr: string): string {
 }
 
 function formatAmount(value: string | number): string {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "BRL" }).format(
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
     typeof value === "string" ? Number(value) : value,
   );
 }

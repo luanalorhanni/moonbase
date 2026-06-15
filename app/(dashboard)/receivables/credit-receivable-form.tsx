@@ -19,6 +19,7 @@ import { createCreditReceivable, updateCreditReceivable } from "@/lib/actions/cr
 import { todayBrazil } from "@/lib/utils";
 import type { CardRow } from "@/lib/queries/cards";
 import type { CreditReceivableWithCard } from "@/lib/queries/receivables";
+import { toFormAmount } from "@/lib/validation/amount";
 import {
   creditReceivableFormSchema,
   type CreditReceivableFormInput,
@@ -48,7 +49,7 @@ export function CreditReceivableForm({ receivable, cards, onSuccess }: Props) {
           cardId: receivable.cardId,
           purchaseDate: receivable.purchaseDate,
           totalParcels: String(receivable.totalParcels),
-          parcelValue: receivable.parcelValue,
+          parcelValue: toFormAmount(receivable.parcelValue),
           manualOverride: receivable.manualOverride,
         }
       : {
@@ -165,7 +166,7 @@ export function CreditReceivableForm({ receivable, cards, onSuccess }: Props) {
             <Input
               id="cr-parcel-value"
               inputMode="decimal"
-              placeholder="e.g. 199.90"
+              placeholder="ex. 199,90"
               disabled={isPending}
               {...form.register("parcelValue")}
             />
@@ -175,7 +176,7 @@ export function CreditReceivableForm({ receivable, cards, onSuccess }: Props) {
           </Field>
         </div>
         <FieldDescription className="-mt-3">
-          use a period as the decimal separator (e.g. 199.90).
+          use vírgula como separador decimal (ex. 199,90).
         </FieldDescription>
 
         <div className="flex items-start gap-3 rounded-md border px-3 py-3">

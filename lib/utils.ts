@@ -12,7 +12,7 @@ export function todayBrazil(): string {
   return new Intl.DateTimeFormat("sv-SE", { timeZone: "America/Sao_Paulo" }).format(new Date());
 }
 
-const CURRENCY = new Intl.NumberFormat("en-US", {
+const CURRENCY = new Intl.NumberFormat("pt-BR", {
   style: "currency",
   currency: "BRL",
 });
@@ -26,7 +26,7 @@ export function formatCurrency(value: string | number | null | undefined): strin
 
 export const formatBRL = formatCurrency;
 
-const COMPACT = new Intl.NumberFormat("en-US", {
+const COMPACT = new Intl.NumberFormat("pt-BR", {
   style: "currency",
   currency: "BRL",
   notation: "compact",

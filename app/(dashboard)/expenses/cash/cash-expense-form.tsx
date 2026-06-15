@@ -24,6 +24,7 @@ import type { CardRow } from "@/lib/queries/cards";
 import type { CashExpenseRow } from "@/lib/queries/cash-expenses";
 import type { SubcategoryWithCategory } from "@/lib/queries/categories";
 import type { LiquidSavingsRow } from "@/lib/queries/investments";
+import { toFormAmount } from "@/lib/validation/amount";
 import {
   CASH_METHOD_LABEL,
   CASH_METHODS,
@@ -58,7 +59,7 @@ export function CashExpenseForm({
           method: expense.method,
           subcategoryId: expense.subcategoryId,
           date: expense.date,
-          amount: expense.amount,
+          amount: toFormAmount(expense.amount),
           liquidSavingsId: expense.liquidSavingsId ?? "",
         }
       : {
@@ -216,11 +217,11 @@ export function CashExpenseForm({
           <Input
             id="ce-amount"
             inputMode="decimal"
-            placeholder="e.g. 45.90"
+            placeholder="ex. 45,90"
             disabled={isPending}
             {...form.register("amount")}
           />
-          <FieldDescription>use a period as the decimal separator (e.g. 45.90).</FieldDescription>
+          <FieldDescription>use vírgula como separador decimal (ex. 45,90).</FieldDescription>
           {form.formState.errors.amount ? (
             <FieldError>{form.formState.errors.amount.message}</FieldError>
           ) : null}

@@ -18,6 +18,7 @@ import {
 import { createCashReceivable, updateCashReceivable } from "@/lib/actions/cash-receivables";
 import { todayBrazil } from "@/lib/utils";
 import type { CashReceivableRow } from "@/lib/queries/receivables";
+import { toFormAmount } from "@/lib/validation/amount";
 import {
   cashReceivableFormSchema,
   LOAN_TYPE_LABEL,
@@ -45,7 +46,7 @@ export function CashReceivableForm({ receivable, onSuccess }: Props) {
       ? {
           description: receivable.description,
           loanType: receivable.loanType,
-          amount: receivable.amount,
+          amount: toFormAmount(receivable.amount),
           loanDate: receivable.loanDate,
           expectedPaymentMonth: receivable.expectedPaymentMonth.slice(0, 7),
           isPaid: receivable.isPaid,
@@ -135,7 +136,7 @@ export function CashReceivableForm({ receivable, onSuccess }: Props) {
             <Input
               id="cr-amount"
               inputMode="decimal"
-              placeholder="e.g. 250.00"
+              placeholder="ex. 250,00"
               disabled={isPending}
               {...form.register("amount")}
             />
