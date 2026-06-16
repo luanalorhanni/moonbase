@@ -28,11 +28,17 @@ export default async function YearPage({ params }: { params: Promise<Params> }) 
     listFixedIncome(),
   ]);
   const inputs = toAggregateInputs(dataset);
-  const snapshots: HistoricalSnapshot[] = snapshotRows.map((s) => ({
-    referenceMonth: s.referenceMonth.toString().slice(0, 10),
-    totalIncomes: s.totalIncomes,
-    totalExpenses: s.totalExpenses,
-  }));
+  // Only *closed* months contribute their frozen snapshot to the cumulative
+  // line; the current and future months are read live, matching loadYear's
+  // overlay policy ("mês fechado, snapshot fechado").
+  const currentMonth = currentMonthRef();
+  const snapshots: HistoricalSnapshot[] = snapshotRows
+    .filter((s) => s.referenceMonth.toString().slice(0, 7) < currentMonth)
+    .map((s) => ({
+      referenceMonth: s.referenceMonth.toString().slice(0, 10),
+      totalIncomes: s.totalIncomes,
+      totalExpenses: s.totalExpenses,
+    }));
 
   const trendData = summary.months.map((m) => ({
     label: formatMonthShort(m.reference).split("/")[0],
