@@ -132,6 +132,33 @@ export const creditExpenses = pgTable("credit_expenses", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+/**
+ * A refund (estorno) credited against a credit_expense. Models the Brazilian
+ * case where some products of an installment purchase are refunded: the credit
+ * lands on one or more invoices without altering the original purchase, so the
+ * remaining products keep being billed. A single-month refund has
+ * totalParcels = 1; an estorno parcelado spreads the credit across months
+ * (referenceMonth → lastParcelMonth), mirroring credit_expenses' parcel model.
+ *
+ * Card and subcategory are NOT stored here — they are inherited from the
+ * parent expense at query time, keeping single source of truth (arch §9.3).
+ */
+export const creditRefunds = pgTable("credit_refunds", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id").notNull(),
+  creditExpenseId: uuid("credit_expense_id")
+    .notNull()
+    .references(() => creditExpenses.id, { onDelete: "cascade" }),
+  description: text("description"),
+  parcelValue: numeric("parcel_value", { precision: 12, scale: 2 }).notNull(),
+  totalParcels: integer("total_parcels").notNull().default(1),
+  // First invoice month the credit lands on (yyyy-mm-01).
+  referenceMonth: date("reference_month").notNull(),
+  // Derived: referenceMonth + (totalParcels - 1) months.
+  lastParcelMonth: date("last_parcel_month"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const cashExpenses = pgTable("cash_expenses", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: uuid("user_id").notNull(),
