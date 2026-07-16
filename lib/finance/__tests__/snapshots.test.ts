@@ -8,6 +8,8 @@ const baseAggregate = (overrides: Partial<MonthAggregate> = {}): MonthAggregate 
   totalIncomes: "5000.00",
   totalCashExpenses: "0.00",
   totalCreditExpenses: "0.00",
+  totalCreditGross: "0.00",
+  totalCreditRefunds: "0.00",
   totalFixedExpenses: "0.00",
   totalExpenses: "2000.00",
   balance: "3000.00",

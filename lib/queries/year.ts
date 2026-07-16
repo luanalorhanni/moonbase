@@ -57,6 +57,8 @@ async function _loadYear(year: number): Promise<YearSummary> {
       totalIncomes: incomes,
       totalCashExpenses: "0.00",
       totalCreditExpenses: "0.00",
+      totalCreditGross: "0.00",
+      totalCreditRefunds: "0.00",
       totalFixedExpenses: expenses,
       totalExpenses: expenses,
       balance,

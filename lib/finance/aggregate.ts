@@ -10,6 +10,7 @@ import {
   fixedExpenseActiveInMonth,
   groupSum,
   isInMonth,
+  negateNumeric,
   parcelSpansMonth,
   shiftMonth,
   subtractNumeric,
@@ -80,13 +81,41 @@ export type AggregateInputs = {
     lastParcelMonth: string | null;
     parcelValue: string;
   }>;
+  /**
+   * Refunds (estornos) credited against credit expenses. They abate the credit
+   * total in the invoice month(s) they land on. Card and category are inherited
+   * from the parent expense (joined in by the query) so the credit is netted out
+   * of the right buckets. Defaults to empty for callers that predate refunds.
+   */
+  creditRefunds?: ReadonlyArray<{
+    id: string;
+    referenceMonth: string;
+    lastParcelMonth: string | null;
+    parcelValue: string;
+    cardId: string;
+    cardName: string;
+    cardColor?: string;
+    subcategoryId: string;
+    subcategoryName?: string;
+    categoryName: string;
+    categoryIcon?: string | null;
+    categoryColor?: string;
+    description?: string | null;
+    expenseDescription?: string;
+    totalParcels?: number;
+  }>;
 };
 
 export type MonthAggregate = {
   reference: MonthRef;
   totalIncomes: string;
   totalCashExpenses: string;
+  /** Credit total NET of refunds — this is what feeds `totalExpenses`. */
   totalCreditExpenses: string;
+  /** Gross credit before refunds, for UIs that want to show the deduction. */
+  totalCreditGross: string;
+  /** Sum of refunds credited this month (a positive number). */
+  totalCreditRefunds: string;
   totalFixedExpenses: string;
   totalExpenses: string;
   balance: string;
@@ -110,10 +139,15 @@ export function aggregateMonth(rows: AggregateInputs, reference: MonthRef): Mont
   const creditRec = rows.creditReceivables.filter((r) =>
     parcelSpansMonth(r.firstParcelMonth, r.lastParcelMonth, reference),
   );
+  const refunds = (rows.creditRefunds ?? []).filter((r) =>
+    parcelSpansMonth(r.referenceMonth, r.lastParcelMonth ?? r.referenceMonth, reference),
+  );
 
   const totalIncomes = sumNumeric(incomes.map((i) => i.amount));
   const totalCashExpenses = sumNumeric(cash.map((e) => e.amount));
-  const totalCreditExpenses = sumNumeric(credit.map((e) => e.parcelValue));
+  const totalCreditGross = sumNumeric(credit.map((e) => e.parcelValue));
+  const totalCreditRefunds = sumNumeric(refunds.map((r) => r.parcelValue));
+  const totalCreditExpenses = subtractNumeric(totalCreditGross, totalCreditRefunds);
   const totalFixedExpenses = sumNumeric(fixed.map((e) => e.monthlyAmount));
   const totalExpenses = sumNumeric([totalCashExpenses, totalCreditExpenses, totalFixedExpenses]);
   const balance = subtractNumeric(totalIncomes, totalExpenses);
@@ -144,6 +178,14 @@ export function aggregateMonth(rows: AggregateInputs, reference: MonthRef): Mont
         icon: e.categoryIcon,
         color: e.categoryColor,
       })),
+      // Refunds subtract from their parent's category — negative amounts.
+      ...refunds.map((r) => ({
+        key: r.categoryName,
+        amount: negateNumeric(r.parcelValue),
+        label: r.categoryName,
+        icon: r.categoryIcon,
+        color: r.categoryColor,
+      })),
     ],
     (r) => r.key,
     (r) => r.amount,
@@ -170,6 +212,12 @@ export function aggregateMonth(rows: AggregateInputs, reference: MonthRef): Mont
       label: e.cardName,
       color: e.cardColor,
     })),
+    ...refunds.map((r) => ({
+      key: r.cardId,
+      amount: negateNumeric(r.parcelValue),
+      label: r.cardName,
+      color: r.cardColor,
+    })),
   ];
 
   const byCard = groupSum(
@@ -184,6 +232,8 @@ export function aggregateMonth(rows: AggregateInputs, reference: MonthRef): Mont
     totalIncomes,
     totalCashExpenses,
     totalCreditExpenses,
+    totalCreditGross,
+    totalCreditRefunds,
     totalFixedExpenses,
     totalExpenses,
     balance,
@@ -214,6 +264,7 @@ export type CardForInvoice = {
 export type InvoiceItem = {
   id: string;
   description: string;
+  /** Positive for a purchase; negative for a refund (estorno) credit. */
   parcelValue: string;
   totalParcels: number;
   /** 1-based parcel index that lands on `reference` (e.g. 3 of 12). */
@@ -221,6 +272,8 @@ export type InvoiceItem = {
   purchaseDate: string;
   subcategoryName: string;
   categoryName: string;
+  /** True when this line is a refund credit rather than a purchase. */
+  isRefund?: boolean;
 };
 
 export type InvoicePerCard = {
@@ -246,9 +299,13 @@ export function invoicePerCard(
   creditExpenses: AggregateInputs["creditExpenses"],
   cards: ReadonlyArray<CardForInvoice>,
   reference: MonthRef,
+  creditRefunds: AggregateInputs["creditRefunds"] = [],
 ): InvoicePerCard[] {
   const inMonth = creditExpenses.filter((e) =>
     parcelSpansMonth(e.firstParcelMonth, e.lastParcelMonth, reference),
+  );
+  const refundsInMonth = (creditRefunds ?? []).filter((r) =>
+    parcelSpansMonth(r.referenceMonth, r.lastParcelMonth ?? r.referenceMonth, reference),
   );
 
   const byCardId = new Map<string, { count: number; total: number; items: InvoiceItem[] }>();
@@ -267,6 +324,24 @@ export function invoicePerCard(
       categoryName: e.categoryName,
     });
     byCardId.set(e.cardId, bucket);
+  }
+
+  // Refund credits reduce the card's invoice and appear as negative lines.
+  for (const r of refundsInMonth) {
+    const bucket = byCardId.get(r.cardId) ?? { count: 0, total: 0, items: [] as InvoiceItem[] };
+    bucket.total -= Number(r.parcelValue);
+    bucket.items.push({
+      id: r.id,
+      description: r.description || `estorno: ${r.expenseDescription ?? ""}`.trim(),
+      parcelValue: negateNumeric(r.parcelValue),
+      totalParcels: r.totalParcels ?? 1,
+      parcelIndex: parcelIndexAt(r.referenceMonth, reference),
+      purchaseDate: "",
+      subcategoryName: r.subcategoryName ?? "",
+      categoryName: r.categoryName,
+      isRefund: true,
+    });
+    byCardId.set(r.cardId, bucket);
   }
 
   return cards

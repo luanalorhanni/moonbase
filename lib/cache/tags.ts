@@ -16,6 +16,7 @@ export const TAGS = {
   categories: "categories",
   subcategories: "subcategories",
   creditExpenses: "credit-expenses",
+  creditRefunds: "credit-refunds",
   cashExpenses: "cash-expenses",
   fixedExpenses: "fixed-expenses",
   incomes: "incomes",
@@ -55,6 +56,7 @@ export function invalidateCardGraph() {
   bust(
     TAGS.cards,
     TAGS.creditExpenses,
+    TAGS.creditRefunds,
     TAGS.cashExpenses,
     TAGS.fixedExpenses,
     TAGS.creditReceivables,
@@ -70,13 +72,20 @@ export function invalidateCategoryGraph() {
     TAGS.categories,
     TAGS.subcategories,
     TAGS.creditExpenses,
+    TAGS.creditRefunds,
     TAGS.cashExpenses,
     TAGS.fixedExpenses,
   );
 }
 
 export function invalidateSubcategoryGraph() {
-  bust(TAGS.subcategories, TAGS.creditExpenses, TAGS.cashExpenses, TAGS.fixedExpenses);
+  bust(
+    TAGS.subcategories,
+    TAGS.creditExpenses,
+    TAGS.creditRefunds,
+    TAGS.cashExpenses,
+    TAGS.fixedExpenses,
+  );
 }
 
 export function invalidate(...tags: Tag[]) {

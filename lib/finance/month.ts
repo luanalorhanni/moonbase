@@ -112,6 +112,11 @@ export function subtractNumeric(a: string, b: string): string {
   return (Number(a) - Number(b)).toFixed(2);
 }
 
+/** Flip the sign of a numeric string, keeping the numeric(12,2) shape. */
+export function negateNumeric(a: string): string {
+  return (-Number(a)).toFixed(2);
+}
+
 export type GroupBucket = {
   key: string;
   label: string;

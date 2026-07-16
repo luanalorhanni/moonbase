@@ -60,14 +60,17 @@ import { deleteCreditExpense } from "@/lib/actions/credit-expenses";
 import type { CardRow } from "@/lib/queries/cards";
 import type { SubcategoryWithCategory } from "@/lib/queries/categories";
 import type { CreditExpenseWithDetails } from "@/lib/queries/credit-expenses";
+import type { CreditRefundWithDetails } from "@/lib/queries/credit-refunds";
 import { cn } from "@/lib/utils";
 
 import { CreditExpenseForm } from "./credit-expense-form";
+import { CreditRefundForm } from "./credit-refund-form";
 
 type DialogState =
   | { kind: "closed" }
   | { kind: "create" }
-  | { kind: "edit"; expense: CreditExpenseWithDetails };
+  | { kind: "edit"; expense: CreditExpenseWithDetails }
+  | { kind: "refund"; expense: CreditExpenseWithDetails };
 
 const EN_MONTH_SHORT = [
   "jan",
@@ -119,11 +122,12 @@ function timeAgo(value: Date | string): string {
 
 type Props = {
   initialExpenses: CreditExpenseWithDetails[];
+  refunds: CreditRefundWithDetails[];
   cards: CardRow[];
   subcategories: SubcategoryWithCategory[];
 };
 
-export function CreditExpensesList({ initialExpenses, cards, subcategories }: Props) {
+export function CreditExpensesList({ initialExpenses, refunds, cards, subcategories }: Props) {
   const [dialog, setDialog] = useState<DialogState>({ kind: "closed" });
   const [pendingDelete, setPendingDelete] = useState<CreditExpenseWithDetails | null>(null);
   const [isDeleting, startDeleteTransition] = useTransition();
@@ -151,6 +155,17 @@ export function CreditExpensesList({ initialExpenses, cards, subcategories }: Pr
     };
   }, [initialExpenses]);
 
+  // Total refunded per expense (sum of parcelValue × totalParcels across all
+  // its refunds) — drives the row badge and the net total.
+  const refundedByExpense = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const r of refunds) {
+      const amount = Number(r.parcelValue) * r.totalParcels;
+      map.set(r.creditExpenseId, (map.get(r.creditExpenseId) ?? 0) + amount);
+    }
+    return map;
+  }, [refunds]);
+
   const filteredExpenses = useMemo(() => {
     const q = query.trim().toLowerCase();
     return initialExpenses.filter((e) => {
@@ -172,8 +187,13 @@ export function CreditExpensesList({ initialExpenses, cards, subcategories }: Pr
   }, [initialExpenses, query, cardFilter, categoryFilter, purchaseRange, parcelRange, periodRange]);
 
   const filteredTotal = useMemo(
-    () => filteredExpenses.reduce((acc, e) => acc + Number(e.parcelValue) * e.totalParcels, 0),
-    [filteredExpenses],
+    () =>
+      filteredExpenses.reduce(
+        (acc, e) =>
+          acc + Number(e.parcelValue) * e.totalParcels - (refundedByExpense.get(e.id) ?? 0),
+        0,
+      ),
+    [filteredExpenses, refundedByExpense],
   );
 
   const isFiltering =
@@ -374,7 +394,17 @@ export function CreditExpensesList({ initialExpenses, cards, subcategories }: Pr
                       {formatDate(expense.purchaseDate)}
                     </TableCell>
                     <TableCell className="numeric py-3 text-[12.5px] tabular-nums">
-                      {expense.totalParcels}× {formatAmount(expense.parcelValue)}
+                      <div>
+                        {expense.totalParcels}× {formatAmount(expense.parcelValue)}
+                      </div>
+                      {refundedByExpense.get(expense.id) ? (
+                        <div
+                          className="text-muted-foreground text-[11px]"
+                          title="refunded (estorno)"
+                        >
+                          −{formatAmount(String(refundedByExpense.get(expense.id)))} refunded
+                        </div>
+                      ) : null}
                     </TableCell>
                     <TableCell className="py-3 font-mono text-[12px] tabular-nums">
                       {expense.firstParcelMonth && expense.lastParcelMonth ? (
@@ -399,6 +429,9 @@ export function CreditExpensesList({ initialExpenses, cards, subcategories }: Pr
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => setDialog({ kind: "edit", expense })}>
                             edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => setDialog({ kind: "refund", expense })}>
+                            log refund
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             variant="destructive"
@@ -426,21 +459,35 @@ export function CreditExpensesList({ initialExpenses, cards, subcategories }: Pr
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>
-              {dialog.kind === "edit" ? "edit expense" : "new credit expense"}
+              {dialog.kind === "edit"
+                ? "edit expense"
+                : dialog.kind === "refund"
+                  ? "log refund"
+                  : "new credit expense"}
             </DialogTitle>
             <DialogDescription>
               {dialog.kind === "edit"
                 ? "update expense details."
-                : "log an installment or one-shot card purchase."}
+                : dialog.kind === "refund"
+                  ? "credit an estorno against this purchase."
+                  : "log an installment or one-shot card purchase."}
             </DialogDescription>
           </DialogHeader>
-          <CreditExpenseForm
-            key={dialog.kind === "edit" ? dialog.expense.id : "create"}
-            expense={dialog.kind === "edit" ? dialog.expense : undefined}
-            cards={cards}
-            subcategories={subcategories}
-            onSuccess={() => setDialog({ kind: "closed" })}
-          />
+          {dialog.kind === "refund" ? (
+            <CreditRefundForm
+              key={`refund-${dialog.expense.id}`}
+              expense={dialog.expense}
+              onSuccess={() => setDialog({ kind: "closed" })}
+            />
+          ) : (
+            <CreditExpenseForm
+              key={dialog.kind === "edit" ? dialog.expense.id : "create"}
+              expense={dialog.kind === "edit" ? dialog.expense : undefined}
+              cards={cards}
+              subcategories={subcategories}
+              onSuccess={() => setDialog({ kind: "closed" })}
+            />
+          )}
         </DialogContent>
       </Dialog>
 
