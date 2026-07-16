@@ -159,6 +159,19 @@ export async function MonthDashboard({ reference }: { reference: MonthRef }) {
         total: Number(f.monthlyAmount),
       });
   }
+  // Refunds (estornos) credited this month reduce the card they were charged
+  // on, so the per-card tiles reconcile with the net credit total.
+  for (const r of summary.data.creditRefunds) {
+    const ex = creditCardMap.get(r.cardId);
+    if (ex) ex.total -= Number(r.parcelValue);
+    else
+      creditCardMap.set(r.cardId, {
+        id: r.cardId,
+        name: r.cardName,
+        color: r.cardColor,
+        total: -Number(r.parcelValue),
+      });
+  }
   // Credit receivables per card — what other people owe me on this card
   // for parcels falling in this reference month. Subtracting from the
   // card's bill gives the amount that actually hits the bank.
@@ -509,6 +522,41 @@ export async function MonthDashboard({ reference }: { reference: MonthRef }) {
                       ))}
                     </div>
                   )}
+                  {summary.data.creditRefunds.length > 0 ? (
+                    <div className="border-border/60 mt-1 flex flex-col gap-1.5 border-t border-dashed pt-2.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground font-mono text-[10.5px] tracking-[0.16em] uppercase">
+                          refunds
+                        </span>
+                        <span className="numeric text-muted-foreground text-[12px] tabular-nums">
+                          −{formatCurrency(summary.totalCreditRefunds)}
+                        </span>
+                      </div>
+                      {summary.data.creditRefunds.map((r) => (
+                        <div
+                          key={r.id}
+                          className="flex items-center justify-between gap-3 text-[12px]"
+                        >
+                          <span className="text-muted-foreground flex min-w-0 items-center gap-1.5">
+                            <span
+                              className="size-1.5 shrink-0 rounded-full"
+                              style={{ backgroundColor: r.cardColor }}
+                              aria-hidden
+                            />
+                            <span className="truncate">
+                              {r.description || r.expenseDescription}
+                            </span>
+                            <span className="text-muted-foreground/50 shrink-0">
+                              · {r.cardName}
+                            </span>
+                          </span>
+                          <span className="numeric text-muted-foreground shrink-0 tabular-nums">
+                            −{formatCurrency(r.parcelValue)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
               </div>
             </div>
