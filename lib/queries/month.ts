@@ -25,6 +25,7 @@ import {
 import { listCards } from "@/lib/queries/cards";
 import { listCashExpenses, type CashExpenseWithDetails } from "@/lib/queries/cash-expenses";
 import { listCreditExpenses, type CreditExpenseWithDetails } from "@/lib/queries/credit-expenses";
+import { listCreditRefunds, type CreditRefundWithDetails } from "@/lib/queries/credit-refunds";
 import { listFixedExpenses, type FixedExpenseWithDetails } from "@/lib/queries/fixed-expenses";
 import { listIncomes, type IncomeRow } from "@/lib/queries/incomes";
 import {
@@ -41,6 +42,7 @@ export type MonthData = {
   reference: MonthRef;
   cashExpenses: CashExpenseWithDetails[];
   creditExpenses: CreditExpenseWithDetails[];
+  creditRefunds: CreditRefundWithDetails[];
   fixedExpenses: FixedExpenseWithDetails[];
   incomes: IncomeRow[];
   cashReceivables: CashReceivableRow[];
@@ -90,6 +92,7 @@ export type MonthSummary = MonthAggregate & {
 export type FullDataset = {
   cashExpenses: CashExpenseWithDetails[];
   creditExpenses: CreditExpenseWithDetails[];
+  creditRefunds: CreditRefundWithDetails[];
   fixedExpenses: FixedExpenseWithDetails[];
   incomes: IncomeRow[];
   cashReceivables: CashReceivableRow[];
@@ -103,6 +106,7 @@ async function _loadFullDataset(): Promise<FullDataset> {
   const [
     cashExpenses,
     creditExpenses,
+    creditRefunds,
     fixedExpenses,
     incomes,
     cashReceivables,
@@ -111,6 +115,7 @@ async function _loadFullDataset(): Promise<FullDataset> {
   ] = await Promise.all([
     listCashExpenses(),
     listCreditExpenses(),
+    listCreditRefunds(),
     listFixedExpenses(),
     listIncomes(),
     listCashReceivables(),
@@ -121,6 +126,7 @@ async function _loadFullDataset(): Promise<FullDataset> {
   return {
     cashExpenses,
     creditExpenses,
+    creditRefunds,
     fixedExpenses,
     incomes,
     cashReceivables,
@@ -144,6 +150,8 @@ function historicalAggregate(reference: MonthRef, snap: SnapshotRow): MonthAggre
     totalIncomes: incomes,
     totalCashExpenses: "0.00",
     totalCreditExpenses: "0.00",
+    totalCreditGross: "0.00",
+    totalCreditRefunds: "0.00",
     totalFixedExpenses: expenses,
     totalExpenses: expenses,
     balance,
@@ -163,6 +171,7 @@ function toAggregateInputs(dataset: FullDataset): AggregateInputs {
     incomes: dataset.incomes,
     cashReceivables: dataset.cashReceivables,
     creditReceivables: dataset.creditReceivables,
+    creditRefunds: dataset.creditRefunds,
   };
 }
 
@@ -227,7 +236,12 @@ async function _loadMonth(reference: MonthRef): Promise<MonthSummary> {
     dueDay: c.dueDay,
   }));
 
-  const thisInvoice = invoicePerCard(dataset.creditExpenses, cardsForInvoice, reference);
+  const thisInvoice = invoicePerCard(
+    dataset.creditExpenses,
+    cardsForInvoice,
+    reference,
+    dataset.creditRefunds,
+  );
   const bySource = incomeBySource(inputs.incomes, reference);
   const byCashMethodList = cashByMethod(inputs.cashExpenses, reference);
   const cumulativeSave = cumulativeBalance(
@@ -244,7 +258,12 @@ async function _loadMonth(reference: MonthRef): Promise<MonthSummary> {
   const nextRef = shiftMonth(reference, 1);
   const nextInvoice = isCurrentOrFuture
     ? (() => {
-        const perCard = invoicePerCard(dataset.creditExpenses, cardsForInvoice, nextRef);
+        const perCard = invoicePerCard(
+          dataset.creditExpenses,
+          cardsForInvoice,
+          nextRef,
+          dataset.creditRefunds,
+        );
         const total = perCard.reduce((sum, b) => sum + Number(b.total), 0).toFixed(2);
         return { reference: nextRef, perCard, total };
       })()
@@ -265,6 +284,9 @@ async function _loadMonth(reference: MonthRef): Promise<MonthSummary> {
       cashExpenses: dataset.cashExpenses.filter((e) => isInMonth(e.date, reference)),
       creditExpenses: dataset.creditExpenses.filter((e) =>
         parcelSpansMonth(e.firstParcelMonth, e.lastParcelMonth, reference),
+      ),
+      creditRefunds: dataset.creditRefunds.filter((r) =>
+        parcelSpansMonth(r.referenceMonth, r.lastParcelMonth ?? r.referenceMonth, reference),
       ),
       fixedExpenses: dataset.fixedExpenses.filter((e) =>
         fixedExpenseActiveInMonth(e.startDate, e.endDate, e.isActive, reference),
