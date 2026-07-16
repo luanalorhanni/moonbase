@@ -95,6 +95,104 @@ describe("aggregateMonth", () => {
   });
 });
 
+describe("aggregateMonth — credit refunds", () => {
+  const withCredit: AggregateInputs = {
+    ...empty,
+    creditExpenses: [
+      {
+        id: "cr1",
+        firstParcelMonth: "2026-04-01",
+        lastParcelMonth: "2026-07-01", // 4 parcels
+        parcelValue: "300.00",
+        cardId: "card2",
+        cardName: "Nubank",
+        subcategoryId: "s2",
+        categoryName: "Transporte",
+        categoryColor: "purple",
+      },
+    ],
+  };
+
+  it("nets a single-month refund out of the credit total, keeping gross", () => {
+    const inputs: AggregateInputs = {
+      ...withCredit,
+      creditRefunds: [
+        {
+          id: "rf1",
+          referenceMonth: "2026-04-01",
+          lastParcelMonth: "2026-04-01",
+          parcelValue: "120.00",
+          cardId: "card2",
+          cardName: "Nubank",
+          subcategoryId: "s2",
+          categoryName: "Transporte",
+          categoryColor: "purple",
+        },
+      ],
+    };
+
+    const april = aggregateMonth(inputs, "2026-04");
+    expect(april.totalCreditGross).toBe("300.00");
+    expect(april.totalCreditRefunds).toBe("120.00");
+    expect(april.totalCreditExpenses).toBe("180.00");
+    expect(april.totalExpenses).toBe("180.00");
+
+    // Later parcels are untouched — the refund only lands on April.
+    const may = aggregateMonth(inputs, "2026-05");
+    expect(may.totalCreditRefunds).toBe("0.00");
+    expect(may.totalCreditExpenses).toBe("300.00");
+  });
+
+  it("subtracts the refund from its parent's category and card buckets", () => {
+    const inputs: AggregateInputs = {
+      ...withCredit,
+      creditRefunds: [
+        {
+          id: "rf1",
+          referenceMonth: "2026-04-01",
+          lastParcelMonth: "2026-04-01",
+          parcelValue: "120.00",
+          cardId: "card2",
+          cardName: "Nubank",
+          subcategoryId: "s2",
+          categoryName: "Transporte",
+          categoryColor: "purple",
+        },
+      ],
+    };
+
+    const r = aggregateMonth(inputs, "2026-04");
+    const transporte = r.byCategory.find((b) => b.key === "Transporte");
+    expect(transporte?.total).toBe("180.00");
+    const nubank = r.byCard.find((b) => b.key === "card2");
+    expect(nubank?.total).toBe("180.00");
+  });
+
+  it("spreads an estorno parcelado across the referenced months", () => {
+    const inputs: AggregateInputs = {
+      ...withCredit,
+      creditRefunds: [
+        {
+          id: "rf2",
+          referenceMonth: "2026-04-01",
+          lastParcelMonth: "2026-05-01", // 2 monthly credits
+          parcelValue: "100.00",
+          totalParcels: 2,
+          cardId: "card2",
+          cardName: "Nubank",
+          subcategoryId: "s2",
+          categoryName: "Transporte",
+          categoryColor: "purple",
+        },
+      ],
+    };
+
+    expect(aggregateMonth(inputs, "2026-04").totalCreditRefunds).toBe("100.00");
+    expect(aggregateMonth(inputs, "2026-05").totalCreditRefunds).toBe("100.00");
+    expect(aggregateMonth(inputs, "2026-06").totalCreditRefunds).toBe("0.00");
+  });
+});
+
 describe("aggregateYear", () => {
   it("produces 12 entries with correct references", () => {
     const r = aggregateYear(empty, 2026);
@@ -167,6 +265,42 @@ describe("invoicePerCard", () => {
       count: 1,
       total: "20.00",
     });
+  });
+
+  it("reduces a card's invoice by refunds and adds a negative line", () => {
+    const credit: AggregateInputs["creditExpenses"] = [
+      {
+        id: "a",
+        firstParcelMonth: "2026-05-01",
+        lastParcelMonth: "2026-05-01",
+        parcelValue: "100.00",
+        cardId: "card1",
+        cardName: "Nubank",
+        subcategoryId: "s",
+        categoryName: "x",
+      },
+    ];
+    const refunds: AggregateInputs["creditRefunds"] = [
+      {
+        id: "rf",
+        referenceMonth: "2026-05-01",
+        lastParcelMonth: "2026-05-01",
+        parcelValue: "30.00",
+        cardId: "card1",
+        cardName: "Nubank",
+        subcategoryId: "s",
+        categoryName: "x",
+        expenseDescription: "headphones",
+      },
+    ];
+
+    const r = invoicePerCard(credit, cards, "2026-05", refunds);
+    expect(r).toHaveLength(1);
+    expect(r[0].total).toBe("70.00");
+    // Purchase counts, refund does not inflate the purchase count.
+    expect(r[0].count).toBe(1);
+    const refundLine = r[0].items.find((i) => i.isRefund);
+    expect(refundLine?.parcelValue).toBe("-30.00");
   });
 
   it("excludes cards with no purchases for the month", () => {
