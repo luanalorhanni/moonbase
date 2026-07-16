@@ -13,10 +13,7 @@ import { formatMonthShort, isMonthRef, shiftMonth } from "@/lib/finance/month";
 import type { CreditExpenseWithDetails } from "@/lib/queries/credit-expenses";
 import { formatCurrency, todayBrazil } from "@/lib/utils";
 import { isValidAmountInput, toApiAmount } from "@/lib/validation/amount";
-import {
-  creditRefundFormSchema,
-  type CreditRefundFormInput,
-} from "@/lib/validation/credit-refund";
+import { creditRefundFormSchema, type CreditRefundFormInput } from "@/lib/validation/credit-refund";
 
 type Props = {
   expense: CreditExpenseWithDetails;
@@ -142,7 +139,12 @@ export function CreditRefundForm({ expense, onSuccess }: Props) {
 
       <Field>
         <FieldLabel htmlFor="rf-month">first invoice month</FieldLabel>
-        <Input id="rf-month" type="month" disabled={isPending} {...form.register("referenceMonth")} />
+        <Input
+          id="rf-month"
+          type="month"
+          disabled={isPending}
+          {...form.register("referenceMonth")}
+        />
         {form.formState.errors.referenceMonth ? (
           <FieldError>{form.formState.errors.referenceMonth.message}</FieldError>
         ) : null}
