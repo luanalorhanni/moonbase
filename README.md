@@ -24,7 +24,7 @@
 
 ## ○ what it is
 
-moonbase is a single-user personal finance web app that replaced a Google Sheets workbook (in use since July 2024). it manages credit and cash expenses, recurring fixed costs, incomes, receivables, investments, and a personal journal — producing consolidated monthly and yearly reports.
+moonbase is a single-user personal finance web app that replaced a Google Sheets workbook (in use since July 2024). it manages credit and cash expenses, recurring fixed costs, incomes, receivables, and investments — producing consolidated monthly and yearly reports.
 
 the name evokes a personal command center: a self-sufficient base from which the user operates, plans, and controls their financial life. like a lunar outpost, it's built foundation by foundation and grows incrementally without losing coherence.
 
@@ -49,19 +49,6 @@ the name evokes a personal command center: a self-sufficient base from which the
 | **cards** | credit cards and accounts with color, closing day, due day, limit — fully editable |
 | **categories** | hierarchical categories → subcategories with color and icon, used across all expense types |
 | **snapshots** | immutable monthly totals for historical months; manual trigger + cron-ready endpoint |
-
-### journal
-
-a personal daily log, separate from finance but living in the same base:
-
-- **gallery view** with Notion-style cards — cover image, mood badge, gratitude preview
-- **cover images** sourced from Unsplash with photographer credit
-- **mood tracking** — five levels, color-coded
-- **gratitude list** — up to N items per day
-- **reflection** — full markdown support (bold, italic, lists, links, blockquotes, headings)
-- **optional title** — a short phrase that captures the feel of the day
-- **read-only preview** on click → edit on demand
-- **heatmap calendar** — activity density across the year at a glance
 
 ### system
 

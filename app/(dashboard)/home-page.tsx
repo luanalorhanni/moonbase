@@ -4,8 +4,6 @@ import {
   ArrowDownToLine,
   ArrowUpRight,
   Banknote,
-  BookOpen,
-  Calendar,
   CalendarDays,
   CalendarRange,
   CircleCheckBig,
@@ -50,20 +48,6 @@ const ROUTINE_CARDS: Card[] = [
     description: "daily and weekly routines",
     icon: CircleCheckBig,
     tone: "mint",
-  },
-  {
-    href: "/calendar",
-    label: "calendar",
-    description: "agenda and upcoming events",
-    icon: Calendar,
-    tone: "aqua",
-  },
-  {
-    href: "/journal",
-    label: "journal",
-    description: "end-of-day reflection",
-    icon: BookOpen,
-    tone: "mauve",
   },
 ];
 
