@@ -49,13 +49,6 @@
       "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
     },
     {
-      "name": "calendar",
-      "short_name": "calendar",
-      "description": "integrated google calendar",
-      "url": "/calendar",
-      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
-    },
-    {
       "name": "new credit expense",
       "short_name": "+ credit",
       "description": "log a credit-card expense",

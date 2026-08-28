@@ -24,7 +24,6 @@ export const TAGS = {
   creditReceivables: "credit-receivables",
   creditReceivableParcelsPaid: "credit-receivable-parcels-paid",
   userSettings: "user-settings",
-  googleCalendarTokens: "google-calendar-tokens",
   habits: "habits",
   habitCategories: "habit-categories",
   habitLogs: "habit-logs",
@@ -32,8 +31,6 @@ export const TAGS = {
   fixedIncome: "fixed-income",
   investmentUpdates: "investment-updates",
   snapshots: "snapshots",
-  journalEntries: "journal-entries",
-  journalQuotes: "journal-quotes",
   monthlyBudgets: "monthly-budgets",
 } as const;
 
