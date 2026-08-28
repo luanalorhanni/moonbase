@@ -34,6 +34,12 @@ yarn-error.log*
 .env*
 !.env.local.example
 
+# Google OAuth client-secret downloads. The credentials live in .env.local
+# (GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET); the downloaded JSON is never used
+# by the app and must never be committed.
+client_secret_*.json
+*.apps.googleusercontent.com.json
+
 # vercel
 .vercel
 
