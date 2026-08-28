@@ -57,7 +57,7 @@ For a single-user system, you should:
 
 Enable Google sign-in:
 
-1. **Reuse the existing Google OAuth client** from the Calendar integration (project `crucial-cabinet-465418-e3` if you're using the same setup) — or create a new one at https://console.cloud.google.com/apis/credentials.
+1. **Create a Google OAuth client** at https://console.cloud.google.com/apis/credentials (or reuse an existing one if you already have a project set up).
 2. In the Google Cloud Console, edit the OAuth 2.0 Client and add this URL to **Authorized redirect URIs**:
    ```
    https://<your-supabase-ref>.supabase.co/auth/v1/callback
@@ -88,7 +88,7 @@ The default template works. Customise the Portuguese-Brazilian copy if you like 
 
 1. `pnpm dev` and open http://localhost:3000.
 2. Middleware sees no session, redirects to `/login`.
-3. **With Google**: click **continuar com google** → Google consent screen (already approved if you've used Calendar) → redirected back through `/api/auth-callback` → land on `/`.
+3. **With Google**: click **continuar com google** → Google consent screen → redirected back through `/api/auth-callback` → land on `/`.
 4. **With email + password**: type credentials, hit **entrar**. `supabase.auth.signInWithPassword` sets the session cookie.
 5. The dashboard layout calls `requireUser()`, sees the session, renders the page with your email and a logout button in the sidebar footer.
 6. Clicking the logout icon runs the `signOut` Server Action, which clears cookies and redirects to `/login`.
