@@ -124,6 +124,12 @@ DATABASE_URL=
 
 ---
 
+## ◍ license
+
+released under the [MIT License](LICENSE). it is a single-user app built for personal use — shared publicly as a reference implementation, not as a hosted product. no financial data of any kind lives in this repository.
+
+---
+
 <div align="center">
 
 *moonbase · personal scale · built by [luanalorhanni](https://github.com/luanalorhanni)*
