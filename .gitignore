@@ -56,3 +56,14 @@ next-env.d.ts
 *.xls
 *.csv
 
+
+# OAuth client secrets and service-account keys (never commit)
+client_secret*.json
+*.apps.googleusercontent.com.json
+*service-account*.json
+*credentials*.json
+*.p12
+*.key
+
+# Local-only maintenance scripts that read production data
+/scripts/local/
