@@ -65,7 +65,7 @@ Enable Google sign-in:
    (Supabase shows the exact URL inside its Google provider config page — copy that.)
 3. Back in Supabase: toggle **Google** on, paste the Client ID + Client Secret, save.
 
-Because the Supabase email user (`luanalorhannips@gmail.com`) and the Google account share the same address, Supabase automatically links the Google identity to the existing user row on first sign-in — your existing `user_id` stays the same and all your data remains visible.
+Because the Supabase email user and the Google account share the same address, Supabase automatically links the Google identity to the existing user row on first sign-in — your existing `user_id` stays the same and all your data remains visible.
 
 ### 3. Authentication → URL Configuration
 
