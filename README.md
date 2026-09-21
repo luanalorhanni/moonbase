@@ -16,7 +16,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6?style=flat-square&logo=typescript)](https://www.typescriptlang.org)
 [![Supabase](https://img.shields.io/badge/Supabase-postgres+auth-3ecf8e?style=flat-square&logo=supabase)](https://supabase.com)
-[![Deployed on Vercel](https://img.shields.io/badge/Vercel-deployed-black?style=flat-square&logo=vercel)](https://moonbase-one.vercel.app)
+[![Deployed on Vercel](https://img.shields.io/badge/Vercel-deployed-black?style=flat-square&logo=vercel)](https://vercel.com)
 
 </div>
 
@@ -126,7 +126,7 @@ DATABASE_URL=
 
 ## ◍ license
 
-released under the [MIT License](LICENSE). it is a single-user app built for personal use — shared publicly as a reference implementation, not as a hosted product. no financial data of any kind lives in this repository.
+released under the [MIT License](LICENSE). it is a single-user app built for personal use — shared publicly as a reference implementation, not as a hosted product. the tracked tree carries no personal financial data: all sample values in tests and docs are synthetic, and real data lives only in the private Supabase instance.
 
 ---
 
